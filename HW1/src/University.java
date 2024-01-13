@@ -8,8 +8,7 @@ class University {
   double averageGPA; // Average student GPA.
   boolean hasCoop; // Represents whether the university offers a co-op program or not.
 
-  University(String name, String city, int studentSize, String mostPopularMajor, double averageGPA,
-             boolean hasCoop) {
+  University(String name, String city, int studentSize, String mostPopularMajor, double averageGPA, boolean hasCoop) {
     this.name = name;
     this.city = city;
     this.studentSize = studentSize;

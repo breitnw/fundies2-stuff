@@ -45,12 +45,13 @@ class Ship implements IResource {
   }
 
   // Returns a value of 100 for a hostile ship, otherwise, returns 50 as the ship's value.
-  public int value () {
+  public int value() {
     return hostile ? 100 : 50;
   }
 }
 
-interface IAction { }
+interface IAction {
+}
 
 class Purchase implements IAction {
   int cost;
@@ -88,8 +89,8 @@ class ExamplesGame {
   IResource blackPearl = new Ship("outrun the Dutchman", false);
 
   // Actions
-  IAction buySmee = new Purchase(5, mrSmee);
-  IAction barterBoats = new Barter(flyingDutchman, blackPearl);
-  IAction barterDudes = new Barter(captainHook, hectorBarbossa);
-  IAction buyPearl = new Purchase(44, blackPearl);
+  IAction purchase1 = new Purchase(5, mrSmee);
+  IAction purchase2 = new Purchase(44, blackPearl);
+  IAction barter1 = new Barter(flyingDutchman, blackPearl);
+  IAction barter2 = new Barter(captainHook, hectorBarbossa);
 }
