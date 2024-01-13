@@ -16,6 +16,16 @@ class University {
     this.averageGPA = averageGPA;
     this.hasCoop = hasCoop;
   }
+
+  /* TEMPLATE
+     FIELDS:
+     ... this.name ...               -- String
+     ... this.city ...               -- String
+     ... this.studentSize ...        -- int
+     ... this.mostPopularMajor ...   -- String
+     ... this.averageGPA ...         -- double
+     ... this.hasCoop ...            -- boolean
+   */
 }
 
 class ExamplesUniversity {

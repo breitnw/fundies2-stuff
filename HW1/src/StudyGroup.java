@@ -18,6 +18,10 @@ class Person implements IStudyGroup {
   Person(String name) {
     this.name = name;
   }
+  /* TEMPLATE
+     FIELDS:
+     ... this.name ...   -- String
+   */
 }
 
 class StudyBuddy implements IStudyGroup {
@@ -28,6 +32,11 @@ class StudyBuddy implements IStudyGroup {
     this.connection = connection;
     this.name = name;
   }
+  /* TEMPLATE
+     FIELDS:
+     ... this.connection ...   -- IStudyGroup
+     ... this.name ...         -- String
+   */
 }
 
 class ExamplesStudyGroup {

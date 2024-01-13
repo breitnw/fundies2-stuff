@@ -1,6 +1,10 @@
 interface IResource {
   // Returns the resource's integer value.
   int value();
+  /* TEMPLATE:
+     METHODS:
+     ... value() ...   -- int
+   */
 }
 
 class Captain implements IResource {
@@ -11,6 +15,13 @@ class Captain implements IResource {
     this.name = name;
     this.battles = battles;
   }
+  /* TEMPLATE
+     FIELDS:
+     ... this.name ...      -- String
+     ... this.battles ...   -- int
+     METHODS:
+     ... value() ...        -- int
+   */
 
   // Returns the number of the Captain's battles their value.
   public int value() {
@@ -28,6 +39,14 @@ class Crewmember implements IResource {
     this.description = description;
     this.wealth = wealth;
   }
+  /* TEMPLATE
+     FIELDS:
+     ... this.name ...          -- String
+     ... this.description ...   -- String
+     ... this.wealth ...        -- int
+     METHODS:
+     ... value() ...            -- int
+   */
 
   // Returns the number of gold coins in the Crewmember's name as their value.
   public int value() {
@@ -43,6 +62,13 @@ class Ship implements IResource {
     this.purpose = purpose;
     this.hostile = hostile;
   }
+  /* TEMPLATE
+     FIELDS:
+     ... this.purpose ...   -- String
+     ... this.hostile ...   -- boolean
+     METHODS:
+     ... value() ...        -- int
+   */
 
   // Returns a value of 100 for a hostile ship, otherwise, returns 50 as the ship's value.
   public int value() {
@@ -61,6 +87,11 @@ class Purchase implements IAction {
     this.cost = cost;
     this.item = item;
   }
+  /* TEMPLATE
+     FIELDS:
+     ... this.cost ...   -- int
+     ... this.item ...   -- IResource
+   */
 }
 
 class Barter implements IAction {
@@ -71,6 +102,16 @@ class Barter implements IAction {
     this.sold = sold;
     this.acquired = acquired;
   }
+  /* TEMPLATE
+     FIELDS:
+     ... this.sold ...              -- IResource
+     ... this.acquired ...          -- IResource
+     METHODS:
+     ... isValid() ...              -- boolean
+     METHODS FOR FIELDS:
+     ... this.acquired.value() ...  -- int
+     ... this.sold.value() ...      -- int
+   */
 
   // Returns true if this is a valid/legal Barter, i.e., the value of the acquired resource is
   // no more than 2 greater than the value of the sold resource. Returns false otherwise.
