@@ -1,13 +1,20 @@
-//        IStudyGroup
-//       /\         /\
-//      /__\       /__\
-//       ||         ||
-//     Person     StudyBuddy
+/*
+      +-------------+
+      | IStudyGroup |
+      +-------------+
+       /\         /\
+      /__\       /__\
+       ||         ||
+       ||         ||
+     Person   StudyBuddy
+ */
 
-interface IStudyGroup { }
+interface IStudyGroup {
+}
 
 class Person implements IStudyGroup {
   String name;
+
   Person(String name) {
     this.name = name;
   }
