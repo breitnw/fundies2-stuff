@@ -1,12 +1,11 @@
-// This represents a university.
-// TODO: come back to this
+// Represents academic, geographic, and demographic information about a university
 class University {
   String name; // The name of the University
-  String city; // Location of campus.
+  String city; // The city the campus is located in
   int studentSize; // The number of students the University has this year
   String mostPopularMajor; // The most popular major at the University
-  double averageGPA; // Average student GPA.
-  boolean hasCoop; // Represents whether the university offers a co-op program or not.
+  double averageGPA; // The mean student GPA
+  boolean hasCoop; // Set to true if the University has a co-op program, otherwise false
 
   University(String name, String city, int studentSize, String mostPopularMajor, double averageGPA, boolean hasCoop) {
     this.name = name;

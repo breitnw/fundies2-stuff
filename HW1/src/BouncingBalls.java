@@ -2,8 +2,8 @@ import tester.Tester;
 import java.awt.Color;
 import javalib.worldimages.*;
 
-// TODO: include the Ball class and inherit, or just include everything on BouncingBall?
-
+// Represents a ball in bouncing motion, with its position coordinates, its color,
+// its size (determined by radius), and its rate of motion horizontally and vertically.
 class BouncingBall {
   Posn pos;
   Color color;
@@ -39,7 +39,6 @@ class BouncingBall {
      METHODS FOR FIELDS:
      ... this.pos.offset(int dx, int dy)                 -- Posn
    */
-  // TODO: need to write out methods on color?
 
   // Returns the area of this ball
   double area() {
@@ -93,23 +92,19 @@ class BouncingBall {
   }
 }
 
-// TODO: ask if tests for separate functions should go in different tester-functions
 class ExamplesBouncingBalls {
   int WIDTH = 300;
   int HEIGHT = 300;
-
-  // NOTE: We have provided BouncingWorld for you, in the starter code.
-  // We'll see how it works in a few lectures
-  boolean testBigBang(Tester t) {
-    BouncingWorld w = new BouncingWorld(WIDTH, HEIGHT);
-    return w.bigBang(WIDTH, HEIGHT, 0.01);
-  }
-
 
   BouncingBall b1 = new BouncingBall(new Posn(0, 0), Color.BLUE, 5, 1, -2);
   BouncingBall b2 = new BouncingBall(new Posn(4, 3), Color.RED, 3, -3, 2);
   BouncingBall b3 = new BouncingBall(new Posn(20, 20), Color.GREEN, 2, 3, 3);
   BouncingBall b4 = new BouncingBall(new Posn(0, 8), Color.ORANGE, 3, 4, 2);
+
+  boolean testBigBang(Tester t) {
+    BouncingWorld w = new BouncingWorld(WIDTH, HEIGHT);
+    return w.bigBang(WIDTH, HEIGHT, 0.01);
+  }
 
   boolean testArea(Tester t) {
     return t.checkInexact(b1.area(), 78.5, 0.001);

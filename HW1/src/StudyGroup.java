@@ -25,8 +25,8 @@ class Person implements IStudyGroup {
 }
 
 class StudyBuddy implements IStudyGroup {
-  IStudyGroup connection;
-  String name;
+  IStudyGroup connection; // The rest of the study group who is with this StudyBuddy.
+  String name; // The name of this StudyBuddy.
 
   StudyBuddy(IStudyGroup connection, String name) {
     this.connection = connection;

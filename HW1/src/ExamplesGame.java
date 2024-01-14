@@ -7,6 +7,8 @@ interface IResource {
    */
 }
 
+// The Captain of a ship, with a name and a number of successful battles. The value of a Captain
+// is their number of successful battles.
 class Captain implements IResource {
   String name; // Name of Captain.
   int battles; // Number of successful battles.
@@ -23,7 +25,7 @@ class Captain implements IResource {
      ... value() ...        -- int
    */
 
-  // Returns the number of the Captain's battles their value.
+  // Returns the number of the Captain's successful battles as their value.
   public int value() {
     return this.battles;
   }
@@ -54,6 +56,7 @@ class Crewmember implements IResource {
   }
 }
 
+// Represents a hostile or a friendly Ship, alongside a description of its purpose
 class Ship implements IResource {
   String purpose; // A description of the Ship's purpose
   boolean hostile; // Does the ship plunder other ships unprompted?
@@ -79,6 +82,8 @@ class Ship implements IResource {
 interface IAction {
 }
 
+// An IAction representing a purchase. To purchase an item, the player must pay an associated cost,
+// which must be a positive integer. They then receive the purchased resource item.
 class Purchase implements IAction {
   int cost;
   IResource item;
@@ -94,6 +99,9 @@ class Purchase implements IAction {
    */
 }
 
+// An IAction representing a barter with another player. Every swap action has a sold resource and
+// an acquired resource. The value of the acquired resource must be no more than 2 greater than the
+// value of the sold resource.
 class Barter implements IAction {
   IResource sold; // Refers to the resource that is sold in this barter action.
   IResource acquired; // Refers to the resource that is acquired in this barter action.
