@@ -33,6 +33,11 @@ class Webpage {
   int totalCredits() {
     return (int) Math.ceil(this.totalMegabytes()) * 50;
   }
+  
+  // Returns the info of all the pictures reachable from this website, separated by commas.
+  String pictureInfo() {
+    return this.content.pictureInfo("");
+  }
 }
 
 interface ILoContent {
@@ -91,6 +96,13 @@ class ConsLoContent implements ILoContent {
 }
 
 class MtLoContent implements ILoContent {
+  /* TEMPLATE:
+  METHODS:
+  ... totalMegabytes() ...               -- double
+  ... pictureInfo(String prevInfo) ...   -- String
+   */
+  
+  // Returns 0, the number of megabytes in an empty list
   public double totalMegabytes() {
     return 0;
   }
@@ -107,7 +119,18 @@ class MtLoContent implements ILoContent {
 }
 
 interface IContent {
+  /* TEMPLATE:
+  METHODS:
+  ... totalMegabytes() ...               -- double
+  ... pictureInfo(String prevInfo) ...   -- String
+   */
+  
+  // Returns the total number of megabytes of this piece of content
   double totalMegabytes();
+  
+  // Returns prevInfo, followed by the info of this piece of content if it is a Picture. If the
+  // previous and new info are both non-empty, then separates them with a comma and a space
+  String pictureInfo(String prevInfo);
 }
 
 class Text implements IContent {
@@ -178,8 +201,26 @@ class Picture implements IContent {
   public double totalMegabytes() {
     return this.megabytes;
   }
+  
+  // Returns this picture's required information if it is the first picture found,
+  // else, it appends this picture's required information to the given string.
+  public String pictureInfo(String prevInfo) {
+    /*
+    TEMPLATE
+    PARAMETERS:
+    ... prevInfo ...           -- String
+    METHODS ON PARAMETERS
+    ... prevInfo.isEmpty() ... -- boolean
+     */
+    if (prevInfo.isEmpty()) {
+      return this.toString();
+    } else {
+      return prevInfo + ", " + this;
+    }
+  }
 }
 
+// Represents a Hyperlink as a content component on a Webpage.
 class Hyperlink implements IContent {
   String text;
   Webpage destination;
@@ -203,6 +244,23 @@ class Hyperlink implements IContent {
   // Returns the total number of megabytes of the pictures accessible from this Hyperlink
   public double totalMegabytes() {
     return this.destination.totalMegabytes();
+  }
+  
+  // Returns prevInfo, joined with the pictureInfo (if any) of this Hyperlink's destination,
+  // separated by a comma and a space if both are non-empty.
+  public String pictureInfo(String prevInfo) {
+    /* TEMPLATE:
+    PARAMETERS:
+    ... prevInfo ...             -- String
+    METHODS ON PARAMETERS:
+    ... prevInfo.isEmpty() ...   -- boolean
+     */
+    String destInfo = this.destination.pictureInfo();
+    if (prevInfo.isEmpty() || destInfo.isEmpty()) {
+      return prevInfo + destInfo;
+    } else {
+      return prevInfo + ", " + this.destination.pictureInfo();
+    }
   }
 }
 
@@ -343,10 +401,12 @@ class ExamplesWebpages {
   // Homepage
   Text courseGoals = new Text("Course Goals", 5, true);
   Text instructorContact = new Text("Instructor Contact", 1, false);
-  Picture eclipse = new Picture("Eclipse", "Eclipse Logo", 0.13);
-  Picture codingBackground = new Picture("Coding Background",
-  "digital rain from the Matrix",
-  30.2);
+  Picture eclipse = new Picture("Eclipse", "Eclipse logo", 0.13);
+  Picture codingBackground = new Picture(
+      "Coding Background",
+      "digital rain from the Matrix",
+      30.2
+  );
   Hyperlink courseSyllabus = new Hyperlink("Course Syllabus", syllabus);
   Hyperlink courseAssignments = new Hyperlink("Course Assignments", assignments);
   
