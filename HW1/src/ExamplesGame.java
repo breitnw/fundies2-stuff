@@ -1,3 +1,4 @@
+// Represents a Resource in a game, which can be one of Captain, Crewmember or Ship.
 interface IResource {
   // Returns the resource's integer value.
   int value();
@@ -31,6 +32,8 @@ class Captain implements IResource {
   }
 }
 
+// A Crewmember of a ship, with their name, a description and the wealth associated with them.
+// The value of a Crewmember is their wealth.
 class Crewmember implements IResource {
   String name; // The name of the Crewmember
   String description; // The description of the Crewmember's role on the ship
@@ -79,14 +82,15 @@ class Ship implements IResource {
   }
 }
 
+// Represents an action/turn in the game, wherein a player can do one of Purchase or Barter.
 interface IAction {
 }
 
 // An IAction representing a purchase. To purchase an item, the player must pay an associated cost,
 // which must be a positive integer. They then receive the purchased resource item.
 class Purchase implements IAction {
-  int cost;
-  IResource item;
+  int cost; // Represents the cost of this Purchase.
+  IResource item; // Represents the item obtained through this Purchase.
 
   Purchase(int cost, IResource item) {
     this.cost = cost;

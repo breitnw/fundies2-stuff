@@ -9,11 +9,13 @@
      Person   StudyBuddy
  */
 
+// Represents the group of people committed together in a "study group".
 interface IStudyGroup {
 }
 
+// A Person (which is a type of IStudyGroup) represents the primary person in a study group.
 class Person implements IStudyGroup {
-  String name;
+  String name; // Name of this Person.
 
   Person(String name) {
     this.name = name;
@@ -24,6 +26,8 @@ class Person implements IStudyGroup {
    */
 }
 
+// A StudyBuddy (which is a type of IStudyGroup) represents a secondary member of the study
+// group, as well as the rest of the study group.
 class StudyBuddy implements IStudyGroup {
   IStudyGroup connection; // The rest of the study group who is with this StudyBuddy.
   String name; // The name of this StudyBuddy.

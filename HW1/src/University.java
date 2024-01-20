@@ -7,7 +7,8 @@ class University {
   double averageGPA; // The mean student GPA
   boolean hasCoop; // Set to true if the University has a co-op program, otherwise false
 
-  University(String name, String city, int studentSize, String mostPopularMajor, double averageGPA, boolean hasCoop) {
+  University(String name, String city, int studentSize, String mostPopularMajor, double averageGPA,
+             boolean hasCoop) {
     this.name = name;
     this.city = city;
     this.studentSize = studentSize;
@@ -28,11 +29,11 @@ class University {
 }
 
 class ExamplesUniversity {
-  University yale = new University("Yale", "New Haven", 14567, "Economics", 4.14, false);
-  University neu = new University("Northeastern", "Boston", 19940, "Engineering", 4.04, true);
+  University yale = new University("Yale", "New Haven", 14567, "economics", 4.14, false);
+  University neu = new University("Northeastern", "Boston", 19940, "engineering", 4.04, true);
   University emory = new University("Emory", "Atlanta", 8359,
-          "Business Administration and Management", 3.8, true);
+          "business administration and management", 3.8, true);
   University cornell = new University("Cornell", "Ithaca", 16071,
-          "Computer and Information Sciences and Support Services", 4.07, true);
+          "computer and information sciences and support services", 4.07, true);
 }
 
