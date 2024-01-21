@@ -15,6 +15,8 @@ public class ExamplesLoString {
   
   ILoString dwarves = new AppendLoString(new AppendLoString(addDopey, grumpy), addSneezy);
   
+  ILoString everybody = new ConsLoString("Snow White", dwarves);
+  
   boolean testReverse(Tester t) {
     ILoString rAddDoc = new ConsLoString("Doc", empty);
     ILoString rAddBashful = new SnocLoString(rAddDoc, "Bashful");
@@ -27,19 +29,23 @@ public class ExamplesLoString {
     ILoString rAddSneezy = new ConsLoString("Sneezy", rAddHappy);
     
     ILoString rDwarves = new AppendLoString(rAddSneezy, new AppendLoString(rGrumpy, rAddDopey));
+    ILoString rEverybody = new SnocLoString(rDwarves, "Snow White");
     
-    return t.checkExpect(addBashful.reverse(), rAddBashful);
+    return t.checkExpect(addBashful.reverse().normalize(), rAddBashful.normalize())
+      && t.checkExpect(everybody.reverse().normalize(), rEverybody.normalize());
   }
   
   boolean testNormalize(Tester t) {
-    ILoString nDwarves = new ConsLoString("Bashful",
-        new ConsLoString("Doc",
-            new ConsLoString("Dopey",
-                new ConsLoString("Grumpy",
-                    new ConsLoString("Happy",
-                        new ConsLoString("Sleepy",
-                            new ConsLoString("Sneezy",
-                                empty
+    ILoString nEverybody = new ConsLoString("Snow White",
+        new ConsLoString("Bashful",
+            new ConsLoString("Doc",
+                new ConsLoString("Dopey",
+                    new ConsLoString("Grumpy",
+                        new ConsLoString("Happy",
+                            new ConsLoString("Sleepy",
+                                new ConsLoString("Sneezy",
+                                    empty
+                                )
                             )
                         )
                     )
@@ -48,23 +54,26 @@ public class ExamplesLoString {
         )
     );
     
-    return t.checkExpect(dwarves.normalize(), nDwarves);
+    return t.checkExpect(everybody.normalize(), nEverybody);
   }
   
-//  boolean testScanConcat(Tester t) {
-//    ILoString empty = new MtLoString();
-//    ILoString sAddDoc = new SnocLoString(empty, "BashfulDoc");
-//    ILoString sAddBashful = new ConsLoString("Bashful", sAddDoc);
-//    ILoString sAddDopey = new SnocLoString(sAddBashful, "BashfulDocDopey");
-//
-//    ILoString sGrumpy = new ConsLoString("BashfulDocDopeyGrumpy", empty);
-//
-//    ILoString sAddSleepy = new ConsLoString("BashfulDocDopeyGrumpyHappySleepy", empty);
-//    ILoString sAddHappy = new ConsLoString("BashfulDocDopeyGrumpyHappy", sAddSleepy);
-//    ILoString sAddSneezy = new SnocLoString(sAddHappy, "BashfulDocDopeyGrumpyHappySleepySneezy");
-//
-//    ILoString sDwarves = new AppendLoString(new AppendLoString(sAddDopey, sGrumpy), sAddSneezy);
-//
-//    return t.checkExpect(dwarves.scanConcat(), sDwarves);
-//  }
+  boolean testScanConcat(Tester t) {
+    ILoString empty = new MtLoString();
+    ILoString sAddDoc = new SnocLoString(empty, "Snow WhiteBashfulDoc");
+    ILoString sAddBashful = new ConsLoString("Snow WhiteBashful", sAddDoc);
+    ILoString sAddDopey = new SnocLoString(sAddBashful, "Snow WhiteBashfulDocDopey");
+
+    ILoString sGrumpy = new ConsLoString("Snow WhiteBashfulDocDopeyGrumpy", empty);
+
+    ILoString sAddSleepy = new ConsLoString("Snow WhiteBashfulDocDopeyGrumpyHappySleepy", empty);
+    ILoString sAddHappy = new ConsLoString("Snow WhiteBashfulDocDopeyGrumpyHappy", sAddSleepy);
+    ILoString sAddSneezy = new SnocLoString(sAddHappy, "Snow WhiteBashfulDocDopeyGrumpyHappySleepySneezy");
+
+    ILoString sDwarves = new AppendLoString(new AppendLoString(sAddDopey, sGrumpy), sAddSneezy);
+    
+    ILoString sEverybody = new ConsLoString("Snow White", sDwarves);
+
+    return t.checkExpect(everybody.scanConcat(), sEverybody.normalize())
+      && t.checkExpect(empty.scanConcat(), empty);
+  }
 }
