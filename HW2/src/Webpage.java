@@ -433,7 +433,6 @@ class ExamplesWebpages {
       )
   );
   
-  // TODO: Do we make check-expects for our helper functions as well?
   boolean testTotalCredits(Tester t) {
     return t.checkExpect(roars.totalCredits(), 100)
              && t.checkExpect(catNotFound.totalCredits(), 0)
@@ -452,6 +451,48 @@ class ExamplesWebpages {
         + "Spot (The First Cat to preside over the Feline Council)"
     );
   }
+  
+  // The following are simply tests for our helper functions, hesitantly written.
+  boolean testTotalMegabytesWebpage(Tester t) {
+    return t.checkInexact(catsHome.totalMegabytes(), 2.2, 0.001);
+  }
+  
+  boolean testTotalMegabytesILoContent(Tester t) {
+    return t.checkInexact(catsHome.content.totalMegabytes(), 2.2, 0.001)
+      && t.checkInexact(catNotFound.content.totalMegabytes(), 0.0, 0.001);
+  }
+  
+  boolean testPictureInfoILoContent(Tester t) {
+    return t.checkExpect(
+      homepage.content.pictureInfo(""),
+      "Eclipse (Eclipse logo), Coding Background (digital rain from the Matrix), "
+        + "Java (HD Java logo), Submission (submission screenshot), "
+        + "Submission (submission screenshot)")
+      && t.checkExpect(catNotFound.content.pictureInfo(""), "");
+  }
+  
+  boolean testTotalMegabytesIContent(Tester t) {
+    return t.checkExpect(categories.totalMegabytes(), 0.0)
+      && t.checkExpect(tiger.totalMegabytes(), 1.6)
+      && t.checkExpect(sphinx.totalMegabytes(), 0.0);
+  }
+  
+  boolean testPictureInfoIContent(Tester t) {
+    return t.checkExpect(categories.pictureInfo("text"), "text")
+      && t.checkExpect(tiger.pictureInfo(""), "Tiger (A picture of a big cat in the wild)")
+      && t.checkExpect(tiger.pictureInfo("text"),
+        "text, Tiger (A picture of a big cat in the wild)")
+      && t.checkExpect(sphinx.pictureInfo("hyperlink"), "hyperlink")
+      && t.checkExpect(domesticatedFelines.pictureInfo("hyperlink"), "hyperlink, Spot (The First "
+          + "Cat to preside over the "
+          + "Feline Council)");
+  }
+  
+  boolean testToStringPicture(Tester t) {
+    return t.checkExpect(tiger.toString(), "Tiger (A picture of a big cat in the wild)");
+  }
+  
+  // DOUBLE-COUNTING ------------------------------------------------------------------------------
   
   // The reason that some methods to double-count information is because of the presence of
   // multiple Hyperlinks to one webpage, in which case, the webpage is traversed in more than once,

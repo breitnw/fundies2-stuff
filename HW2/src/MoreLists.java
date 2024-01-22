@@ -1,7 +1,7 @@
 interface ILoString {
-  // ILoString reverse();
+  ILoString reverse();
   ILoString normalize();
-  // ILoString scanConcat();
+  ILoString scanConcat();
 }
 
 class ConsLoString implements ILoString {
@@ -13,23 +13,25 @@ class ConsLoString implements ILoString {
     this.rest = rest;
   }
 
-  // public ILoString reverse() {}
+   public ILoString reverse() { return null; }
 
   public ILoString normalize() {
     return new ConsLoString(this.first, this.rest.normalize());
   }
 
-  // public ILoString scanConcat() {}
+   public ILoString scanConcat() { return null; }
 }
 
 class MtLoString implements ILoString {
-  // public ILoString reverse() {}
+  public ILoString reverse() { return null; }
+
 
   public ILoString normalize() {
     return this;
   }
+  
+  public ILoString scanConcat() { return null; }
 
-  // public ILoString scanConcat() {}
 }
 
 class SnocLoString implements ILoString {
@@ -40,13 +42,14 @@ class SnocLoString implements ILoString {
     this.rest = rest;
     this.last = last;
   }
-  // public ILoString reverse() {}
+  public ILoString reverse() { return null; }
+
 
   public ILoString normalize() {
     return new AppendLoString(this.rest.normalize(), new ConsLoString(this.last, new MtLoString()));
   }
-
-  // public ILoString scanConcat() {}
+  
+  public ILoString scanConcat() { return null; }
 }
 
 class AppendLoString implements ILoString {
@@ -57,13 +60,14 @@ class AppendLoString implements ILoString {
     this.list1 = list1;
     this.list2 = list2;
   }
-  // public ILoString reverse() {}
+  public ILoString reverse() { return null; }
+
 
   public ILoString normalize() {
     return new AppendLoString(this.list1.normalize(), this.list2.normalize());
   }
-
-  // public ILoString scanConcat() {}
+  
+  public ILoString scanConcat() { return null; }
 }
 
 // Given Auto-generated Code: public class MoreLists { }
