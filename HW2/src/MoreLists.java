@@ -4,7 +4,7 @@ interface ILoString {
   ILoString reverse();
   ILoString normalize();
   ILoString scanConcat();
-  ILoString addToEnd(ILoString that);
+//  ILoString addToEnd(ILoString that);
 }
 
 class ConsLoString implements ILoString {
@@ -26,9 +26,9 @@ class ConsLoString implements ILoString {
 
   public ILoString scanConcat() { return null; }
   
-  public ILoString addToEnd(ILoString that) {
-    return new ConsLoString(this.first, this.rest.addToEnd(that));
-  }
+//  public ILoString addToEnd(ILoString that) {
+//    return new ConsLoString(this.first, this.rest.addToEnd(that));
+//  }
 }
 
 class MtLoString implements ILoString {

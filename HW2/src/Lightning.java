@@ -16,10 +16,13 @@ interface ILightningBolt {
   // its children offset by theta.
   ILightningBolt offsetAll(double theta);
   
-  // returns the width of the bolt, from the leftmost tip to the rightmost tip. Ignores the
+  // returns the width of this bolt, from the leftmost tip to the rightmost tip. Ignores the
   // actual thicknesses of segments or the branches of a fork themselves, and just assumes that
   // the thickness of each bolt is zero.
   double getWidth();
+  
+  double getRightmostX();
+  double getLeftmostX();
 }
 
 // represents one final endpoint of a lightning bolt
@@ -44,16 +47,22 @@ class Tip implements ILightningBolt {
   public ILightningBolt combine(int leftLength, int rightLength, int leftCapacity,
                                 int rightCapacity, double leftTheta, double rightTheta,
                                 ILightningBolt otherBolt) {
-    // TODO
-    return null;
+    return new Fork(leftLength, rightLength, leftCapacity, rightCapacity, leftTheta, rightTheta,
+      this.offsetAll(leftTheta - 90),
+      otherBolt.offsetAll(rightTheta - 90));
   }
   
   public ILightningBolt offsetAll(double theta) {
-    // TODO
-    return null;
+    return this;
   }
   
   public double getWidth() {
+    return 0;
+  }
+  public double getRightmostX() {
+    return 0;
+  }
+  public double getLeftmostX() {
     return 0;
   }
 }
@@ -77,7 +86,6 @@ class Segment implements ILightningBolt {
   }
   
   public WorldImage draw() {
-    // TODO
     return null;
   }
   
@@ -97,18 +105,27 @@ class Segment implements ILightningBolt {
   public ILightningBolt combine(int leftLength, int rightLength, int leftCapacity,
                                 int rightCapacity, double leftTheta, double rightTheta,
                                 ILightningBolt otherBolt) {
-    // TODO
-    return null;
+    return new Fork(leftLength, rightLength, leftCapacity, rightCapacity, leftTheta, rightTheta,
+      this.offsetAll(leftTheta - 90),
+      otherBolt.offsetAll(rightTheta - 90));
   }
   
   public ILightningBolt offsetAll(double theta) {
-    // TODO
-    return null;
+    return new Segment(this.length, this.current, this.theta + theta,
+      this.bolt.offsetAll(theta));
   }
   
   public double getWidth() {
-    // TODO
-    return 0;
+    return Math.abs(this.getRightmostX() - this.getLeftmostX());
+  }
+  
+  public double getRightmostX() {
+    return Math.max(0,
+      this.length * Math.cos(Math.toRadians(this.theta)) + this.bolt.getRightmostX());
+  }
+  public double getLeftmostX() {
+    return Math.min(0,
+      this.length * Math.cos(Math.toRadians(this.theta)) + this.bolt.getLeftmostX());
   }
 }
 
@@ -164,18 +181,34 @@ class Fork implements ILightningBolt {
   public ILightningBolt combine(int leftLength, int rightLength, int leftCapacity,
                                 int rightCapacity, double leftTheta, double rightTheta,
                                 ILightningBolt otherBolt) {
-    // TODO
-    return null;
+    return new Fork(leftLength, rightLength, leftCapacity, rightCapacity, leftTheta, rightTheta,
+      this.offsetAll(leftTheta - 90),
+      otherBolt.offsetAll(rightTheta - 90));
   }
   
   public ILightningBolt offsetAll(double theta) {
-    // TODO
-    return null;
+    return new Fork(this.leftLength, this.rightLength, this.leftCurrent, this.rightCurrent,
+      this.leftTheta + theta, this.rightTheta + theta,
+      this.left.offsetAll(theta), this.right.offsetAll(theta));
   }
   
   public double getWidth() {
-    // TODO
-    return 0;
+    return Math.abs(this.getRightmostX() - this.getLeftmostX());
+  }
+  
+  public double getRightmostX() {
+    double lRightmost =
+      this.leftLength * Math.cos(Math.toRadians(this.leftTheta)) + this.left.getRightmostX();
+    double rRightmost =
+      this.rightLength * Math.cos(Math.toRadians(this.rightTheta)) + this.right.getRightmostX();
+    return Math.max(0, Math.max(lRightmost, rRightmost));
+  }
+  public double getLeftmostX() {
+    double lLeftmost =
+      this.leftLength * Math.cos(Math.toRadians(this.leftTheta)) + this.left.getLeftmostX();
+    double rLeftmost =
+      this.rightLength * Math.cos(Math.toRadians(this.rightTheta)) + this.right.getLeftmostX();
+    return Math.min(0, Math.min(lLeftmost, rLeftmost));
   }
 }
 
@@ -263,18 +296,18 @@ class ExamplesLightning {
   boolean testGetWidth1(Tester t) {
     return t.checkInexact(tip.getWidth(), 0.0, 0.001);
   }
-  
+
   boolean testGetWidth2(Tester t) {
     ILightningBolt straightSegment = new Segment(40, 20, 80, tip);
     return t.checkInexact(straightSegment.getWidth(), 40 * Math.cos(Math.toRadians(80)), 0.001);
   }
-  
+
   boolean testGetWidth3(Tester t) {
     return t.checkInexact(
       fork1.getWidth(),
       30 * Math.cos(Math.toRadians(40)) - 33 * Math.cos(Math.toRadians(135)), 0.001);
   }
-  
+
   boolean testGetWidth4(Tester t) {
     // left and right swapped
     ILightningBolt bolt = new Fork(30, 33, 10, 25, 40, 135, new Tip(), new Tip());
