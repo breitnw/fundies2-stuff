@@ -579,6 +579,7 @@ class ExamplesWebpages {
       )
   );
   
+  // Webpage
   boolean testTotalMegabytesWebpage(Tester t) {
     return t.checkInexact(catsHome.totalMegabytes(), 2.2, 0.001)
                && t.checkInexact(homepage.totalMegabytes(), 48.03, 0.001);
@@ -596,7 +597,7 @@ class ExamplesWebpages {
                && t.checkExpect(homepage.totalCredits(), 2450);
   }
   
-  boolean testPictureInfo(Tester t) {
+  boolean testPictureInfoWebpage(Tester t) {
     return t.checkExpect(
         homepage.pictureInfo(),
         "Eclipse (Eclipse logo), Coding Background (digital rain from the Matrix), "
@@ -610,10 +611,21 @@ class ExamplesWebpages {
   
   boolean testPictureInfoHelperWebpage(Tester t) {
     return t.checkExpect(catsHome.pictureInfoHelper(new MtLoContent()),
-        "Tiger (A picture of a big cat in the wild), Spot (The First Cat to preside over the Feline Council)")
-        && t.checkExpect(homepage.pictureInfoHelper(new MtLoContent()), "");
+        "Tiger (A picture of a big cat in the wild), Spot (The First Cat to preside "
+            + "over the Feline Council)")
+        && t.checkExpect(homepage.pictureInfoHelper(new MtLoContent()),
+        "Eclipse (Eclipse logo), Coding Background (digital rain from the Matrix), "
+            + "Java (HD Java logo), Submission (submission screenshot)");
   }
   
+  boolean testContainsPictureInfoWebpage(Tester t) {
+    return t.checkExpect(homepage.containsPictureInfo("Submission (submission screenshot)"), true)
+               && t.checkExpect(assignment1.containsPictureInfo(
+                   "Submission (submission screenshot)"), true)
+               && t.checkExpect(assignment1.containsPictureInfo("Eclipse (Eclipse logo)"), false);
+  }
+  
+  // ILoContent
   boolean testTotalMegabytesILoContent(Tester t) {
     return t.checkInexact(catsHome.content.totalMegabytes(new MtLoContent()), 2.2, 0.001)
                && t.checkInexact(catNotFound.content.totalMegabytes(new MtLoContent()), 0.0, 0.001);
@@ -627,6 +639,16 @@ class ExamplesWebpages {
                && t.checkExpect(catNotFound.content.pictureInfo("", new MtLoContent()), "");
   }
   
+  boolean testContainsPictureInfoILoContent(Tester t) {
+    return t.checkExpect(homepage.content.containsPictureInfo(
+        "Submission (submission screenshot)"), true)
+               && t.checkExpect(assignment1.content.containsPictureInfo(
+                  "Submission (submission screenshot)"), true)
+               && t.checkExpect(assignment1.content.containsPictureInfo(
+                   "Eclipse (Eclipse logo)"), false);
+  }
+  
+  // IContent
   boolean testTotalMegabytesIContent(Tester t) {
     return t.checkExpect(categories.totalMegabytes(new MtLoContent()), 0.0)
                && t.checkExpect(tiger.totalMegabytes(new MtLoContent()), 1.6)
@@ -644,6 +666,17 @@ class ExamplesWebpages {
           "hyperlink, Spot (The First Cat to preside over the Feline Council)");
   }
   
+  boolean testMatchesPictureInfoIContent(Tester t) {
+    return t.checkExpect(java.matchesPictureInfo("Java (HD Java logo)"),  true)
+               && t.checkExpect(java.matchesPictureInfo("Python (HD Python Logo)"), false)
+               && t.checkExpect(firstAssignment.matchesPictureInfo(
+                   "Submission (submission screenshot)"), true)
+               && t.checkExpect(firstAssignment.matchesPictureInfo(
+                   "Python (HD Python Logo)"), false)
+               && t.checkExpect(courseGoals.matchesPictureInfo("Python (HD Python Logo)"), false);
+  }
+  
+  // Picture
   boolean testToStringPicture(Tester t) {
     return t.checkExpect(tiger.toString(), "Tiger (A picture of a big cat in the wild)");
   }
