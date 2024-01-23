@@ -269,8 +269,7 @@ class ExamplesWebpages {
   
   // We have a webpage named "Cat Not Found" with the following content:
   // - A text section named "404: The cat you're looking for might not exist" with 1 line that is
-  // not
-  //   written in markdown
+  // not written in markdown
   // We have a webpage named "Cat's Home" with the following content:
   // - A hyperlink "The bigger ones" to "Big Cats"
   // - A hyperlink "The smaller ones" to "Domesticated Felines"
@@ -281,7 +280,7 @@ class ExamplesWebpages {
   // - A hyperlink "The Sphinx" to "Cat Not Found"
   // We have a webpage, named "Domesticated Felines" with the following content:
   // - A picture "Spot", with description "The First Cat to preside over the Feline Council"
-  //   that is 1.1 megabytes.
+  //   that is 0.6 megabytes.
   // - A hyperlink "Cheshire Cat" to "Cat Not Found"
   
   // 404 page

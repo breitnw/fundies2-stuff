@@ -15,16 +15,21 @@ interface ILoString {
   // The accumulator, tail, is updated each time normalizeHelper encounters a SnocLoString
   // (gaining a new ConsLoString that wraps the existing tail), as well as each time
   // normalizeHelper encounters an AppendLoString (swapping the existing tail with the
-  // AppendLoString's list2, itself normalized with the existing tail)
+  // AppendLoString's back, itself normalized with the existing tail)
   ILoString normalizeHelper(ILoString tail);
   
-  // left-scans across this list and concatenates all the strings, and produces a list of the
-  // results.
+  // left-scans across this list and concatenates all the strings, returning a normalized list
+  // of the intermediate results at each step.
   ILoString scanConcat();
   
+  // Left-scans across this list and concatenates all the strings, producing a list of the
+  // results at each step. The accumulator, acc, represents a String prepended to each returned
+  // result. Each time a ConsLoString is encountered, its first element is appended to the
+  // accumulator.
   ILoString scanConcatHelper(String acc);
 }
 
+// Represents an element and the list of elements that follow it in a list of Strings
 class ConsLoString implements ILoString {
   String first;
   ILoString rest;
@@ -58,7 +63,7 @@ class ConsLoString implements ILoString {
   // Takes the current list and produces a list of the same items in the same order, but uses
   // only ConsLoString and MtLoString.
   public ILoString normalize() {
-    return new ConsLoString(this.first, this.rest.normalize());
+    return this.normalizeHelper(new MtLoString());
   }
   
   // Takes the current list and produces a normalized list by creating a new ConsLoString with
@@ -71,10 +76,15 @@ class ConsLoString implements ILoString {
     return new ConsLoString(this.first, this.rest.normalizeHelper(tail));
   }
   
+  // left-scans across this list and concatenates all the strings, returning a normalized list
+  // of the intermediate results at each step.
   public ILoString scanConcat() {
     return this.scanConcatHelper("");
   }
   
+  // Left-scans across this list and concatenates all the strings, producing a list of the
+  // results at each step. The accumulator is prepended to each element of the list, and
+  // this.first is appended to the accumulator for future iterations.
   public ILoString scanConcatHelper(String acc) {
     /* TEMPLATE:
     PARAMETERS:
@@ -85,6 +95,7 @@ class ConsLoString implements ILoString {
   }
 }
 
+// Represents an empty list of Strings
 class MtLoString implements ILoString {
   
   // Reverses this MtLoString by doing absolutely nothing and returning this.
@@ -99,18 +110,32 @@ class MtLoString implements ILoString {
   
   // Normalizes this MtLoString by substituting it with tail
   public ILoString normalizeHelper(ILoString tail) {
+    /* TEMPLATE:
+    PARAMETERS:
+    ... tail ...   -- ILoString
+     */
     return tail;
   }
   
+  // left-scans across this list and concatenates all the strings, returning a normalized list
+  // of the intermediate results at each step. Since this list is empty, the list itself is
+  // returned.
   public ILoString scanConcat() {
     return this;
   }
   
+  // Left-scans across this list and concatenates all the strings, producing a list of the
+  // results at each step. Since this list is empty, the list itself is returned.
   public ILoString scanConcatHelper(String acc) {
+    /* TEMPLATE:
+    PARAMETERS:
+    ... acc ...   -- String
+     */
     return this;
   }
 }
 
+// Represents an element and the list of elements that precede it in a list of Strings
 class SnocLoString implements ILoString {
   ILoString front;
   String last;
@@ -119,6 +144,20 @@ class SnocLoString implements ILoString {
     this.front = front;
     this.last = last;
   }
+  /* TEMPLATE:
+  FIELDS:
+  ... this.front ...                          -- ILoString
+  ... this.last ...                           -- String
+  METHODS:
+  ... reverse() ...                           -- ILoString
+  ... normalize() ...                         -- ILoString
+  ... normalizeHelper(ILoString tail) ...     -- ILoString
+  ... scanConcat() ...                        -- ILoString
+  ... scanConcatHelper(String acc) ...        -- ILoString
+  METHODS ON FIELDS:
+  ... this.front.reverse() ...                -- ILoString
+  ... this.front.normalizeHelper() ...        -- ILoString
+   */
   
   // Produces a new list with its elements in reversed order by converting this SnocLoString to a
   // ConsLoString with its rest field reversed.
@@ -126,14 +165,41 @@ class SnocLoString implements ILoString {
     return new ConsLoString(this.last, this.front.reverse());
   }
   
-  // TODO: I have made a mistake...
+  // Takes the current list and produces a list of the same items in the same order, but uses
+  // only ConsLoString and MtLoString
   public ILoString normalize() {
-    return new AppendLoString(this.rest.normalize(), new ConsLoString(this.last, new MtLoString()));
+    return this.normalizeHelper(new MtLoString());
   }
   
-  public ILoString scanConcat() { return null; }
+  // Takes the current list and produces a normalized list by normalizing the front of this
+  // SnocLoString and appending the last to tail.
+  public ILoString normalizeHelper(ILoString tail) {
+    /* TEMPLATE:
+    PARAMETERS:
+    ... tail ...   -- ILoString
+     */
+    return this.front.normalizeHelper(new ConsLoString(this.last, tail));
+  }
+  
+  // left-scans across this list and concatenates all the strings, returning a normalized list
+  // of the intermediate results at each step.
+  public ILoString scanConcat() {
+    return this.scanConcatHelper("");
+  }
+  
+  // Left-scans across this list and concatenates all the strings, producing a list of the
+  // results at each step. To do so, simply calls scanConcatHelper() on a normalized version of
+  // this list.
+  public ILoString scanConcatHelper(String acc) {
+    /* TEMPLATE:
+    PARAMETERS:
+    ... acc ...   -- String
+     */
+    return this.normalize().scanConcatHelper(acc);
+  }
 }
 
+// Represents two lists of Strings that are concatenated side-by-side to form another list
 class AppendLoString implements ILoString {
   ILoString front;
   ILoString back;
@@ -143,22 +209,59 @@ class AppendLoString implements ILoString {
     this.back = back;
   }
   
-  // Produces a new list with its elements in reversed order by swapping the order of list1 and
-  // list2 and reversing each.
+  /* TEMPLATE:
+  FIELDS:
+  ... this.front ...                        -- ILoString
+  ... this.back ...                         -- ILoString
+  METHODS:
+  ... reverse() ...                         -- ILoString
+  ... normalize() ...                       -- ILoString
+  ... normalizeHelper(ILoString tail) ...   -- ILoString
+  ... scanConcat() ...                      -- ILoString
+  ... scanConcatHelper(String acc) ...      -- ILoString
+  METHODS ON FIELDS:
+  ... this.back.reverse() ...               -- ILoString
+  ... this.front.reverse() ...              -- ILoString
+  ... this.front.normalizeHelper() ...      -- ILoString
+  ... this.back.normalizeHelper() ...       -- ILoString
+   */
+  
+  // Produces a new list with its elements in reversed order by swapping the order of this.front and
+  // this.back and reversing each.
   public ILoString reverse() {
     return new AppendLoString(this.back.reverse(), this.front.reverse());
   }
   
-  // TODO: I have made many a mistake...
+  // Takes the current list and produces a list of the same items in the same order, but uses
+  // only ConsLoString and MtLoString
   public ILoString normalize() {
-    return new AppendLoString(this.list1.normalize(), this.list2.normalize());
+    return this.normalizeHelper(new MtLoString());
   }
   
+  // Takes the current list and produces a normalized list by normalizing this.front and swapping
+  // the existing tail with this.back, itself normalized with the existing tail
+  public ILoString normalizeHelper(ILoString tail) {
+    /* TEMPLATE:
+    PARAMETERS:
+    ... tail ...   -- ILoString
+     */
+    return this.front.normalizeHelper(this.back.normalizeHelper(tail));
+  }
+  
+  // left-scans across this list and concatenates all the strings, returning a normalized list
+  // of the intermediate results at each step.
   public ILoString scanConcat() {
-    return null;
+    return this.scanConcatHelper("");
   }
   
-  public ILoString scanConcatHelper(String acc/*, ILoString tail, boolean hitMt*/) {
+  // Left-scans across this list and concatenates all the strings, producing a list of the
+  // results at each step. To do so, simply calls scanConcatHelper() on a normalized version of
+  // this list.
+  public ILoString scanConcatHelper(String acc) {
+    /* TEMPLATE:
+    PARAMETERS:
+    ... acc ...   -- String
+     */
     return this.normalize().scanConcatHelper(acc);
   }
 }
@@ -199,25 +302,43 @@ class ExamplesLoString {
   }
   
   boolean testNormalize(Tester t) {
-    ILoString nEverybody = new ConsLoString("Snow White",
-      new ConsLoString("Bashful",
-        new ConsLoString("Doc",
-          new ConsLoString("Dopey",
-            new ConsLoString("Grumpy",
-              new ConsLoString("Happy",
-                new ConsLoString("Sleepy",
-                  new ConsLoString("Sneezy",
-                    empty
-                  )
+    return t.checkExpect(everybody.normalize(),
+        new ConsLoString("Snow White",
+            new ConsLoString("Bashful",
+                new ConsLoString("Doc",
+                    new ConsLoString("Dopey",
+                        new ConsLoString("Grumpy",
+                            new ConsLoString("Happy",
+                                new ConsLoString("Sleepy",
+                                    new ConsLoString("Sneezy",
+                                        empty
+                                    )
+                                )
+                            )
+                        )
+                    )
                 )
-              )
             )
-          )
         )
-      )
     );
-    
-    return t.checkExpect(everybody.normalize(), nEverybody);
+  }
+  
+  boolean testNormalizeHelper(Tester t) {
+    ILoString firstFour = new AppendLoString(addDopey, grumpy);
+    return t.checkExpect(
+        firstFour.normalizeHelper(new ConsLoString("secret dwarf", new MtLoString())),
+        new ConsLoString("Bashful",
+            new ConsLoString("Doc",
+                new ConsLoString("Dopey",
+                    new ConsLoString("Grumpy",
+                        new ConsLoString("secret dwarf",
+                            empty
+                        )
+                    )
+                )
+            )
+        )
+    );
   }
   
   boolean testScanConcat(Tester t) {
@@ -230,7 +351,8 @@ class ExamplesLoString {
     
     ILoString sAddSleepy = new ConsLoString("Snow WhiteBashfulDocDopeyGrumpyHappySleepy", empty);
     ILoString sAddHappy = new ConsLoString("Snow WhiteBashfulDocDopeyGrumpyHappy", sAddSleepy);
-    ILoString sAddSneezy = new SnocLoString(sAddHappy, "Snow WhiteBashfulDocDopeyGrumpyHappySleepySneezy");
+    ILoString sAddSneezy = new SnocLoString(sAddHappy,
+          "Snow WhiteBashfulDocDopeyGrumpyHappySleepySneezy");
     
     ILoString sDwarves = new AppendLoString(new AppendLoString(sAddDopey, sGrumpy), sAddSneezy);
     
@@ -240,6 +362,23 @@ class ExamplesLoString {
     
     return t.checkExpect(everybody.scanConcat(), sEverybody.normalize())
              && t.checkExpect(empty.scanConcat(), empty)
-             && t.checkExpect(oneList.scanConcat(), new ConsLoString("one", new ConsLoString("onetwo", empty)));
+             && t.checkExpect(oneList.scanConcat(),
+                    new ConsLoString("one", new ConsLoString("onetwo", empty)));
+  }
+  
+  boolean testScanConcatHelper(Tester t) {
+    ILoString firstFour = new AppendLoString(addDopey, grumpy);
+    return t.checkExpect(
+        firstFour.scanConcatHelper("secret dwarf"),
+        new ConsLoString("secret dwarfBashful",
+            new ConsLoString("secret dwarfBashfulDoc",
+                new ConsLoString("secret dwarfBashfulDocDopey",
+                    new ConsLoString("secret dwarfBashfulDocDopeyGrumpy",
+                        empty
+                    )
+                )
+            )
+        )
+    );
   }
 }
