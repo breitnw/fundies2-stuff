@@ -1,10 +1,28 @@
 import tester.Tester;
 
 interface ILoString {
+  // Produces a new list with its elements in reversed order from this list
   ILoString reverse();
+  
+  // Takes the current list and produces a list of the same items in the same order, but uses
+  // only ConsLoString and MtLoString while simplifying away any instances of SnocLoString and
+  // AppendLoString.
+  
   ILoString normalize();
+  
+  // Normalizes this list according to the purpose statement for normalize(), appending tail at
+  // the end.
+  // The accumulator, tail, is updated each time normalizeHelper encounters a SnocLoString
+  // (gaining a new ConsLoString that wraps the existing tail), as well as each time
+  // normalizeHelper encounters an AppendLoString (swapping the existing tail with the
+  // AppendLoString's list2, itself normalized with the existing tail)
+  ILoString normalizeHelper(ILoString tail);
+  
+  // left-scans across this list and concatenates all the strings, and produces a list of the
+  // results.
   ILoString scanConcat();
-//  ILoString addToEnd(ILoString that);
+  
+  ILoString scanConcatHelper(String acc);
 }
 
 class ConsLoString implements ILoString {
@@ -15,47 +33,97 @@ class ConsLoString implements ILoString {
     this.first = first;
     this.rest = rest;
   }
-
+  /* TEMPLATE:
+  FIELDS:
+  ... this.first ...                         -- String
+  ... this.rest ...                          -- ILoString
+  METHODS:
+  ... reverse() ...                          -- ILoString
+  ... normalize() ...                        -- ILoString
+  ... normalizeHelper(ILoString tail) ...    -- ILoString
+  ... scanConcat() ...                       -- ILoString
+  ... scanConcatHelper(String acc) ...       -- ILoString
+  METHODS ON FIELDS:
+  ... this.rest.reverse() ...                -- ILoString
+  ... this.rest.normalizeHelper() ...        -- ILoString
+  ... this.rest.scanConcatHelper() ...       -- ILoString
+   */
+  
+  // Produces a new list with its elements in reversed order by converting this ConsLoString to a
+  // SnocLoString with its rest field reversed.
   public ILoString reverse() {
     return new SnocLoString(this.rest.reverse(), this.first);
   }
-
+  
+  // Takes the current list and produces a list of the same items in the same order, but uses
+  // only ConsLoString and MtLoString.
   public ILoString normalize() {
     return new ConsLoString(this.first, this.rest.normalize());
   }
-
-  public ILoString scanConcat() { return null; }
   
-//  public ILoString addToEnd(ILoString that) {
-//    return new ConsLoString(this.first, this.rest.addToEnd(that));
-//  }
+  // Takes the current list and produces a normalized list by creating a new ConsLoString with
+  // the same first element and the rest of the elements normalized with the same tail.
+  public ILoString normalizeHelper(ILoString tail) {
+    /* TEMPLATE:
+    PARAMETERS:
+    ... tail ...   -- ILoString
+     */
+    return new ConsLoString(this.first, this.rest.normalizeHelper(tail));
+  }
+  
+  public ILoString scanConcat() {
+    return this.scanConcatHelper("");
+  }
+  
+  public ILoString scanConcatHelper(String acc) {
+    /* TEMPLATE:
+    PARAMETERS:
+    ... acc ...   -- String
+     */
+    return new ConsLoString(acc + this.first,
+        this.rest.scanConcatHelper(acc + this.first));
+  }
 }
 
 class MtLoString implements ILoString {
-  public ILoString reverse() { return this; }
-
-
+  
+  // Reverses this MtLoString by doing absolutely nothing and returning this.
+  public ILoString reverse() {
+    return this;
+  }
+  
+  // Normalizes this MtLoString by returning this, since an MtLoString is a valid normalization.
   public ILoString normalize() {
     return this;
   }
   
-  public ILoString scanConcat() { return null; }
-
-  public ILoString addToEnd(ILoString that) {
-    return that;
+  // Normalizes this MtLoString by substituting it with tail
+  public ILoString normalizeHelper(ILoString tail) {
+    return tail;
+  }
+  
+  public ILoString scanConcat() {
+    return this;
+  }
+  
+  public ILoString scanConcatHelper(String acc) {
+    return this;
   }
 }
 
 class SnocLoString implements ILoString {
-  ILoString rest;
+  ILoString front;
   String last;
 
-  SnocLoString(ILoString rest, String last) {
-    this.rest = rest;
+  SnocLoString(ILoString front, String last) {
+    this.front = front;
     this.last = last;
   }
+  
+  // Produces a new list with its elements in reversed order by converting this SnocLoString to a
+  // ConsLoString with its rest field reversed.
   public ILoString reverse() {
-    return new ConsLoString(this.last, this.rest.reverse());
+    return new ConsLoString(this.last, this.front.reverse());
   }
   
   // TODO: I have made a mistake...
@@ -67,15 +135,18 @@ class SnocLoString implements ILoString {
 }
 
 class AppendLoString implements ILoString {
-  ILoString list1;
-  ILoString list2;
+  ILoString front;
+  ILoString back;
 
-  AppendLoString(ILoString list1, ILoString list2) {
-    this.list1 = list1;
-    this.list2 = list2;
+  AppendLoString(ILoString front, ILoString back) {
+    this.front = front;
+    this.back = back;
   }
+  
+  // Produces a new list with its elements in reversed order by swapping the order of list1 and
+  // list2 and reversing each.
   public ILoString reverse() {
-    return new AppendLoString(this.list2.reverse(), this.list1.reverse());
+    return new AppendLoString(this.back.reverse(), this.front.reverse());
   }
   
   // TODO: I have made many a mistake...
@@ -83,7 +154,13 @@ class AppendLoString implements ILoString {
     return new AppendLoString(this.list1.normalize(), this.list2.normalize());
   }
   
-  public ILoString scanConcat() { return null; }
+  public ILoString scanConcat() {
+    return null;
+  }
+  
+  public ILoString scanConcatHelper(String acc/*, ILoString tail, boolean hitMt*/) {
+    return this.normalize().scanConcatHelper(acc);
+  }
 }
 
 class ExamplesLoString {
@@ -101,6 +178,7 @@ class ExamplesLoString {
   ILoString dwarves = new AppendLoString(new AppendLoString(addDopey, grumpy), addSneezy);
   
   ILoString everybody = new ConsLoString("Snow White", dwarves);
+  
   
   boolean testReverse(Tester t) {
     ILoString rAddDoc = new ConsLoString("Doc", empty);

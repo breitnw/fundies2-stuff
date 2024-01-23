@@ -1,14 +1,27 @@
-import javalib.worldimages.WorldImage;
-import tester.Tester;
+import tester.*;                // The tester library
+import javalib.worldcanvas.*;
+import javalib.worldimages.*;   // images, like RectangleImage or OverlayImages
+import javalib.funworld.*;      // the abstract World class and the big-bang library
+import java.awt.Color;          // general colors (as triples of red,green,blue values)
+// and predefined colors (Color.RED, Color.GRAY, etc.)
 
 interface ILightningBolt {
   // Draws this ILightningBolt using the javalib library
   WorldImage draw();
+  
   // Determines whether the downsegment parts of this bolt have at most as much current as its
   // upsegment parts. In other words, the sum of the currents flowing out the tips may never
   // exceed the current at the beginning of the bolt.
   boolean isPhysicallyPossible();
+  
+  // Determines whether this bolt is physically possible based on the current of a parent bolt;
+  // i.e., its current is less than the parent's, and all of its children have a current less
+  // than this bolt's.
   boolean isPhysicallyPossibleHelper(int parentCurrent);
+  
+  // takes the current bolt and a given bolt and produces a Fork using the given arguments, with
+  // this bolt on the left and the given bolt on the right. All the angles in this bolt are
+  // offset by leftTheta - 90, and all the angles in the other bolt by rightTheta - 90.
   ILightningBolt combine(int leftLength, int rightLength, int leftCapacity, int rightCapacity,
                          double leftTheta, double rightTheta, ILightningBolt otherBolt);
   
@@ -21,15 +34,19 @@ interface ILightningBolt {
   // the thickness of each bolt is zero.
   double getWidth();
   
+  // Gets the offset from this bolt itself (0) to the rightmost point in any of its children. If
+  // none of the children contain a point to the right of the bolt itself, returns 0.
   double getRightmostX();
+  
+  // Gets the offset from this bolt itself (0) to the rightmost point in any of its children. If
+  // none of the children contain a point to the right of the bolt itself, returns 0.
   double getLeftmostX();
 }
 
 // represents one final endpoint of a lightning bolt
 class Tip implements ILightningBolt {
   public WorldImage draw() {
-    // TODO
-    return null;
+    return new CircleImage(5, OutlineMode.SOLID, Color.ORANGE);
   }
   
   // Returns true iff this Tip is physically possible. A tip on its own is always physically
@@ -44,6 +61,9 @@ class Tip implements ILightningBolt {
     return true;
   }
   
+  // takes the current bolt and a given bolt and produces a Fork using the given arguments, with
+  // this bolt on the left and the given bolt on the right. All the angles in the other bolt are
+  // offset by rightTheta - 90.
   public ILightningBolt combine(int leftLength, int rightLength, int leftCapacity,
                                 int rightCapacity, double leftTheta, double rightTheta,
                                 ILightningBolt otherBolt) {
@@ -52,16 +72,22 @@ class Tip implements ILightningBolt {
       otherBolt.offsetAll(rightTheta - 90));
   }
   
+  // Returns this, since there are no angles to offset.
   public ILightningBolt offsetAll(double theta) {
     return this;
   }
   
+  // Returns the width of this Tip, which is always 0
   public double getWidth() {
     return 0;
   }
+  
+  // Returns the rightmost X position of this Tip relative to the Tip itself, which is always 0.
   public double getRightmostX() {
     return 0;
   }
+  
+  // Returns the leftmost X position of this Tip relative to the Tip itself, which is always 0.
   public double getLeftmostX() {
     return 0;
   }
@@ -86,7 +112,22 @@ class Segment implements ILightningBolt {
   }
   
   public WorldImage draw() {
-    return null;
+    WorldImage segRect = new RectangleImage(this.length, 5, OutlineMode.SOLID, Color.RED)
+                           .movePinholeTo(new Posn(-this.length / 2, 0));
+    
+    // Rotate rest by -theta so that the final rotation by theta returns it to its original
+    // position. This could be avoided by rotating segRectPinholed earlier, but then we would
+    // need to use trig to reposition the pinhole.
+    WorldImage rest = new RotateImage(this.bolt.draw(), -theta);
+    
+    // Overlay rest on top of segRect
+    WorldImage overlay = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.PINHOLE,
+        rest, 0, 0, segRect);
+    
+    // Move the pinhole to the base of the segment
+    WorldImage overlayPinholed = overlay.movePinhole(this.length, 0);
+    // Rotate the segment and return
+    return new RotateImage(overlayPinholed, theta);
   }
   
   // Returns true iff this Segment is physically possible; i.e., its child has a current less than
@@ -102,6 +143,9 @@ class Segment implements ILightningBolt {
     return this.current <= parentCurrent && this.bolt.isPhysicallyPossibleHelper(this.current);
   }
   
+  // takes the current bolt and a given bolt and produces a Fork using the given arguments, with
+  // this bolt on the left and the given bolt on the right. All the angles in this bolt are
+  // offset by leftTheta - 90, and all the angles in the other bolt by rightTheta - 90.
   public ILightningBolt combine(int leftLength, int rightLength, int leftCapacity,
                                 int rightCapacity, double leftTheta, double rightTheta,
                                 ILightningBolt otherBolt) {
@@ -110,19 +154,31 @@ class Segment implements ILightningBolt {
       otherBolt.offsetAll(rightTheta - 90));
   }
   
+  // Returns a new Segment whose theta, and all angles of children, are offset by the given theta.
   public ILightningBolt offsetAll(double theta) {
     return new Segment(this.length, this.current, this.theta + theta,
       this.bolt.offsetAll(theta));
   }
   
+  // Returns the horizontal distance between the leftmost point of this Segment (including
+  // children) to its rightmost point.
   public double getWidth() {
     return Math.abs(this.getRightmostX() - this.getLeftmostX());
   }
   
+  // Returns the rightmost X position of this Segment relative to the Segment itself, which is the
+  // maximum of the following two values:
+  // - 0 (the relative position of the Fork itself),
+  // - the tip of this Segment, plus the rightmost point after it.
   public double getRightmostX() {
     return Math.max(0,
       this.length * Math.cos(Math.toRadians(this.theta)) + this.bolt.getRightmostX());
   }
+  
+  // Returns the leftmost X position of this Segment relative to the Segment itself, which is the
+  // minimum of the following two values:
+  // - 0 (the relative position of the Fork itself),
+  // - the tip of this Segment, plus the leftmost point after it.
   public double getLeftmostX() {
     return Math.min(0,
       this.length * Math.cos(Math.toRadians(this.theta)) + this.bolt.getLeftmostX());
@@ -157,8 +213,30 @@ class Fork implements ILightningBolt {
   }
   
   public WorldImage draw() {
-    // TODO
-    return null;
+    WorldImage leftRect = new RectangleImage(this.leftLength, 5, OutlineMode.SOLID, Color.RED)
+                               .movePinholeTo(new Posn(-this.leftLength / 2, 0));
+    WorldImage rightRect = new RectangleImage(this.rightLength, 5, OutlineMode.SOLID, Color.RED)
+                                .movePinholeTo(new Posn(-this.rightLength / 2, 0));
+    
+    // Rotate remaining parts of the branch by -theta so that the final rotation by theta returns it
+    // to its original position.
+    WorldImage leftRest = new RotateImage(this.left.draw(), -leftTheta);
+    WorldImage rightRest = new RotateImage(this.right.draw(), -rightTheta);
+    
+    // Overlay the remaining parts on top of the rects
+    WorldImage leftOverlay = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.PINHOLE,
+        leftRest, 0, 0, leftRect);
+    WorldImage rightOverlay = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.PINHOLE,
+        rightRest, 0, 0, rightRect);
+    
+    // Move the pinholes to the base of the branches
+    WorldImage lOverlayPinholed = leftOverlay.movePinhole(this.leftLength, 0);
+    WorldImage rOverlayPinholed = rightOverlay.movePinhole(this.rightLength, 0);
+    
+    // Combine the left and right branches and return
+    return new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.PINHOLE,
+      new RotateImage(lOverlayPinholed, leftTheta), 0, 0,
+      new RotateImage(rOverlayPinholed, rightTheta));
   }
   
   // Returns true iff this Fork is physically possible; i.e., each the children of each of its
@@ -178,6 +256,9 @@ class Fork implements ILightningBolt {
       && this.right.isPhysicallyPossibleHelper(this.rightCurrent);
   }
   
+  // takes the current bolt and a given bolt and produces a Fork using the given arguments, with
+  // this bolt on the left and the given bolt on the right. All the angles in this bolt are
+  // offset by leftTheta - 90, and all the angles in the other bolt by rightTheta - 90.
   public ILightningBolt combine(int leftLength, int rightLength, int leftCapacity,
                                 int rightCapacity, double leftTheta, double rightTheta,
                                 ILightningBolt otherBolt) {
@@ -186,16 +267,25 @@ class Fork implements ILightningBolt {
       otherBolt.offsetAll(rightTheta - 90));
   }
   
+  // Returns a new Fork whose left and right theta, and all angles of children, are offset by
+  // the given theta.
   public ILightningBolt offsetAll(double theta) {
     return new Fork(this.leftLength, this.rightLength, this.leftCurrent, this.rightCurrent,
       this.leftTheta + theta, this.rightTheta + theta,
       this.left.offsetAll(theta), this.right.offsetAll(theta));
   }
   
+  // Returns the horizontal distance between the leftmost point of this Fork (including children)
+  // to its rightmost point.
   public double getWidth() {
     return Math.abs(this.getRightmostX() - this.getLeftmostX());
   }
   
+  // Returns the rightmost X position of this Fork relative to the Fork itself, which is the
+  // maximum of the following three values:
+  // - 0 (the relative position of the Fork itself),
+  // - the tip of the left branch of the Fork, plus the rightmost point after that branch
+  // - the tip of the right branch of the Fork, plus the rightmost point after that branch
   public double getRightmostX() {
     double lRightmost =
       this.leftLength * Math.cos(Math.toRadians(this.leftTheta)) + this.left.getRightmostX();
@@ -203,6 +293,12 @@ class Fork implements ILightningBolt {
       this.rightLength * Math.cos(Math.toRadians(this.rightTheta)) + this.right.getRightmostX();
     return Math.max(0, Math.max(lRightmost, rRightmost));
   }
+  
+  // Returns the leftmost X position of this Fork relative to the Fork itself, which is the
+  // minimum of the following three values:
+  // - 0 (the relative position of the Fork itself),
+  // - the tip of the left branch of the Fork, plus the leftmost point after that branch
+  // - the tip of the right branch of the Fork, plus the leftmost point after that branch
   public double getLeftmostX() {
     double lLeftmost =
       this.leftLength * Math.cos(Math.toRadians(this.leftTheta)) + this.left.getLeftmostX();
@@ -221,6 +317,40 @@ class ExamplesLightning {
   ILightningBolt seg3 = new Segment(50, 29, 77, fork2); // Not plausible!
   
   ILightningBolt forked = new Fork(40, 50, 30, 35, 150, 30, seg2, seg2);
+  
+  boolean testDrawBolt(Tester t) {
+    WorldCanvas c = new WorldCanvas(500, 500);
+    WorldScene s = new WorldScene(500, 500);
+
+    return c.drawScene(s.placeImageXY(forked.draw(), 250, 250))
+             && c.show();
+  }
+  
+  boolean testDrawTip(Tester t) {
+    WorldImage expected = new CircleImage(5, OutlineMode.SOLID, Color.ORANGE);
+    return t.checkExpect(tip.draw(), expected);
+  }
+  
+  boolean testDrawFork(Tester t) {
+    WorldImage leftRect = new RectangleImage(33, 5, OutlineMode.SOLID, Color.RED)
+                            .movePinholeTo(new Posn(-16, 0));
+    WorldImage rightRect = new RectangleImage(30, 5, OutlineMode.SOLID, Color.RED)
+                             .movePinholeTo(new Posn(-15, 0));
+    WorldImage leftRest = new RotateImage(tip.draw(), -135);
+    WorldImage rightRest = new RotateImage(tip.draw(), -40);
+    WorldImage leftOverlay = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.PINHOLE,
+        leftRest, 0, 0, leftRect);
+    WorldImage rightOverlay = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.PINHOLE,
+        rightRest, 0, 0, rightRect);
+    WorldImage lOverlayPinholed = leftOverlay.movePinhole(33, 0);
+    WorldImage rOverlayPinholed = rightOverlay.movePinhole(30, 0);
+    
+    WorldImage expected = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.PINHOLE,
+        new RotateImage(lOverlayPinholed, 135), 0, 0,
+        new RotateImage(rOverlayPinholed, 40));
+    
+    return t.checkExpect(fork1.draw(), expected);
+  }
   
   boolean testIsPhysicallyPossible1(Tester t) {
     return t.checkExpect(seg1.isPhysicallyPossible(), false);
