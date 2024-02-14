@@ -1,5 +1,6 @@
 import tester.Tester;
 
+// Represents a monomial with a coefficient and a degree, of the form ax^b.
 class Monomial {
   int coefficient;
   int degree;
@@ -12,13 +13,33 @@ class Monomial {
     this.coefficient = coefficient;
   }
   
+  /* TEMPLATE
+  FIELDS:
+  ... this.coefficient ...                       -- int
+  ... this.degree ...                            -- int
+  METHODS:
+  ... this.isZero() ...                          -- boolean
+  ... this.evaluate(int x) ...                   -- int
+  ... this.compareTo(Monomial that) ...          -- int
+  ... this.add(Monomial that) ...                -- Monomial
+  ... this.multiplyScalar(int scalar) ...        -- Monomial
+  ... this.multiplyMonomial(Monomial that) ...   -- Monomial
+   */
+  
   // Determines if the coefficient of this monomial is 0
   boolean isZero() {
+    /* TEMPLATE
+    Template: Same as class template.
+     */
     return this.coefficient == 0;
   }
   
   // Evaluates this Monomial for the given value of x
   int evaluate(int x) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... x ...  -- int
+     */
     return (int) (this.coefficient * (Math.pow(x, this.degree)));
   }
   
@@ -26,12 +47,25 @@ class Monomial {
   // less than the degree of that, zero if the degrees are equal, and a positive number this
   // Monomial's degree is greater.
   int compareTo(Monomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...         -- Monomial
+    FIELDS ON PARAMETERS:
+    ... that.degree ...  -- int
+     */
     return this.degree - that.degree;
   }
   
   // Returns a new Monomial representing the sum of this and that. If the degrees of the
   // monomials do not match, throws an exception.
   Monomial add(Monomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...              -- Monomial
+    FIELDS ON PARAMETERS:
+    ... that.degree ...       -- int
+    ... that.coefficient ...  -- int
+     */
     if (this.degree != that.degree) {
       throw new RuntimeException("cannot add monomials if their degrees do not match!");
     }
@@ -40,14 +74,27 @@ class Monomial {
   
   // Multiplies the coefficient of this Monomial by a scalar
   Monomial multiplyScalar(int scalar) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... scalar ...  -- int
+     */
     return new Monomial(scalar * this.coefficient, this.degree);
   }
   
+  // Multiplies this Monomial by another Monomial
   Monomial multiplyMonomial(Monomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...              -- Monomial
+    FIELDS ON PARAMETERS
+    ... that.coefficient ...  -- int
+    ... that.degree ...       -- int
+     */
     return new Monomial(this.coefficient * that.coefficient, this.degree + that.degree);
   }
 }
 
+// Represents a polynomial whose value is the sum of a list of provided monomials
 class Polynomial {
   ILoMonomial monomials;
   
@@ -62,8 +109,30 @@ class Polynomial {
     this(new MtLoMonomial());
   }
   
+  /* TEMPLATE
+  FIELDS:
+  ... this.monomials ...                                       -- ILoMonomial
+  METHODS:
+  ... evaluate(int x) ...                                      -- int
+  ... add(Polynomial that) ...                                 -- Polynomial
+  ... multiplyScalar(int scalar) ...                           -- Polynomial
+  ... isZero() ...                                             -- boolean
+  ... samePolynomial(Polynomial that) ...                      -- boolean
+  ... multiply(Polynomial that) ...                            -- Polynomial
+  METHODS ON FIELDS:
+  ... this.monomials.evaluate(x) ...                           -- int
+  ... this.monomials.addILoMonomial(that.monomials) ...        -- ILoMonomial
+  ... this.monomials.multiplyScalar(scalar) ...                -- ILoMonomial
+  ... this.monomials.isZero() ...                              -- boolean
+  ... this.monomials.multiplyILoMonomial(that.monomials) ...   -- ILoMonomial
+   */
+  
   // Evaluates a polynomial at a given value of x.
   int evaluate(int x) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... x ...   -- int
+     */
     return this.monomials.evaluate(x);
   }
   
@@ -71,33 +140,57 @@ class Polynomial {
   // of two monomials are the same, their coefficients are added; otherwise, both monomials are
   // added separately.
   Polynomial add(Polynomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...             -- Polynomial
+    FIELDS ON PARAMETERS:
+    ... that.monomials ...   -- ILoMonomial
+     */
     return new Polynomial(this.monomials.addILoMonomial(that.monomials));
   }
   
   // Multiplies each term in this Polynomial by a provided scalar
   Polynomial multiplyScalar(int scalar) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... scalar ...   -- int
+     */
     return new Polynomial(this.monomials.multiplyScalar(scalar));
   }
   
   // Determines if the value of this polynomial is 0.
   boolean isZero() {
+    /* TEMPLATE
+    Template: Same as class template.
+     */
     return this.monomials.isZero();
   }
   
   // Determines if this Polynomial and that Polynomial represent the same polynomial
   boolean samePolynomial(Polynomial that) {
-    // TODO: potential solution: make a method to multiply by a scalar, multiply that by -1 and
-    //  add to this, expect new Polynomial() [i.e., 0]
-    throw new RuntimeException("not done");
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...                      -- Polynomial
+    METHODS ON PARAMETERS:
+    ... that.multiplyScalar(-1) ...   -- Polynomial
+     */
+    return this.add(that.multiplyScalar(-1)).isZero();
   }
   
   // Multiplies this Polynomial with that Polynomial, returning a new Polynomial representing the
   // result.
   Polynomial multiply(Polynomial that) {
-    throw new RuntimeException("not done");
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...             -- Polynomial
+    FIELDS ON PARAMETERS:
+    ... that.monomials ...   -- ILoMonomial
+     */
+    return new Polynomial(this.monomials.multiplyILoMonomial(that.monomials));
   }
 }
 
+// Represents a list of Monomials.
 interface ILoMonomial {
   // Checks if the same degree appears twice in this ILoMonomial
   boolean hasDuplicateDegree();
@@ -146,6 +239,7 @@ interface ILoMonomial {
   ILoMonomial multiplyILoMonomial(ILoMonomial that);
 }
 
+// Represents a list of Monomials with a first element and a list of other elements
 class ConsLoMonomial implements ILoMonomial {
   Monomial first;
   ILoMonomial rest;
@@ -155,30 +249,89 @@ class ConsLoMonomial implements ILoMonomial {
     this.rest = rest;
   }
   
+  /* TEMPLATE
+  FIELDS:
+  ... this.first ...                                   -- Monomial
+  ... this.rest ...                                    -- Monomial
+  METHODS:
+  ... this.hasDuplicateDegree() ...                    -- boolean
+  ... this.hasDegreeOf(Monomial that) ...              -- boolean
+  ... this.normalize() ...                             -- ILoMonomial
+  ... this.insertionSort() ...                         -- ILoMonomial
+  ... this.insert(Monomial that) ...                   -- ILoMonomial
+  ... this.removeZeroes() ...                          -- ILoMonomial
+  ... this.evaluate(int x) ...                         -- int
+  ... this.addILoMonomial(ILoMonomial that) ...        -- ILoMonomial
+  ... this.addMonomial(Monomial that) ...              -- ILoMonomial
+  ... this.multiplyScalar(int scalar) ...              -- ILoMonomial
+  ... this.isZero() ...                                -- boolean
+  ... this.multiplyMonomial(Monomial that) ...         -- ILoMonomial
+  ... this.multiplyILoMonomial(Monomial that) ...      -- ILoMonomial
+  METHODS ON FIELDS:
+  ... this.first.isZero() ...                          -- boolean
+  ... this.first.evaluate(int x) ...                   -- int
+  ... this.first.compareTo(Monomial that) ...          -- int
+  ... this.first.add(Monomial that) ...                -- Monomial
+  ... this.first.multiplyScalar(int scalar) ...        -- Monomial
+  ... this.first.multiplyMonomial(Monomial that) ...   -- Monomial
+  ... this.rest.hasDuplicateDegree() ...               -- boolean
+  ... this.rest.hasDegreeOf(Monomial that) ...         -- boolean
+  ... this.rest.normalize() ...                        -- ILoMonomial
+  ... this.rest.insertionSort() ...                    -- ILoMonomial
+  ... this.rest.insert(Monomial that) ...              -- ILoMonomial
+  ... this.rest.removeZeroes() ...                     -- ILoMonomial
+  ... this.rest.evaluate(int x) ...                    -- int
+  ... this.rest.addILoMonomial(ILoMonomial that) ...   -- ILoMonomial
+  ... this.rest.addMonomial(Monomial that) ...         -- ILoMonomial
+  ... this.rest.multiplyScalar(int scalar) ...         -- ILoMonomial
+  ... this.rest.isZero() ...                           -- boolean
+  ... this.rest.multiplyMonomial(Monomial that) ...    -- ILoMonomial
+  ... this.rest.multiplyILoMonomial(Monomial that) ... -- ILoMonomial
+   */
+  
   // Checks if the same degree appears twice in this ConsLoMonomial
   public boolean hasDuplicateDegree() {
+    /* TEMPLATE
+    Template: Same as class template.
+     */
     return this.rest.hasDegreeOf(this.first) || this.rest.hasDuplicateDegree();
   }
   
   // Checks if this ConsLoMonomial has a term with the same degree as the provided term
   public boolean hasDegreeOf(Monomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...   -- Monomial
+     */
     return this.first.compareTo(that) == 0 || this.rest.hasDegreeOf(that);
   }
   
   // Normalizes this ConsLoMonomial by removing all terms with coefficient 0 and sorting by degree,
   // from lowest to highest.
   public ILoMonomial normalize() {
+    /* TEMPLATE
+    Template: Same as class template.
+     */
     return this.insertionSort().removeZeroes();
   }
   
   // Insertion-sorts this ConsLoMonomial from lowest to highest degree
   public ILoMonomial insertionSort() {
+    /* TEMPLATE
+    Template: Same as class template.
+     */
     return this.rest.insertionSort().insert(this.first);
   }
   
   // Inserts that Monomial into this ConsLoMonomial immediately before the first Monomial that
   // exceeds its degree
   public ILoMonomial insert(Monomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...                         -- Monomial
+    METHODS ON PARAMETERS:
+    ... that.compareTo(this.first) ...   -- int
+     */
     if (that.compareTo(this.first) > 0) {
       return new ConsLoMonomial(this.first, this.rest.insert(that));
     } else {
@@ -188,6 +341,9 @@ class ConsLoMonomial implements ILoMonomial {
   
   // Removes all Monomials in this ConsLoMonomial with a coefficient of 0
   public ILoMonomial removeZeroes() {
+    /* TEMPLATE
+    Template: Same as class template.
+     */
     if (this.first.isZero()) {
       return this.rest.removeZeroes();
     } else {
@@ -197,6 +353,10 @@ class ConsLoMonomial implements ILoMonomial {
   
   // Evaluates all the Monomials in this ILoMonomial and finds their sum
   public int evaluate(int x) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... x ...  -- int
+     */
     return this.first.evaluate(x) + this.rest.evaluate(x);
   }
   
@@ -204,6 +364,12 @@ class ConsLoMonomial implements ILoMonomial {
   // degrees of two monomials are the same, their coefficients are added; otherwise, both
   // monomials are added separately.
   public ILoMonomial addILoMonomial(ILoMonomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...                                   -- ILoMonomial
+    METHODS ON FIELDS:
+    ... that.addILoMonomial(ILoMonomial that) ...  -- ILoMonomial
+     */
     return that.addILoMonomial(this.rest).addMonomial(this.first);
   }
   
@@ -211,6 +377,12 @@ class ConsLoMonomial implements ILoMonomial {
   // it matches the degree of an existing monomial, their coefficients are added; otherwise, it
   // is added separately at an appropriate location.
   public ILoMonomial addMonomial(Monomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...                         -- Monomial
+    METHODS ON PARAMETERS:
+    ... that.compareTo(this.first) ...   -- int
+     */
     if (that.compareTo(this.first) == 0) {
       return new ConsLoMonomial(this.first.add(that), this.rest);
     } else if (that.compareTo(this.first) > 0) {
@@ -219,63 +391,201 @@ class ConsLoMonomial implements ILoMonomial {
       return new ConsLoMonomial(that, this);
     }
   }
+  
+  // Multiplies all the terms in this ILoMonomial by a scalar
+  public ILoMonomial multiplyScalar(int scalar) {
+    /* TEMPLATE
+    PARAMETERS
+    ... scalar ...  -- int
+     */
+    return new ConsLoMonomial(this.first.multiplyScalar(scalar), this.rest.multiplyScalar(scalar));
+  }
+  
+  // Determines if the value of this ConsLoMonomial is 0; i.e., all of its terms have a
+  // coefficient of zero.
+  public boolean isZero() {
+    /* TEMPLATE
+    Template: Same as class template.
+     */
+    return this.first.isZero() && this.rest.isZero();
+  }
+  
+  // Multiplies all terms of this ConsLoMonomial by a Monomial.
+  public ILoMonomial multiplyMonomial(Monomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...  -- Monomial
+     */
+    return new ConsLoMonomial(this.first.multiplyMonomial(that), this.rest.multiplyMonomial(that));
+  }
+  
+  // Multiplies this ConsLoMonomial by an ILoMonomial, assuming that both are normalized. 
+  public ILoMonomial multiplyILoMonomial(ILoMonomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...                                  -- ILoMonomial
+    METHODS ON PARAMETERS
+    ... that.multiplyMonomial(Monomial that) ...  -- ILoMonomial
+     */
+    return that.multiplyMonomial(this.first).addILoMonomial(this.rest.multiplyILoMonomial(that));
+  }
 }
 
+// Represents an empty list of Monomials
 class MtLoMonomial implements ILoMonomial {
+  
+  /* TEMPLATE
+  FIELDS:
+  ... this.first ...                                   -- Monomial
+  ... this.rest ...                                    -- Monomial
+  METHODS:
+  ... this.hasDuplicateDegree() ...                    -- boolean
+  ... this.hasDegreeOf(Monomial that) ...              -- boolean
+  ... this.normalize() ...                             -- ILoMonomial
+  ... this.insertionSort() ...                         -- ILoMonomial
+  ... this.insert(Monomial that) ...                   -- ILoMonomial
+  ... this.removeZeroes() ...                          -- ILoMonomial
+  ... this.evaluate(int x) ...                         -- int
+  ... this.addILoMonomial(ILoMonomial that) ...        -- ILoMonomial
+  ... this.addMonomial(Monomial that) ...              -- ILoMonomial
+  ... this.multiplyScalar(int scalar) ...              -- ILoMonomial
+  ... this.isZero() ...                                -- boolean
+  ... this.multiplyMonomial(Monomial that) ...         -- ILoMonomial
+  ... this.multiplyILoMonomial(Monomial that) ...      -- ILoMonomial
+   */
+  
   // Checks if the same degree appears twice in this MtLoMonomial
   public boolean hasDuplicateDegree() {
+    /* TEMPLATE
+    Template: Same as class template.
+     */
     return false;
   }
   
   // Checks if this MtLoMonomial has a term with the same degree as the provided term
   public boolean hasDegreeOf(Monomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...   -- Monomial
+     */
     return false;
   }
   
   // Normalizes this ConsLoMonomial by removing all terms with coefficient 0 and sorting by degree,
   // from lowest to highest.
   public ILoMonomial normalize() {
+    /* TEMPLATE
+    Template: Same as class template.
+     */
     return this;
   }
   
   // Insertion-sorts this MtLoMonomial from lowest to highest degree
   public ILoMonomial insertionSort() {
+    /* TEMPLATE
+    Template: Same as class template.
+     */
     return this;
   }
   
   // Inserts that Monomial into this ConsLoMonomial immediately before the first Monomial that
   // exceeds its degree
   public ILoMonomial insert(Monomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...   -- Monomial
+     */
     return new ConsLoMonomial(that, new MtLoMonomial());
   }
   
   // Removes all Monomials in this ConsLoMonomial with a coefficient of 0
   public ILoMonomial removeZeroes() {
+    /* TEMPLATE
+    Template: Same as class template.
+     */
     return this;
   }
   
   // Evaluates all the Monomials in this ILoMonomial and finds their sum
   public int evaluate(int x) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... x ...  -- int
+     */
     return 0;
   }
   
   // Mathematically adds another ILoMonomial to this MtLoMonomial.
   public ILoMonomial addILoMonomial(ILoMonomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...  -- ILoMonomial
+     */
     return that;
   }
   
   // Mathematically adds a single monomial to this MtLoMonomial, preserving normalization.
   public ILoMonomial addMonomial(Monomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...  -- Monomial
+     */
     return new ConsLoMonomial(that, new MtLoMonomial());
+  }
+  
+  // Multiplies all the terms in this ILoMonomial by a scalar
+  public ILoMonomial multiplyScalar(int scalar) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... scalar ...  -- int
+     */
+    return this;
+  }
+  
+  // Determines if the value of this MtLoMonomial is zero.
+  public boolean isZero() {
+    /* TEMPLATE
+    Template: Same as class template.
+     */
+    return true;
+  }
+  
+  // Multiplies this MtLoMonomial by a Monomial.
+  public ILoMonomial multiplyMonomial(Monomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...  -- Monomial
+     */
+    return this;
+  }
+  
+  // Multiplies this MtLoMonomial by an ILoMonomial.
+  public ILoMonomial multiplyILoMonomial(ILoMonomial that) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... that ...  -- ILoMonomial
+     */
+    return new MtLoMonomial();
   }
 }
 
+
 class ExamplesPolynomials {
+  // Examples =====================================================================================
+  
+  Monomial threeX2 = new Monomial(3, 2);
+  Monomial twoX0 = new Monomial(2,0);
+  Monomial minusTwoX4 = new Monomial(-2,4);
+  Monomial fiveX1 = new Monomial(5,1);
+  Monomial minusOneX2 = new Monomial(-1,2);
+  Monomial zeroX5 = new Monomial(0,5);
+  Monomial zeroX3 = new Monomial(0,3);
+  
   // == 0
   ILoMonomial lMt = new MtLoMonomial();
   // == 2
   ILoMonomial lTwo = new ConsLoMonomial(
-      new Monomial(2, 0),
+      twoX0,
       new MtLoMonomial());
   // == -2x^4
   ILoMonomial lMon = new ConsLoMonomial(
@@ -283,41 +593,40 @@ class ExamplesPolynomials {
       new MtLoMonomial());
   // == 2 - 2x^4
   ILoMonomial lBi = new ConsLoMonomial(
-      new Monomial(3, 2),
-      lTwo);
-  // == -2x^4 + 3x^2 + 2
+      twoX0,
+      lMon);
+  // == 3x^2 + 2 - 2x^4
   ILoMonomial lTri = new ConsLoMonomial(
-      new Monomial(-2, 4),
+      threeX2,
       lBi);
   
   // == 3x^2 + 0x^5 + 2 - 2x^4 + 0x^3
   ILoMonomial lTriRedundant = new ConsLoMonomial(
       threeX2,
       new ConsLoMonomial(
-          new Monomial(0, 5),
+          zeroX5,
           new ConsLoMonomial(
-              new Monomial(2, 0),
+              twoX0,
               new ConsLoMonomial(
-                  new Monomial(-2, 4),
-                  new MtLoMonomial()
-              )
-          )
-      )
-  );
+                  minusTwoX4,
+                  new ConsLoMonomial(
+                      zeroX3,
+                      new MtLoMonomial())))));
+  
   // == 2 + 3x^2 - 2x^4
   ILoMonomial lTriNorm = new ConsLoMonomial(
-      new Monomial(2, 0),
+      twoX0,
       new ConsLoMonomial(
-          new Monomial(3, 2),
+          threeX2,
           new ConsLoMonomial(
               minusTwoX4,
               new MtLoMonomial())));
   
   // == 5x - x^2 - 6x^3
   ILoMonomial lTri2 = new ConsLoMonomial(
-      new Monomial(5, 1),
+      fiveX1,
       new ConsLoMonomial(
-          new Monomial(-1, 2),
+          minusOneX2,
           new ConsLoMonomial(
               new Monomial(-6, 3),
               new MtLoMonomial())));
@@ -644,11 +953,12 @@ class ExamplesPolynomials {
   // CONSTRUCTORS ---------------------------------------------------------------------------------
   
   boolean testPositiveDegreeValidation(Tester t) {
-     return t.checkConstructorNoException("noNegDegree1", "Monomial", -5, 0)
-         && t.checkConstructorNoException("noNegDegree2", "Monomial", 3, 6)
-         && t.checkConstructorException(
-             new IllegalArgumentException("the degree of a monomial must a be non-negative integer"),
-             "Monomial", 4, -1);
+    return t.checkConstructorNoException("noNegDegree1", "Monomial", -5, 0)
+        && t.checkConstructorNoException("noNegDegree2", "Monomial", 3, 6)
+        && t.checkConstructorException(
+            new IllegalArgumentException(
+                "the degree of a monomial must a be non-negative integer"),
+            "Monomial", 4, -1);
   }
 
   boolean testNoDuplicatesValidation(Tester t) {
