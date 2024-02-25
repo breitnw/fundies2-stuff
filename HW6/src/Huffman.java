@@ -5,6 +5,155 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
+// Represents a Huffman tree constructed from a list of characters and their respective
+// frequencies.
+class Huffman {
+  IHuffmanTree tree;
+
+  Huffman(ArrayList<String> chars, ArrayList<Integer> frequencies) {
+    // Validate that the length of the list of strings is greater than or equal to 2
+    if (chars.size() < 2) {
+      throw new IllegalArgumentException(
+          "The length of `chars` must be at least 2"
+      );
+    }
+    
+    // Zip chars and frequencies into a single list (NOTE: this also performs the validation that
+    // the list lengths are equal)
+    ArrayList<IHuffmanTree> trees = new ListUtils().zip(chars, frequencies, new HuffmanTreeZipper());
+    
+    // Condense all the IHuffmanTrees in the list into a single IHuffmanTree
+    this.tree = new HuffmanTreeUtils().condense(trees);
+  }
+  
+  // Encodes the provided message as an ArrayList<Boolean> according to the structure of the
+  // Huffman tree, where false represents a leftward movement down the tree (0) and true
+  // represents a rightward movement (1)
+  ArrayList<Boolean> encode(String message) {
+    ArrayList<Boolean> code = new ArrayList<>();
+    for (int i = 0; i < message.length(); i += 1) {
+      String c = message.substring(i, i + 1);
+      code.addAll(this.tree.encodeChar(c).expect(new IllegalArgumentException(
+          "Tried to encode " + c + " but that is not part of the language.")
+      ));
+    }
+    return code;
+  }
+  
+  // Decodes the provided code to a String according to the structure of the Huffman tree, where
+  // a false in the code represents a leftward movement down the tree (0) and a true represents
+  // a rightward movement (1)
+  // EFFECT: consumes the contents of code, leaving it as an empty ArrayList<Boolean>.
+  public String decode(ArrayList<Boolean> code) {
+    String message = "";
+    while (!code.isEmpty()) {
+      message = message + this.tree.decodeNext(code);
+    }
+    return message;
+  }
+}
+
+// TREE STRUCTURE ---------------------------------------------------------------------------------
+
+// Represents a Huffman tree in tree form.
+interface IHuffmanTree {
+  // Gets the total frequency of this IHuffmanTree, calculated as the sum of the frequencies of
+  // all the leaves in the tree.
+  int frequency();
+  
+  // Encodes a single character according to the structure of the Huffman tree, producing a
+  // Some<ArrayList<Boolean>> with the corresponding code if the character exists in the tree and
+  // a None<> if it does not.
+  Maybe<ArrayList<Boolean>> encodeChar(String c);
+  
+  // Decodes a single character from the given ArrayList of Booleans `code`, or produces "?" if
+  // the ArrayList is not long enough to decode a character.
+  // EFFECT: removes the corresponding booleans within ArrayList<Boolean>
+  String decodeNext(ArrayList<Boolean> code);
+}
+
+// Represents a leaf in a Huffman tree with a character and a frequency
+class Leaf implements IHuffmanTree {
+  String c;
+  int freq;
+  
+  Leaf(String c, int freq) {
+    this.c = c;
+    this.freq = freq;
+  }
+  
+  // Gets the total frequency of this Leaf, calculated as the sum of the frequencies of all the
+  // leaves in the tree.
+  public int frequency() {
+    return this.freq;
+  }
+  
+  // Encodes a single character according to the structure of the Huffman tree, producing a
+  // Some<ArrayList<Boolean>> with the corresponding code if the character exists in the tree and
+  // a None<> if it does not.
+  public Maybe<ArrayList<Boolean>> encodeChar(String c) {
+    if (this.c.equals(c)) {
+      return new Some<>(new ArrayList<>());
+    } else {
+      return new None<>();
+    }
+  }
+  
+  // Decodes a single character from the given ArrayList of Booleans `code`, or produces "?" if
+  // the ArrayList is not long enough to decode a character.
+  public String decodeNext(ArrayList<Boolean> code) {
+    return this.c;
+  }
+}
+
+// Represents a node in a Huffman tree with left and right branches
+class Node implements IHuffmanTree {
+  IHuffmanTree left;
+  IHuffmanTree right;
+  
+  Node(IHuffmanTree left, IHuffmanTree right) {
+    this.left = left;
+    this.right = right;
+  }
+  
+  // Gets the total frequency of this Node, calculated as the sum of the frequencies of all the
+  // leaves in the tree.
+  public int frequency() {
+    return this.left.frequency() + this.right.frequency();
+  }
+  
+  // Encodes a single character according to the structure of the Huffman tree, producing a
+  // Some<ArrayList<Boolean>> with the corresponding code if the character exists in the tree and
+  // a None<> if it does not.
+  public Maybe<ArrayList<Boolean>> encodeChar(String c) {
+    Maybe<ArrayList<Boolean>> left = this.left.encodeChar(c);
+    Maybe<ArrayList<Boolean>> right = this.right.encodeChar(c);
+    
+    left.mapMut(new ArrayListPrepend<>(false));
+    right.mapMut(new ArrayListPrepend<>(true));
+    
+    return left.or(right);
+  }
+  
+  // Decodes a single character from the given ArrayList of Booleans `code`, or produces "?" if
+  // the ArrayList is not long enough to decode a character.
+  // EFFECT: removes the corresponding booleans within ArrayList<Boolean>
+  public String decodeNext(ArrayList<Boolean> code) {
+    if (code.isEmpty()) {
+      return "?";
+    }
+    
+    if (code.remove(0)) {
+      return this.right.decodeNext(code);
+    } else {
+      return this.left.decodeNext(code);
+    }
+  }
+}
+
+// OPTIONALS --------------------------------------------------------------------------------------
+
+// Represents a value that may or may not exist
 interface Maybe<T> {
   // Returns this Maybe if it contains a value, otherwise returns that
   Maybe<T> or(Maybe<T> that);
@@ -16,6 +165,7 @@ interface Maybe<T> {
   T expect(RuntimeException ex);
 }
 
+// Represents a value that exists
 class Some<T> implements Maybe<T> {
   T t;
   
@@ -39,8 +189,8 @@ class Some<T> implements Maybe<T> {
   }
 }
 
+// Represents a value that does not exist
 class None<T> implements Maybe<T>  {
-  
   // Returns this Maybe if it contains a value, otherwise returns that
   public Maybe<T> or(Maybe<T> that) {
     return that;
@@ -55,138 +205,7 @@ class None<T> implements Maybe<T>  {
   }
 }
 
-// Represents a Huffman tree constructed from a list of characters and their respective
-// frequencies.
-class Huffman {
-  IHuffmanTree tree;
-
-  Huffman(ArrayList<String> chars, ArrayList<Integer> frequencies) {
-    
-    // Validate that the lengths of the lists are equal
-    int charSize = chars.size();
-    int freqSize = frequencies.size();
-    if (charSize != freqSize) {
-      throw new IllegalArgumentException(
-          "Expected two ArrayList of equal lengths, got "
-          + charSize + " and " + freqSize + " instead"
-      );
-    }
-    
-    // Validate that the length of the list of strings is greater than or equal to 2
-    if (charSize < 2) {
-      throw new IllegalArgumentException(
-          "The length of `chars` must be at least 2"
-      );
-    }
-    
-    // Zip chars and frequencies into a single list
-    ArrayList<IHuffmanTree> trees = new ListUtils().zip(chars, frequencies, new HuffmanTreeZipper());
-    
-    // Condense all the IHuffmanTrees in the list into a single IHuffmanTree
-    this.tree = new HuffmanTreeUtils().condense(trees);
-  }
-  
-  ArrayList<Boolean> encode(String message) {
-    ArrayList<Boolean> code = new ArrayList<>();
-    for (int i = 0; i < message.length(); i += 1) {
-      String c = message.substring(i, i + 1);
-      code.addAll(this.tree.encodeChar(c).expect(new IllegalArgumentException(
-              "Tried to encode " + c + " but that is not part of the language.")
-      ));
-    }
-    return code;
-  }
-
-  public String decode(ArrayList<Boolean> code) {
-    String message = "";
-    while (!code.isEmpty()) {
-      message = message + this.tree.decodeNext(code);
-    }
-    return message;
-  }
-}
-
-// Represents a Huffman tree in tree form.
-interface IHuffmanTree {
-  // Gets the total frequency of this IHuffmanTree, calculated as the sum of the frequencies of
-  // all the leaves in the tree.
-  int frequency();
-  
-  Maybe<ArrayList<Boolean>> encodeChar(String c);
-  
-  // Decodes a single character from the given stream of Booleans `code`
-  // EFFECT: removes the corresponding booleans within ArrayList<Boolean>
-  String decodeNext(ArrayList<Boolean> code);
-}
-
-// Represents a leaf in a Huffman tree with a character and a frequency
-class Leaf implements IHuffmanTree {
-  String c;
-  int freq;
-  
-  Leaf(String c, int freq) {
-    this.c = c;
-    this.freq = freq;
-  }
-  
-  // Gets the total frequency of this Leaf, calculated as the sum of the frequencies of all the
-  // leaves in the tree.
-  public int frequency() {
-    return this.freq;
-  }
-  
-  public Maybe<ArrayList<Boolean>> encodeChar(String c) {
-    if (this.c.equals(c)) {
-      return new Some<>(new ArrayList<>());
-    } else {
-      return new None<>();
-    }
-  }
-  
-  public String decodeNext(ArrayList<Boolean> code) {
-    return this.c;
-  }
-}
-
-// Represents a node in a Huffman tree with left and right branches
-class Node implements IHuffmanTree {
-  IHuffmanTree left;
-  IHuffmanTree right;
-  
-  Node(IHuffmanTree left, IHuffmanTree right) {
-    this.left = left;
-    this.right = right;
-  }
-  
-  // Gets the total frequency of this Node, calculated as the sum of the frequencies of all the
-  // leaves in the tree.
-  public int frequency() {
-    return this.left.frequency() + this.right.frequency();
-  }
-  
-  public Maybe<ArrayList<Boolean>> encodeChar(String c) {
-    Maybe<ArrayList<Boolean>> left = this.left.encodeChar(c);
-    left.mapMut(new ArrayListPrepend<>(false));
-    Maybe<ArrayList<Boolean>> right = this.right.encodeChar(c);
-    right.mapMut(new ArrayListPrepend<>(true));
-    
-    return left.or(right);
-  }
-  
-  public String decodeNext(ArrayList<Boolean> code) {
-    if (code.isEmpty()) {
-      return "?";
-    }
-    
-    boolean codeAt = code.remove(0);
-    if (codeAt) {
-      return this.right.decodeNext(code);
-    } else {
-      return this.left.decodeNext(code);
-    }
-  }
-  
-}
+// FUNCTIONS --------------------------------------------------------------------------------------
 
 // A Consumer that consumes a reference to an ArrayList and mutates it to add the T passed during
 // construction to the start.
@@ -227,6 +246,8 @@ class HuffmanTreeZipper implements BiFunction<String, Integer, IHuffmanTree> {
   }
 }
 
+// UTILS ------------------------------------------------------------------------------------------
+
 class ListUtils {
   // Sorts the provided ArrayList low-to-high via a stable insertion sort, provided a Comparator
   // cmp that compares any two elements of the ArrayList.
@@ -255,8 +276,17 @@ class ListUtils {
   // Zips two ArrayLists of equal length into a single ArrayList of that same length. The
   // element at each index n in the produced ArrayList is the result of combining the nth element
   // of arr1 with the nth element of arr2 in an arbitrary way defined by cmbFunc.
+  // If the lengths of the arrays are not equal, throws an IllegalArgumentException.
   <T, U, V> ArrayList<V> zip(ArrayList<T> arr1, ArrayList<U> arr2, BiFunction<T, U, V> cmbFunc) {
-    // TODO: do length validation here?
+    // Validate that the lengths of the lists are equal
+    int a1size = arr1.size();
+    int a2size = arr2.size();
+    if (a1size != a2size) {
+      throw new IllegalArgumentException(
+          "Expected two ArrayList of equal lengths, got " + a1size + " and " + a2size + " instead"
+      );
+    }
+    
     ArrayList<V> zipped = new ArrayList<>();
     for (int i = 0; i < arr1.size(); i += 1) {
       zipped.add(cmbFunc.apply(arr1.get(i), arr2.get(i)));
@@ -290,6 +320,8 @@ class HuffmanTreeUtils {
     return treesSorted.get(0);
   }
 }
+
+// EXAMPLES ---------------------------------------------------------------------------------------
 
 class ExamplesHuffman {
   /*
@@ -371,18 +403,67 @@ class ExamplesHuffman {
     t.checkExpect(hPairs, hPairsMixed);
   }
   
-  // an unterminated sequence should result in an "/"
-  // appended at the end of the decoded string
+  // If the list of chars is less than length 2, we throw an exception
+  void testConstructorExSufficientLength(Tester t) {
+    t.checkConstructorException(
+        new IllegalArgumentException(
+            "The length of `chars` must be at least 2"),
+        "Huffman",
+        new ArrayList<>(List.of("a")),
+        new ArrayList<>(List.of(1))
+    );
+    t.checkConstructorException(
+        new IllegalArgumentException(
+            "The length of `chars` must be at least 2"),
+        "Huffman",
+        new ArrayList<>(),
+        new ArrayList<>()
+    );
+  }
+  
+  // If the lists don't have equal lengths, we throw an exception
+  void testConstructorExEqualLengths(Tester t) {
+    t.checkConstructorException(
+        new IllegalArgumentException(
+            "Expected two ArrayList of equal lengths, got 4 and 3 instead"),
+        "Huffman",
+        new ArrayList<>(List.of("a", "b", "c", "d")),
+        new ArrayList<>(List.of(1, 2, 3))
+    );
+    t.checkConstructorException(
+        new IllegalArgumentException(
+            "Expected two ArrayList of equal lengths, got 3 and 4 instead"),
+        "Huffman",
+        new ArrayList<>(List.of("a", "b", "c")),
+        new ArrayList<>(List.of(1, 2, 3, 4))
+    );
+  }
+  
+  
+  // an unterminated sequence should result in an "/" appended at the end of the decoded string
   void testUnterminatedDecode(Tester t) {
     t.checkExpect(
         hPairs.decode(new ArrayList<>(List.of(false))),
         "?");
+    t.checkExpect(
+        hPairs.decode(new ArrayList<>(List.of(true, false, false))),
+        "c?");
+    t.checkExpect(
+        hPairs.decode(new ArrayList<>(List.of(true, false, false, false, false, true, false))),
+        "cab?");
   }
   
+  // We should be able to maintain a result by decoding then encoding, or encoding then decoding
+  // (unless the result ends in a ? or an error is thrown)
   void testConsistentEncodeDecode(Tester t) {
     t.checkExpect(
         hPairs.decode(hPairs.encode("abacd")),
         "abacd"
+    );
+    t.checkExpect(
+        hPairs.encode(
+            hPairs.decode(new ArrayList<>(List.of(true, false, false, false, false, true)))),
+        new ArrayList<>(List.of(true, false, false, false, false, true))
     );
   }
 
