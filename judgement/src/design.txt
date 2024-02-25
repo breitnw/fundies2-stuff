@@ -1,0 +1,118 @@
+class Util: contains all the logic like converting a string into a list of IVehicles, list of Boundary, Position of exit, checks string validity
+	- Contains a list of colors used when converting string -> IList<IVehicle>
+`	- when converting from string -> IList<IVehicle>, the accumulator accumulates a "colorIndex", in which is used to modulo with the length of
+	  the list of colors, which allows the vehicle's to have different colors cycled throughout the list of colors. -> stringToVehicleList(...) method
+		- Uses index() method in IList<T>
+
+
+interface IVehicle: represents either Car or Truck
+
+abstract class AVehicle: abstracts methods in Car and Truck
+
+Car: represents a Car, contains information like its position (top left corner) , if its the target Car, if its selected
+Truck: represents a Truck, contains the same information like a Car
+
+	- IVehicles can:
+	- render themselves to image
+	- draw itself onto the given canvas
+	- find its endpoint
+	- check if its overlapping with another vehicle
+	- check if itself is a main car && on the given exit position
+	- reset its selection (new vehicle with same parameters but with isSelected field to false)
+	- select itself (new vehicle with same parameters but with isSelected field to false)
+	- returns whether itself is on a given mouse click position
+	- returns whether itself is selected
+
+
+class Boundary: represents a boundary block, contains its position (top left corner) on the board
+	- Boundary can:
+		- render itself to image
+		- draw itself to the given canvas
+		- returns if this Boundary's x position is greater than the given x value
+		- returns if this Boundary's y position is greater than the given y value
+
+class Level: represents a Level that takes in a String that gets parsed into information needed to make a board by the Util class
+	- contains fields Board and a Posn exit, level just take in a string and creates a board, and delegates everything to the board to do
+
+	In Constructor of Level:
+	- Checks if String description is valid level in constructor using class Util methods:
+		- description makes up a rectangular boundary
+		- description contains only valid characters: + - | C c T t A a B b
+		- description height at least 4 including the boundary blocks so it can have at least a vertical car
+	- throws exception if these conditions aren't met
+
+	- Checks if the Board contains vehicles that are overlapping (in Board class below) and throws exception if there is overlapping
+	- Checks if the Board contains vehicles that are overlapping with boundaries (in Board class below) and throws exception if there is
+
+	Two Constructors: one that takes in a string (initial level), parsed into a Board
+			  one that takes in a Board and a Posn, the modified Level when interaction happens in big bang
+
+
+- Level just takes in a string and converts it to a Board and in the Level methods, it delegates everything for the Board to do
+
+class Board: represents the game board
+- Contains:
+	- list of IVehicles
+	- list of Boundary
+	- Posn exit
+
+	- everything in a board are lists of vehicles/boundary. When interaction happens, it modifies the board's lists of contents
+
+
+- Renders list of IVehicle and IBoundary to world scene by doing foldr() on those lists and combining the results to the final board scene
+(class RenderBoundaryImage && RenderVehicleImage below)
+	- Scene size determined by finding highest x and y value in list of Boundary using foldr()
+		(class LargestXY below)
+
+- Checks if player has won by doing orMap() on list of IVehicles to see if any of IVehicles is the target car && on the exit
+(class MainVehicleOnExit below )
+
+- Selects a Vehicle by doing map() on list of IVehicle to change the IVehicle to "selected" if the position matches the mouse click's position
+(class SelectVehicle below)
+
+- Deselects a IVehicle by:
+	- checking through the list and doing orMap() to check if any IVehicle is selected in the board
+	  	(class AnySelection below)
+	- resetting all IVehicles in the list to not-selected by doing map()
+		(class ResetSelection below)
+
+- Checks if any of the vehicles in the list are overlapping with each other using compareOrMap()
+(class AreOverLapping below)
+
+- Checks if any of the vehicles in the list are overlapping with any of the boundaries in the list using compareOrMap()
+(class OverlapsAnyBoundaryVehicle && OverlapsBoundary below)
+
+
+interface List<T> represents a generic list of type T
+	- allows for list methods foldr(), orMap(), map(),
+	- compareOrMap() -  returns if the given T when compared with any element in this list of elements is true
+	- compareAllOrMap() - returns if any element of the list returns true in a comparison with the rest of the elements
+
+
+class ConsLo<T>: Cons a type T to rest of list T
+class MtLo<T>: empty list of type T
+
+class RushHourWorld: represents the world state in big bang, takes in a level
+	- handles mouse click
+		|
+		V
+	- when interaction happens, returns a new world by constructing a new Level with the board changed, and the exit the same
+
+
+class AreOverlapping: function object that returns whether two vehicles are overlapping
+
+class RenderBoundaryImage && RenderVehicleImage classes: function objects that renders Boundary/Vehicle to an image, and places it on the world scene
+class LargestXY: function object that compares a boundary's post and a posn and returns the posn that's larger in terms of x or y depending on the argument
+	 	 passed into the constructor
+
+class MainVehicleOnExit: function object that returns if a IVehicle is a main car and on the exit
+
+class SelectVehicle: function object that takes in the mouse click's position and changes IVehicles to "selected" if its position matches with mouse click's position
+
+class AnySelection: function object that returns if a IVehicle is selected
+
+class ResetSelection: function object that returns IVehicles de-selected
+
+class OverlapsBoundary: function object that returns if a vehicle and a boundary are overlapping
+
+class OverlapsAnyBoundaryVehicle: function object that returns if any vehicle in the given list overlaps a given boundary

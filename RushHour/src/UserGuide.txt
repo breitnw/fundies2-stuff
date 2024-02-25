@@ -1,0 +1,22 @@
+RUSH HOUR!
+
+How To Play:
+
+Objective: Get the Red Car to the Exit!
+
+Rules:
+- The Red Car is the Player Car.
+- The generated level, has various other cars and trucks populated onto the board.
+- At any given point, only one "selected" car can be moved using the arrow keys in the
+direction/orientation it is originally provided in. For example, a horizontal vehicle could only be
+moved left and right, using the respective arrow keys. (not implemented as of HW5; for later)
+- To move the vehicle, the user must first click on the vehicle using their mouse pointer. Once
+clicked, the vehicle will light up in a bright yellow colour. This will indicate that the vehicle
+has been "selected."
+- After moving the vehicle, one must simply click outside the vehicle or on another vehicle to
+"un-select" the given vehicle.
+- The Exit is indicated as a tile with a dot on it, usually present as a gap in the outer boundary
+of the board, i.e., The Wall.
+- Once the Red Car reaches the Exit position, you've won the game!
+- For more fun and puzzling levels, some boards may have multiple Red Cars and multiple Exits,
+in which case, one must put every Red Car on an Exit in order to win the game!

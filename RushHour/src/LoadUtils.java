@@ -1,33 +1,65 @@
-// Represents a suite of utilities to allow loading a Level from a String
-// TODO: show how to format the strings
+import java.util.Random;
+
+// Represents a suite of utilities to allow loading a Level from a String. For information on how
+// to format level Strings, see the Level convenience constructor.
 class LoadUtils {
+  /* TEMPLATE
+  METHODS:
+  ... loadVehicles(String layout, int curX, int curY, Random rng) ...   -- IList<IVehicle>
+  ... loadWalls(String layout, int curX, int curY) ...                  -- IList<Wall>
+  ... loadExits(String layout, int curX, int curY) ...                  -- IList<Exit>
+  ... loadWidth(String layout) ...                                      -- int
+  ... hasSameLineLengths(String s) ...                                  -- boolean
+  ... lineLengthsMatch(String s, int targetLength) ...                  -- boolean
+  ... loadHeight(String layout) ...                                     -- int
+   */
+  
   // Loads a list of AVehicles defined by the provided layout String, assuming that the first
-  // character in the String is at the position defined by curX and curY
-  IList<AVehicle> loadVehicles(String layout, int curX, int curY) {
+  // character in the String is at the position defined by curX and curY. The vehicle at the same
+  // GridPosn as selection, if one exists, is selected.
+  IList<IVehicle> loadVehicles(String layout, int curX, int curY, Random rng, GridPosn selection) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... layout ...     -- String
+    ... curX ...       -- int
+    ... curY ...       -- int
+    ... rng ...        -- Random
+    ... selection ...  -- GridPosn
+    METHODS ON PARAMETERS:
+    ... layout.isEmpty() ...        -- boolean
+    ... layout.indexOf(char) ...    -- int
+    ... layout.substring(int) ...   -- String
+    ... rng.nextInt(int) ...        -- int
+    ... layout.charAt(int) ...      -- char
+     */
     if (layout.isEmpty()) {
-      return new Mt<AVehicle>();
+      return new Mt<>();
     }
     
-    IList<AVehicle> rest;
+    IList<IVehicle> rest;
     if (layout.indexOf('\n') == 0) {
-      rest = loadVehicles(layout.substring(1), 0, curY + 1);
+      rest = loadVehicles(layout.substring(1), 0, curY + 1, rng, selection);
     } else {
-      rest = loadVehicles(layout.substring(1), curX + 1, curY);
+      rest = loadVehicles(layout.substring(1), curX + 1, curY, rng, selection);
     }
+    
+    int color = rng.nextInt(5);
+    GridPosn pos = new GridPosn(curX, curY);
+    boolean selected = pos.samePosn(selection);
     
     switch (layout.charAt(0)) {
       case 'c':
-        return new Cons<>(new Car(new GridPosn(curX, curY), "purple", true), rest);
+        return new Cons<>(new Car(pos, color, true, selected), rest);
       case 'C':
-        return new Cons<>(new Car(new GridPosn(curX, curY), "purple", false), rest);
+        return new Cons<>(new Car(pos, color, false, selected), rest);
       case 't':
-        return new Cons<>(new Truck(new GridPosn(curX, curY), "purple", true), rest);
+        return new Cons<>(new Truck(pos, color, true, selected), rest);
       case 'T':
-        return new Cons<>(new Truck(new GridPosn(curX, curY), "purple", false), rest);
+        return new Cons<>(new Truck(pos, color, false, selected), rest);
       case 'p':
-        return new Cons<>(new PlayerCar(new GridPosn(curX, curY), true), rest);
+        return new Cons<>(new PlayerCar(pos, true, selected), rest);
       case 'P':
-        return new Cons<>(new PlayerCar(new GridPosn(curX, curY), false), rest);
+        return new Cons<>(new PlayerCar(pos, false, selected), rest);
       default:
         return rest;
     }
@@ -36,6 +68,18 @@ class LoadUtils {
   // Loads a list of walls defined by the provided layout String, assuming that the first
   // character in the String is at the position defined by curX and curY
   IList<Wall> loadWalls(String layout, int curX, int curY) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... layout ...                       -- String
+    ... curX ...                         -- int
+    ... curY ...                         -- int
+    METHODS ON PARAMETERS:
+    ... layout.isEmpty() ...             -- boolean
+    ... layout.indexOf(char) ...         -- int
+    ... layout.substring(int) ...        -- String
+    ... layout.substring(int, int) ...   -- String
+     */
+    
     if (layout.isEmpty()) {
       return new Mt<Wall>();
     }
@@ -57,6 +101,18 @@ class LoadUtils {
   // Loads a list of exits defined by the provided layout String, assuming that the first
   // character in the String is at the position defined by curX and curY
   IList<Exit> loadExits(String layout, int curX, int curY) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... layout ...                  -- String
+    ... curX ...                    -- int
+    ... curY ...                    -- int
+    METHODS ON PARAMETERS:
+    ... layout.isEmpty() ...        -- boolean
+    ... layout.indexOf(char) ...    -- int
+    ... layout.substring(int) ...   -- String
+    ... layout.charAt(int) ...      -- char
+     */
+    
     if (layout.isEmpty()) {
       return new Mt<Exit>();
     }
@@ -78,7 +134,14 @@ class LoadUtils {
   // Determines the width of the grid defined by layout by returning the index of the first
   // newline character. Throws an exception if any two lines in the grid have different lengths.
   int loadWidth(String layout) {
-    if (!this.hasSameLineLengths(layout, -1)) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... layout ...                 -- String
+    METHODS ON PARAMETERS:
+    ... layout.indexOf(char) ...   -- int
+    ... layout.length() ...        -- int
+     */
+    if (!this.hasSameLineLengths(layout)) {
       throw new IllegalArgumentException("The length of each line in the provided layout " +
                                              "(excluding newline characters) should be equal");
     }
@@ -90,23 +153,56 @@ class LoadUtils {
     }
   }
   
-  // Determines whether all the lines of s have length targetLength. If targetLength is -1,
-  // determines whether every line has the same length as the first line.
-  boolean hasSameLineLengths(String s, int targetLength) {
+  // Determines whether all the lines of s have the same length.
+  boolean hasSameLineLengths(String s) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... s ...                  -- String
+    METHODS ON PARAMETERS:
+    ... s.indexOf(char) ...    -- int
+    ... s.substring(int) ...   -- String
+     */
+    
     int newlineIndex = s.indexOf('\n');
-    if (targetLength == -1) {
-      return this.hasSameLineLengths(s.substring(newlineIndex + 1), newlineIndex);
-    } else if (newlineIndex == -1) {
+    if (newlineIndex == -1) {
+      return true;
+    } else {
+      return this.lineLengthsMatch(s.substring(newlineIndex + 1), newlineIndex);
+    }
+  }
+  
+  // Determines whether every line has the same length as targetLength.
+  boolean lineLengthsMatch(String s, int targetLength) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... s ...                  -- String
+    ... targetLength ...       -- int
+    METHODS ON PARAMETERS:
+    ... s.indexOf(char) ...    -- int
+    ... s.substring(int) ...   -- String
+    ... s.length() ...         -- int
+     */
+    
+    int newlineIndex = s.indexOf('\n');
+    if (newlineIndex == -1) {
       return s.length() == targetLength;
     } else {
       return newlineIndex == targetLength
-                 && this.hasSameLineLengths(s.substring(newlineIndex + 1), targetLength);
+                 && this.lineLengthsMatch(s.substring(newlineIndex + 1), targetLength);
     }
   }
   
   // Determines the height of the grid defined by layout by counting the number of newlines in
   // layout.
   int loadHeight(String layout) {
+    /* TEMPLATE
+    PARAMETERS:
+    ... layout ...                  -- String
+    METHODS ON PARAMETERS:
+    ... layout.indexOf(char) ...    -- int
+    ... layout.substring(int) ...   -- String
+     */
+    
     int newlineIndex = layout.indexOf('\n');
     if (newlineIndex == -1) {
       return 1;
