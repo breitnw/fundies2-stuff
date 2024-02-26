@@ -129,8 +129,8 @@ class Node implements IHuffmanTree {
     Maybe<ArrayList<Boolean>> left = this.left.encodeChar(c);
     Maybe<ArrayList<Boolean>> right = this.right.encodeChar(c);
     
-    left.mapMut(new ArrayListPrepend<>(false));
-    right.mapMut(new ArrayListPrepend<>(true));
+    left.mapMut(new ArrPrepend<>(false));
+    right.mapMut(new ArrPrepend<>(true));
     
     return left.or(right);
   }
@@ -143,7 +143,8 @@ class Node implements IHuffmanTree {
       return "?";
     }
     
-    if (code.remove(0)) {
+    boolean next = code.remove(0);
+    if (next) {
       return this.right.decodeNext(code);
     } else {
       return this.left.decodeNext(code);
@@ -209,10 +210,10 @@ class None<T> implements Maybe<T>  {
 
 // A Consumer that consumes a reference to an ArrayList and mutates it to add the T passed during
 // construction to the start.
-class ArrayListPrepend<T> implements Consumer<ArrayList<T>> {
+class ArrPrepend<T> implements Consumer<ArrayList<T>> {
   T t;
   
-  ArrayListPrepend(T t) {
+  ArrPrepend(T t) {
     this.t = t;
   }
   
