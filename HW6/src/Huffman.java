@@ -43,12 +43,26 @@ class Huffman {
   // Decodes the provided code to a String according to the structure of the Huffman tree, where
   // a false in the code represents a leftward movement down the tree (0) and a true represents
   // a rightward movement (1)
-  // EFFECT: consumes the contents of code, leaving it as an empty ArrayList<Boolean>.
   public String decode(ArrayList<Boolean> code) {
     String message = "";
-    while (!code.isEmpty()) {
-      message = message + this.tree.decodeNext(code);
+    IHuffmanTree t = this.tree;
+    
+    for (boolean b : code) {
+      // The below RuntimeException will never be thrown with the current code, since the tree is
+      // validated in the constructor to have a node at the top. However, it prevents infinite
+      // recursion in the case that future code mutates the tree.
+      t = t.next(b)
+              .or(this.tree.next(b))
+              .expect(new RuntimeException("Could not decode when this.tree is a leaf"));
+      
+      message += t.decodeCurrent();
     }
+    // If decoding the current tree yields an empty String, it also yielded an empty String on the
+    // last iteration, meaning the message is incomplete
+    if (t.decodeCurrent().isEmpty()) {
+      message += "?";
+    }
+
     return message;
   }
 }
@@ -66,10 +80,13 @@ interface IHuffmanTree {
   // a None<> if it does not.
   Maybe<ArrayList<Boolean>> encodeChar(String c);
   
-  // Decodes a single character from the given ArrayList of Booleans `code`, or produces "?" if
-  // the ArrayList is not long enough to decode a character.
-  // EFFECT: removes the corresponding booleans within ArrayList<Boolean>
-  String decodeNext(ArrayList<Boolean> code);
+  // Decodes the topmost node/leaf of this IHuffmanTree. Produces an empty String if it has no
+  // String value (i.e., it has children with values), or its corresponding String if it does.
+  String decodeCurrent();
+  
+  // Gets the next node in this IHuffmanTree, selecting the node to the left if next is false or
+  // the node to the right if next is true. If there are no child nodes, produces a new Mt<>().
+  Maybe<IHuffmanTree> next(Boolean next);
 }
 
 // Represents a leaf in a Huffman tree with a character and a frequency
@@ -99,10 +116,16 @@ class Leaf implements IHuffmanTree {
     }
   }
   
-  // Decodes a single character from the given ArrayList of Booleans `code`, or produces "?" if
-  // the ArrayList is not long enough to decode a character.
-  public String decodeNext(ArrayList<Boolean> code) {
+  // Decodes the topmost node/leaf of this IHuffmanTree. Produces an empty String if it has no
+  // String value (i.e., it has children with values), or its corresponding String if it does.
+  public String decodeCurrent() {
     return this.c;
+  }
+  
+  // Gets the next node in this IHuffmanTree, selecting the node to the left if next is false or
+  // the node to the right if next is true. If there are no child nodes, produces a new Mt<>().
+  public Maybe<IHuffmanTree> next(Boolean next) {
+    return new None<>();
   }
 }
 
@@ -135,19 +158,19 @@ class Node implements IHuffmanTree {
     return left.or(right);
   }
   
-  // Decodes a single character from the given ArrayList of Booleans `code`, or produces "?" if
-  // the ArrayList is not long enough to decode a character.
-  // EFFECT: removes the corresponding booleans within ArrayList<Boolean>
-  public String decodeNext(ArrayList<Boolean> code) {
-    if (code.isEmpty()) {
-      return "?";
-    }
-    
-    boolean next = code.remove(0);
+  // Decodes the topmost node/leaf of this IHuffmanTree. Produces an empty String if it has no
+  // String value (i.e., it has children with values), or its corresponding String if it does.
+  public String decodeCurrent() {
+    return "";
+  }
+  
+  // Gets the next node in this IHuffmanTree, selecting the node to the left if next is false or
+  // the node to the right if next is true. If there are no child nodes, produces a new Mt<>().
+  public Maybe<IHuffmanTree> next(Boolean next) {
     if (next) {
-      return this.right.decodeNext(code);
+      return new Some<>(this.right);
     } else {
-      return this.left.decodeNext(code);
+      return new Some<>(this.left);
     }
   }
 }
