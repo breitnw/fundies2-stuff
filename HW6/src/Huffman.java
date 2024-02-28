@@ -1,6 +1,7 @@
 import tester.*;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -46,23 +47,12 @@ class Huffman {
   public String decode(ArrayList<Boolean> code) {
     String message = "";
     IHuffmanTree t = this.tree;
+    Iterator<Boolean> codeIter = code.iterator();
     
-    for (boolean b : code) {
-      // The below RuntimeException will never be thrown with the current code, since the tree is
-      // validated in the constructor to have a node at the top. However, it prevents infinite
-      // recursion in the case that future code mutates the tree.
-      t = t.next(b)
-              .or(this.tree.next(b))
-              .expect(new RuntimeException("Could not decode when this.tree is a leaf"));
-      
-      message += t.decodeCurrent();
+    while (codeIter.hasNext()) {
+      message = message + this.tree.decodeNext(codeIter);
     }
-    // If decoding the current tree yields an empty String, it also yielded an empty String on the
-    // last iteration, meaning the message is incomplete
-    if (t.decodeCurrent().isEmpty()) {
-      message += "?";
-    }
-
+    
     return message;
   }
 }
@@ -80,13 +70,11 @@ interface IHuffmanTree {
   // a None<> if it does not.
   Maybe<ArrayList<Boolean>> encodeChar(String c);
   
-  // Decodes the topmost node/leaf of this IHuffmanTree. Produces an empty String if it has no
-  // String value (i.e., it has children with values), or its corresponding String if it does.
-  String decodeCurrent();
-  
-  // Gets the next node in this IHuffmanTree, selecting the node to the left if next is false or
-  // the node to the right if next is true. If there are no child nodes, produces a new Mt<>().
-  Maybe<IHuffmanTree> next(Boolean next);
+  // Decodes a single character from the given Iterator of Booleans, or produces "?" if
+  // the Iterator does not have enough elements left to decode a character.
+  // EFFECT: moves the cursor of this codeIter the number of elements necessary to decode a
+  // single character
+  String decodeNext(Iterator<Boolean> codeIter);
 }
 
 // Represents a leaf in a Huffman tree with a character and a frequency
@@ -116,16 +104,10 @@ class HTLeaf implements IHuffmanTree {
     }
   }
   
-  // Decodes the topmost node/leaf of this HTLeaf. Produces an empty String if it has no
-  // String value (i.e., it has children with values), or its corresponding String if it does.
-  public String decodeCurrent() {
+  // Decodes a single character from the given Iterator of Booleans, or produces "?" if
+  // the Iterator does not have enough elements left to decode a character.
+  public String decodeNext(Iterator<Boolean> codeIter) {
     return this.c;
-  }
-  
-  // Gets the next node in this HTLeaf, selecting the node to the left if next is false or
-  // the node to the right if next is true. If there are no child nodes, produces a new Mt<>().
-  public Maybe<IHuffmanTree> next(Boolean next) {
-    return new None<>();
   }
 }
 
@@ -158,19 +140,20 @@ class HTNode implements IHuffmanTree {
     return left.or(right);
   }
   
-  // Decodes the topmost node/leaf of this HTNode. Produces an empty String if it has no
-  // String value (i.e., it has children with values), or its corresponding String if it does.
-  public String decodeCurrent() {
-    return "";
-  }
-  
-  // Gets the next node in this HTNode, selecting the node to the left if next is false or
-  // the node to the right if next is true. If there are no child nodes, produces a new Mt<>().
-  public Maybe<IHuffmanTree> next(Boolean next) {
-    if (next) {
-      return new Some<>(this.right);
+  // Decodes a single character from the given Iterator of Booleans, or produces "?" if
+  // the Iterator does not have enough elements left to decode a character.
+  // EFFECT: moves the cursor of this codeIter the number of elements necessary to decode a
+  // single character
+  public String decodeNext(Iterator<Boolean> codeIter) {
+    if (codeIter.hasNext()) {
+      boolean shouldGoRight = codeIter.next();
+      if (shouldGoRight) {
+        return this.right.decodeNext(codeIter);
+      } else {
+        return this.left.decodeNext(codeIter);
+      }
     } else {
-      return new Some<>(this.left);
+      return "?";
     }
   }
 }
