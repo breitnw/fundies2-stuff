@@ -90,16 +90,16 @@ interface IHuffmanTree {
 }
 
 // Represents a leaf in a Huffman tree with a character and a frequency
-class Leaf implements IHuffmanTree {
+class HTLeaf implements IHuffmanTree {
   String c;
   int freq;
   
-  Leaf(String c, int freq) {
+  HTLeaf(String c, int freq) {
     this.c = c;
     this.freq = freq;
   }
   
-  // Gets the total frequency of this Leaf, calculated as the sum of the frequencies of all the
+  // Gets the total frequency of this HTLeaf, calculated as the sum of the frequencies of all the
   // leaves in the tree.
   public int frequency() {
     return this.freq;
@@ -116,13 +116,13 @@ class Leaf implements IHuffmanTree {
     }
   }
   
-  // Decodes the topmost node/leaf of this IHuffmanTree. Produces an empty String if it has no
+  // Decodes the topmost node/leaf of this HTLeaf. Produces an empty String if it has no
   // String value (i.e., it has children with values), or its corresponding String if it does.
   public String decodeCurrent() {
     return this.c;
   }
   
-  // Gets the next node in this IHuffmanTree, selecting the node to the left if next is false or
+  // Gets the next node in this HTLeaf, selecting the node to the left if next is false or
   // the node to the right if next is true. If there are no child nodes, produces a new Mt<>().
   public Maybe<IHuffmanTree> next(Boolean next) {
     return new None<>();
@@ -130,16 +130,16 @@ class Leaf implements IHuffmanTree {
 }
 
 // Represents a node in a Huffman tree with left and right branches
-class Node implements IHuffmanTree {
+class HTNode implements IHuffmanTree {
   IHuffmanTree left;
   IHuffmanTree right;
   
-  Node(IHuffmanTree left, IHuffmanTree right) {
+  HTNode(IHuffmanTree left, IHuffmanTree right) {
     this.left = left;
     this.right = right;
   }
   
-  // Gets the total frequency of this Node, calculated as the sum of the frequencies of all the
+  // Gets the total frequency of this HTNode, calculated as the sum of the frequencies of all the
   // leaves in the tree.
   public int frequency() {
     return this.left.frequency() + this.right.frequency();
@@ -158,13 +158,13 @@ class Node implements IHuffmanTree {
     return left.or(right);
   }
   
-  // Decodes the topmost node/leaf of this IHuffmanTree. Produces an empty String if it has no
+  // Decodes the topmost node/leaf of this HTNode. Produces an empty String if it has no
   // String value (i.e., it has children with values), or its corresponding String if it does.
   public String decodeCurrent() {
     return "";
   }
   
-  // Gets the next node in this IHuffmanTree, selecting the node to the left if next is false or
+  // Gets the next node in this HTNode, selecting the node to the left if next is false or
   // the node to the right if next is true. If there are no child nodes, produces a new Mt<>().
   public Maybe<IHuffmanTree> next(Boolean next) {
     if (next) {
@@ -265,8 +265,8 @@ class HuffmanTreeComparator implements Comparator<IHuffmanTree> {
 class HuffmanTreeZipper implements BiFunction<String, Integer, IHuffmanTree> {
   // Constructs an IHuffmanTree provided a String and an Integer.
   @Override
-  public Leaf apply(String c, Integer freq) {
-    return new Leaf(c, freq);
+  public HTLeaf apply(String c, Integer freq) {
+    return new HTLeaf(c, freq);
   }
 }
 
@@ -335,7 +335,7 @@ class HuffmanTreeUtils {
       // As specified in the problem, new nodes should be inserted as deep in the list as possible
       new ListUtils().insert(
           treesSorted,
-          new Node(first, second),
+          new HTNode(first, second),
           new HuffmanTreeComparator());
     }
     
@@ -524,9 +524,9 @@ class ExamplesHuffman {
   }
   
   void testHuffmanTreeFrequency(Tester t) {
-    IHuffmanTree leaf1 = new Leaf("a", 3);
-    IHuffmanTree leaf2 = new Leaf("b", 2);
-    IHuffmanTree node1 = new Node(leaf1, leaf2);
+    IHuffmanTree leaf1 = new HTLeaf("a", 3);
+    IHuffmanTree leaf2 = new HTLeaf("b", 2);
+    IHuffmanTree node1 = new HTNode(leaf1, leaf2);
     t.checkExpect(leaf1.frequency(), 3);
     t.checkExpect(leaf2.frequency(), 2);
     t.checkExpect(node1.frequency(), 5);
