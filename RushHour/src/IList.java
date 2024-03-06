@@ -1,6 +1,50 @@
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/*
+class ListUtils {
+  // Iterates over all elements of the given ArrayList, returning true only if the provided
+  // predicate is satisfied on each.
+  <T> boolean andmap(List<T> ls, Function<T, Boolean> func) {
+    boolean res = true;
+    for (T t : ls) {
+      res &= func.apply(t);
+    }
+    return res;
+  }
+
+  // Iterates over all elements of this ArrayList, returning true if the provided predicate is
+  // satisfied on any one element.
+  <T> boolean ormap(List<T> ls, Function<T, Boolean> func) {
+    boolean res = false;
+    for (T t : ls) {
+      res |= func.apply(t);
+    }
+    return res;
+  }
+
+  // Like an ormap, but also includes the rest of the list after this element in the call to func.
+  <T> boolean restOrmap(List<T> ls, BiFunction<T, List<T>, Boolean> func) {
+    boolean res = false;
+    for (int i = 0; i < ls.size(); i += 1) {
+      res |= func.apply(ls.get(i), ls.subList(i + 1, ls.size()));
+    }
+    return res;
+  }
+
+  // Applies a function to the elements of one or more lists. Combines values in an arbitrary
+  // way that is determined by func. The first value is combined with base, and subsequent
+  // values are combined with previous return values.
+  <T, U> U foldl(List<T> ls, BiFunction<T, U, U> func, U base) {
+    U acc = base;
+    for (T t : ls) {
+      acc = func.apply(t, base);
+    }
+    return acc;
+  }
+}
+ */
+
 // Represents a list of elements of type T
 interface IList<T> {
   // Iterates over all elements of this IList, returning true only if the provided predicate is
@@ -21,6 +65,12 @@ interface IList<T> {
   
   // Maps each value in the list to a different value in an arbitrary way defined by func.
   <U> IList<U> map(Function<T, U> func);
+  
+  // Produces a new list with the first instance of the provided element removed. If the provided
+  // element is not in this list, does nothing. Uses double-equals (instance-wise) equality for
+  // comparison.
+  // TODO: needs tests
+  IList<T> remove(T that);
 }
 
 // Represents a list of elements of type T with a first element and a list of remaining elements
@@ -33,34 +83,10 @@ class Cons<T> implements IList<T> {
     this.rest = rest;
   }
   
-  /* TEMPLATE
-  FIELDS:
-  ... this.first ...                                          -- T
-  ... this.rest ...                                           -- IList<T>
-  METHODS:
-  ... andmap(Function<T, Boolean> func) ...                   -- boolean
-  ... ormap(Function<T, Boolean> func) ...                    -- boolean
-  ... restOrmap(BiFunction<T, IList<T>, Boolean> func) ...    -- boolean
-  ... foldr(BiFunction<T, U, U> func, U base) ...             -- U
-  ... map(Function<T, U> func) ...                            -- IList<U>
-  METHODS ON FIELDS:
-  ... this.rest.andmap(Function<T, Boolean> func) ...                   -- boolean
-  ... this.rest.ormap(Function<T, Boolean> func) ...                    -- boolean
-  ... this.rest.restOrmap(BiFunction<T, IList<T>, Boolean> func) ...    -- boolean
-  ... this.rest.foldr(BiFunction<T, U, U> func, U base) ...             -- U
-  ... this.rest.map(Function<T, U> func) ...                            -- IList<U>
-   */
-  
   // Iterates over all elements of this Cons, returning true only if the provided predicate is
   // satisfied on each.
   @Override
   public boolean andmap(Function<T, Boolean> func) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... func ...            -- Function<T, Boolean>
-    METHODS ON PARAMETERS:
-    ... func.apply(T) ...   -- boolean
-     */
     return func.apply(this.first) && this.rest.andmap(func);
   }
   
@@ -68,24 +94,12 @@ class Cons<T> implements IList<T> {
   // satisfied on any one element.
   @Override
   public boolean ormap(Function<T, Boolean> func) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... func ...            -- Function<T, Boolean>
-    METHODS ON PARAMETERS:
-    ... func.apply(T) ...   -- boolean
-     */
     return func.apply(this.first) || this.rest.ormap(func);
   }
   
   // Like ormap, but also includes rest in the call to func.
   @Override
   public boolean restOrmap(BiFunction<T, IList<T>, Boolean> func) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... func ...                      -- BiFunction<T, IList<T>, Boolean>
-    METHODS ON PARAMETERS:
-    ... func.apply(T, IList<T>) ...   -- Boolean
-     */
     return func.apply(this.first, this.rest) || this.rest.restOrmap(func);
   }
   
@@ -94,48 +108,35 @@ class Cons<T> implements IList<T> {
   // values are combined with previous return values.
   @Override
   public <U> U foldr(BiFunction<T, U, U> func, U base) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... func ...               -- BiFunction<T, U, U>
-    ... base ...               -- U
-    METHODS ON PARAMETERS:
-    ... func.apply(T, U) ...   -- U
-     */
     return func.apply(this.first, this.rest.foldr(func, base));
   }
   
   // Maps each value in the list to a different value in an arbitrary way defined by func.
   @Override
   public <U> IList<U> map(Function<T, U> func) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... func ...            -- Function<T, U>
-    METHODS ON PARAMETERS:
-    ... func.apply(T) ...   -- U
-     */
     return new Cons<U>(func.apply(this.first), this.rest.map(func));
+  }
+  
+  // Produces a new list with the first instance of the provided element removed. If the provided
+  // element is not in this list, does nothing. Uses double-equals (instance-wise) equality for
+  // comparison.
+  @Override
+  public IList<T> remove(T that) {
+    if (this.first == that) {
+      return this.rest;
+    } else {
+      return new Cons<>(this.first, this.rest.remove(that));
+    }
   }
 }
 
 // Represents an empty list of elements of type T.
 class Mt<T> implements IList<T> {
-  /* TEMPLATE
-  METHODS:
-  ... andmap(Function<T, Boolean> func) ...                   -- boolean
-  ... ormap(Function<T, Boolean> func) ...                    -- boolean
-  ... restOrmap(BiFunction<T, IList<T>, Boolean> func) ...    -- boolean
-  ... foldr(BiFunction<T, U, U> func, U base) ...             -- U
-  ... map(Function<T, U> func) ...                            -- IList<U>
-   */
   
   // Iterates over all elements of this Mt, returning true only if the provided predicate is
   // satisfied on each.
   @Override
   public boolean andmap(Function<T, Boolean> func) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... func ...   -- Function<T, Boolean>
-     */
     return true;
   }
   
@@ -143,22 +144,12 @@ class Mt<T> implements IList<T> {
   // satisfied on any one element.
   @Override
   public boolean ormap(Function<T, Boolean> func) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... func ...   -- Function<T, Boolean>
-     */
     return false;
   }
   
   // Like ormap, but also includes rest in the call to func.
   @Override
   public boolean restOrmap(BiFunction<T, IList<T>, Boolean> func) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... func ...               -- BiFunction<T, IList<T>, Boolean>
-    METHODS ON PARAMETERS:
-    ... func.apply(T, IList<T>) ...   -- Boolean
-     */
     return false;
   }
   
@@ -167,11 +158,6 @@ class Mt<T> implements IList<T> {
   // values are combined with previous return values.
   @Override
   public <U> U foldr(BiFunction<T, U, U> func, U base) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... func ...   -- BiFunction<T, U, U>
-    ... base ...   -- U
-     */
     return base;
   }
   
@@ -179,10 +165,14 @@ class Mt<T> implements IList<T> {
   
   @Override
   public <U> IList<U> map(Function<T, U> func) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... func ...   -- Function<T, U>
-     */
     return new Mt<U>();
+  }
+  
+  // Produces a new list with the first instance of the provided element removed. If the provided
+  // element is not in this list, does nothing. Uses double-equals (instance-wise) equality for
+  // comparison.
+  @Override
+  public IList<T> remove(T that) {
+    return this;
   }
 }

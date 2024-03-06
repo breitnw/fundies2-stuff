@@ -1,0 +1,19 @@
+# MERGING
+
+We decided to base the merged implementation primarily off of Nick's work for HW5 while merging in
+finer implementation details from Joseph's design. This is primarily due to extensibility concerns:
+Nick's design was extensible enough as-is to address many of the HW7 requirements without major
+changes. It already had support for placing walls anywhere in the grid and representing object areas
+via the `Rect` class, and supports requirements that may be salient in the future as well (e.g.,
+dealing with multiple player cars and exits)
+
+However, for some of the finer details (namely, those involving the switch to ArrayLists) Nick's
+implementation was a bit less extensible, so we chose to merge in aspects of Joseph's
+implementation. For instance, the use of a boolean value on each car for selection proved fairly
+difficult to work with; meanwhile, Joseph's solution of storing a selection index is cleaner and
+works much better with ArrayLists.
+
+Additionally, we decided to merge our parsing implementations together. We wanted to maintain the
+way Nick's implementation parsed Levels from the constructor; however, we also wanted the
+simplicity of Joseph's implementation in how it parses the vehicles, walls, and exit all from
+within one function. // TODO

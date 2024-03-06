@@ -11,22 +11,9 @@ class IntersectsPred<T extends IGameObject> implements Function<T, Boolean> {
     this.with = with;
   }
   
-  /* TEMPLATE
-  FIELDS:
-  ... this.with ...       -- IGameObject
-  METHODS:
-  ... apply(T that) ...   -- Boolean
-   */
-  
   // Determines if the IGameObject provided on construction overlaps with that.
   @Override
   public Boolean apply(T that) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... that ...                       -- T
-    METHODS ON PARAMETERS:
-    ... that.overlaps(this.with) ...   -- boolean
-     */
     return that.intersects(this.with);
   }
 }
@@ -41,45 +28,20 @@ class IntersectsAnyPred<T extends IGameObject, U extends IGameObject> implements
     this.otherObjects = otherObjects;
   }
   
-  /* TEMPLATE
-  FIELDS:
-  ... this.otherObjects ...                                    -- IList<U>
-  METHODS:
-  ... apply(T that) ...                                        -- Boolean
-  METHODS ON FIELDS:
-  ... this.otherObjects.ormap(Function<T, Boolean> func) ...   -- boolean
-   */
-  
   // Determines if any of the vehicles or walls provided on construction overlap with that.
   @Override
   public Boolean apply(T that) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... that ...   -- T
-     */
     return this.otherObjects.ormap(new IntersectsPred<>(that));
   }
 }
 
 // A predicate that determines whether the IGameObject applied to overlaps with any of the
 // IGameObjects in the rest of its list. To be used with restAndmap().
-class IntersectsAnyOtherPred<T extends IGameObject>
-    implements BiFunction<T, IList<T>, Boolean> {
-  /* TEMPLATE
-  METHODS:
-  ... apply(T that) ...                                    -- Boolean
-   */
+class IntersectsAnyOtherPred<T extends IGameObject> implements BiFunction<T, IList<T>, Boolean> {
   
   // Determines if any of the vehicles or walls in rest overlap with that.
   @Override
   public Boolean apply(T that, IList<T> rest) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... that ...                                  -- T
-    ... rest ...                                  -- IList<T>
-    METHODS ON PARAMETERS:
-    ... rest.ormap(Function<T, Boolean func>) ... -- Boolean
-     */
     return rest.ormap(new IntersectsPred<>(that));
   }
 }
@@ -88,53 +50,27 @@ class IntersectsAnyOtherPred<T extends IGameObject>
 // on its GridPosn
 class DrawToScene<T extends IGameObject> implements BiFunction<T, WorldScene, WorldScene> {
   
-  int tileSize;
-  
-  DrawToScene(int tileSize) {
-    this.tileSize = tileSize;
-  }
-  
   // Draws the provided IGameObject to the provided WorldImage according to the IGameObject's
   // position and draw method
   @Override
   public WorldScene apply(T obj, WorldScene scene) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... obj ...                            -- T
-    ... scene ...                          -- WorldScene
-    METHODS ON PARAMETERS:
-    ... obj.drawTo(WorldScene scene) ...   -- WorldScene
-     */
-    return obj.drawTo(scene, tileSize);
+    return obj.drawTo(scene);
   }
 }
 
 // A predicate that determines whether the provided IGameObject's GridRect is fully contained in
 // the GridRect passed during construction
 class InRectPred<T extends IGameObject> implements Function<T, Boolean> {
-  GridRect rect;
+  GridArea rect;
   
-  InRectPred(GridRect rect) {
+  InRectPred(GridArea rect) {
     this.rect = rect;
   }
-  
-  /* TEMPLATE
-  FIELDS:
-  ... this.rect ...      -- GridRect
-  METHODS:
-  ... apply(T that) ...  -- Boolean
-   */
   
   // Determines whether the provided IGameObject's GridRect is fully contained in the GridRect
   // passed during construction
   @Override
   public Boolean apply(T that) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... that ...            -- T
-    METHODS ON PARAMETERS:
-    ... that.getRect() ...  -- Boolean
-     */
     return rect.containsRect(that.getRect());
   }
 }
@@ -148,23 +84,10 @@ class InWinningStatePred implements Function<IVehicle, Boolean> {
     this.exits = exits;
   }
   
-  /* TEMPLATE
-  FIELDS:
-  ... exits ...                  -- IList<Exit>
-  METHODS:
-  ... apply(AVehicle that) ...   -- Boolean
-   */
-  
   // A predicate that returns true if the provided IVehicle is in a winning state; i.e., if it
   // being a PlayerCar implies it is overlapping an Exit.
   @Override
   public Boolean apply(IVehicle that) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... that ...                                      -- AVehicle
-    METHODS ON PARAMETERS:
-    ... that.inWinningState(IList<Exits> exits) ...   -- Boolean
-     */
     return that.inWinningState(this.exits);
   }
 }
@@ -178,22 +101,30 @@ class OnClick implements Function<IVehicle, IVehicle> {
     this.clickedPosn = clickedPosn;
   }
   
-  /* TEMPLATE
-  FIELDS:
-  ... this.clickedPosn ...       -- GridPosn
-  METHODS:
-  ... apply(AVehicle that) ...   -- AVehicle
-   */
+  // Maps a car before a click event to a car after a click event, selecting it if it contains
+  // the click position and deselecting it if it does not.
+  public IVehicle apply(IVehicle that) {
+    return that.registerClick(this.clickedPosn);
+  }
+}
+
+// A function that maps a car before a key event to a car after a key event, moving it if it is
+// selected and the key represents an available movement direction.
+class OnKey implements Function<IVehicle, IVehicle> {
+  String key;
+  IList<Wall> walls;
+  IList<IVehicle> vehicles;
+  
+  
+  OnKey(String key, IList<Wall> walls, IList<IVehicle> vehicles) {
+    this.key = key;
+    this.walls = walls;
+    this.vehicles = vehicles;
+  }
   
   // Maps a car before a click event to a car after a click event, selecting it if it contains
   // the click position and deselecting it if it does not.
   public IVehicle apply(IVehicle that) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... that ...                                   -- AVehicle
-    METHODS ON PARAMETERS:
-    ... that.registerClick(GridPosn clickPosn) ...   -- AVehicle
-     */
-    return that.registerClick(this.clickedPosn);
+    return that.registerKey(key, walls, vehicles);
   }
 }

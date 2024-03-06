@@ -167,8 +167,8 @@ class ExamplesGame {
   
   void testMakeScene(Tester t) {
     // Since we've tested Level.draw(), we're checking against its output in this test
-    t.checkExpect(game1.makeScene(), level1.draw(64));
-    t.checkExpect(game2.makeScene(), level2.draw(64));
+    t.checkExpect(game1.makeScene(), level1.draw());
+    t.checkExpect(game2.makeScene(), level2.draw());
   }
   
   void testOnMouseClicked(Tester t) {
@@ -290,7 +290,7 @@ class ExamplesGame {
   // An integration test to check the functionality of the draw method on a simple scene.
   // Utilizes draw methods on IGameObject and GridPosn that are tested individually below.
   void testDraw(Tester t) {
-    t.checkExpect(level13.draw(64),
+    t.checkExpect(level13.draw(),
         new Car(new GridPosn(0, 0), 3, false, false).drawTo(
             new PlayerCar(new GridPosn(1, 0), false, false).drawTo(
                 new Truck(new GridPosn(2, 0), 0, false, false).drawTo(
@@ -305,32 +305,19 @@ class ExamplesGame {
                                                     new TiledImage(
                                                         new FromFileImage("sprites/grid-cell.png"),
                                                         6, 3).draw(),
-                                                    new WorldScene(0, 0),
-                                                    64),
-                                                64),
-                                            64),
-                                        64),
-                                    64),
-                                64),
-                            64),
-                        64),
-                    64),
-                64),
-            64));
+                                                    new WorldScene(0, 0)))))))))))));
   }
   
   void testGetWidthPixels(Tester t) {
-    t.checkExpect(level12.getWidthPixels(64), 64);
-    t.checkExpect(level1.getWidthPixels(64), 512);
-    t.checkExpect(level1.getWidthPixels(32), 256);
-    t.checkExpect(level11.getWidthPixels(64), 704);
+    t.checkExpect(level12.getWidthPixels(), 64);
+    t.checkExpect(level1.getWidthPixels(), 512);
+    t.checkExpect(level11.getWidthPixels(), 704);
   }
   
   void testGetHeightPixels(Tester t) {
-    t.checkExpect(level12.getHeightPixels(64), 64);
-    t.checkExpect(level1.getHeightPixels(64), 512);
-    t.checkExpect(level1.getHeightPixels(32), 256);
-    t.checkExpect(level11.getHeightPixels(64), 384);
+    t.checkExpect(level12.getHeightPixels(), 64);
+    t.checkExpect(level1.getHeightPixels(), 512);
+    t.checkExpect(level11.getHeightPixels(), 384);
   }
   
   void testHasWon(Tester t) {
@@ -408,14 +395,14 @@ class ExamplesIGameObject {
   }
   
   void testGetRect(Tester t) {
-    t.checkExpect(wall1.getRect(), new GridRect(new GridPosn(), new GridPosn(1, 1)));
-    t.checkExpect(wall2.getRect(), new GridRect(new GridPosn(2, 4), new GridPosn(3, 5)));
-    t.checkExpect(exit2.getRect(), new GridRect(new GridPosn(2, 4), new GridPosn(3, 5)));
-    t.checkExpect(car1.getRect(), new GridRect(new GridPosn(), new GridPosn(2, 1)));
-    t.checkExpect(car2.getRect(), new GridRect(new GridPosn(0, 1), new GridPosn(1, 3)));
-    t.checkExpect(pCar2.getRect(), new GridRect(new GridPosn(1, 1), new GridPosn(2, 3)));
-    t.checkExpect(truck1.getRect(), new GridRect(new GridPosn(0, 2), new GridPosn(3, 3)));
-    t.checkExpect(truck2.getRect(), new GridRect(new GridPosn(1, 1), new GridPosn(2, 4)));
+    t.checkExpect(wall1.getRect(), new GridArea(new GridPosn(), new GridPosn(1, 1)));
+    t.checkExpect(wall2.getRect(), new GridArea(new GridPosn(2, 4), new GridPosn(3, 5)));
+    t.checkExpect(exit2.getRect(), new GridArea(new GridPosn(2, 4), new GridPosn(3, 5)));
+    t.checkExpect(car1.getRect(), new GridArea(new GridPosn(), new GridPosn(2, 1)));
+    t.checkExpect(car2.getRect(), new GridArea(new GridPosn(0, 1), new GridPosn(1, 3)));
+    t.checkExpect(pCar2.getRect(), new GridArea(new GridPosn(1, 1), new GridPosn(2, 3)));
+    t.checkExpect(truck1.getRect(), new GridArea(new GridPosn(0, 2), new GridPosn(3, 3)));
+    t.checkExpect(truck2.getRect(), new GridArea(new GridPosn(1, 1), new GridPosn(2, 4)));
   }
   
   void testXSize(Tester t) {
@@ -456,18 +443,18 @@ class ExamplesIGameObject {
   }
   
   void testDrawTo(Tester t) {
-    t.checkExpect(wall1.drawTo(new WorldScene(0, 0), 64),
-        new GridPosn().drawPositioned(wall1.getImage(), new WorldScene(0, 0), 64));
-    t.checkExpect(wall1.drawTo(new WorldScene(512, 512), 64),
-        new GridPosn().drawPositioned(wall1.getImage(), new WorldScene(512, 512), 64));
-    t.checkExpect(exit2.drawTo(new WorldScene(0, 0), 64),
-        new GridPosn(2, 4).drawPositioned(exit2.getImage(), new WorldScene(0, 0), 64));
-    t.checkExpect(car2.drawTo(new WorldScene(0, 0), 64),
-        new GridPosn(0, 1).drawPositioned(car2.getImage(), new WorldScene(0, 0), 64));
-    t.checkExpect(pCar1.drawTo(new WorldScene(0, 0), 64),
-        new GridPosn(1, 1).drawPositioned(pCar2.getImage(), new WorldScene(0, 0), 64));
-    t.checkExpect(truck1.drawTo(new WorldScene(0, 0), 64),
-        new GridPosn(0, 2).drawPositioned(pCar2.getImage(), new WorldScene(0, 0), 64));
+    t.checkExpect(wall1.drawTo(new WorldScene(0, 0)),
+        new GridPosn().drawPositioned(wall1.getImage(), new WorldScene(0, 0)));
+    t.checkExpect(wall1.drawTo(new WorldScene(512, 512)),
+        new GridPosn().drawPositioned(wall1.getImage(), new WorldScene(512, 512)));
+    t.checkExpect(exit2.drawTo(new WorldScene(0, 0)),
+        new GridPosn(2, 4).drawPositioned(exit2.getImage(), new WorldScene(0, 0)));
+    t.checkExpect(car2.drawTo(new WorldScene(0, 0)),
+        new GridPosn(0, 1).drawPositioned(car2.getImage(), new WorldScene(0, 0)));
+    t.checkExpect(pCar1.drawTo(new WorldScene(0, 0)),
+        new GridPosn(1, 1).drawPositioned(pCar2.getImage(), new WorldScene(0, 0)));
+    t.checkExpect(truck1.drawTo(new WorldScene(0, 0)),
+        new GridPosn(0, 2).drawPositioned(pCar2.getImage(), new WorldScene(0, 0)));
   }
   
   // +----------------+
@@ -568,7 +555,7 @@ class ExamplesFunctions {
   IList<Wall> walls = new Cons<>(wall1, new Cons<>(wall2, new Mt<>()));
   IList<Exit> exits = new Cons<>(exit1, new Cons<>(exit2, new Mt<>()));
   // GridRects
-  GridRect r = new GridRect(new GridPosn(0, 1), new GridPosn(6, 6));
+  GridArea r = new GridArea(new GridPosn(0, 1), new GridPosn(6, 6));
   
   // ... Function examples
   IntersectsPred<Wall> wallIntersectsWall1 = new IntersectsPred<>(wall1);
@@ -588,9 +575,9 @@ class ExamplesFunctions {
   IntersectsAnyOtherPred<Exit> exitIntersectsAnyOther = new IntersectsAnyOtherPred<>();
   IntersectsAnyOtherPred<IVehicle> vehicleIntersectsAnyOther = new IntersectsAnyOtherPred<>();
   
-  DrawToScene<Wall> drawWallToScene = new DrawToScene<>(64);
-  DrawToScene<Exit> drawExitToScene = new DrawToScene<>(64);
-  DrawToScene<IVehicle> drawVehicleToScene = new DrawToScene<>(64);
+  DrawToScene<Wall> drawWallToScene = new DrawToScene<>();
+  DrawToScene<Exit> drawExitToScene = new DrawToScene<>();
+  DrawToScene<IVehicle> drawVehicleToScene = new DrawToScene<>();
   
   InRectPred<Wall> wallInRectPred = new InRectPred<>(r);
   InRectPred<Exit> exitInRectPred = new InRectPred<>(r);
@@ -644,11 +631,11 @@ class ExamplesFunctions {
   void testDrawToScene(Tester t) {
     // DrawTo has already been extensively tested, so we're just checking against that.
     t.checkExpect(drawWallToScene.apply(wall2, new WorldScene(0, 0)),
-        wall2.drawTo(new WorldScene(0, 0), 64));
+        wall2.drawTo(new WorldScene(0, 0)));
     t.checkExpect(drawExitToScene.apply(exit1, new WorldScene(0, 0)),
-        exit1.drawTo(new WorldScene(0, 0), 64));
+        exit1.drawTo(new WorldScene(0, 0)));
     t.checkExpect(drawVehicleToScene.apply(truck3, new WorldScene(512, 512)),
-        truck3.drawTo(new WorldScene(512, 512), 64));
+        truck3.drawTo(new WorldScene(512, 512)));
   }
   
   void testInRectPred(Tester t) {
@@ -683,18 +670,18 @@ class ExamplesCoordinates {
   GridPosn p2 = new GridPosn(1, 3);
   GridPosn p3 = new GridPosn(2, -4);
   
-  GridRect r1 = new GridRect(p1, p2);
-  GridRect r2 = new GridRect(p1, new GridPosn(3, 3));
-  GridRect r3 = new GridRect(new GridPosn(1, 0), new GridPosn(2, 3));
-  GridRect r4 = new GridRect(new GridPosn(2, 0), new GridPosn(3, 3));
-  GridRect r5 = new GridRect(new GridPosn(0, 1), new GridPosn(3, 2));
+  GridArea r1 = new GridArea(p1, p2);
+  GridArea r2 = new GridArea(p1, new GridPosn(3, 3));
+  GridArea r3 = new GridArea(new GridPosn(1, 0), new GridPosn(2, 3));
+  GridArea r4 = new GridArea(new GridPosn(2, 0), new GridPosn(3, 3));
+  GridArea r5 = new GridArea(new GridPosn(0, 1), new GridPosn(3, 2));
   
   // +--------------------+
   // | Tests for GridPosn |
   // +--------------------+
   void testGridPosnConstructors(Tester t) {
     t.checkExpect(p1, new GridPosn());
-    t.checkExpect(p3, new GridPosn(new Posn(128, -256), 64));
+    t.checkExpect(p3, new GridPosn(new Posn(128, -256)));
   }
   
   void testSamePosn(Tester t) {
@@ -715,10 +702,10 @@ class ExamplesCoordinates {
     WorldScene scene = new WorldScene(512, 512);
     
     t.checkExpect(
-        p1.drawPositioned(sqr, scene, 64),
+        p1.drawPositioned(sqr, scene),
         scene.placeImageXY(sqr.movePinhole(-32, -32), 0, 0));
     t.checkExpect(
-        p2.drawPositioned(sqr, scene, 64),
+        p2.drawPositioned(sqr, scene),
         scene.placeImageXY(sqr.movePinhole(-32, -32), 64, 192));
   }
   

@@ -78,8 +78,8 @@ provided String.
 To represent any object in our game with physical dimensions, we created the IGameObject interface.
 Every IGameObject has three publicly accessible (defined on the interface) methods:
 - intersects, which determines if this IGameObject overlaps another IGameObject utilizing the
-  methods on each IGameObject's generated GridRect
-- getRect, which creates a GridRect representing the two-dimensional span of this IGameObject,
+  methods on each IGameObject's generated GridArea
+- getRect, which creates a GridArea representing the two-dimensional span of this IGameObject,
   from its top-left to bottom-right corner.
 - drawTo, which given a scene and a tileSize, draws this IGameObject to the scene at its respective
   GridPosn.
@@ -162,18 +162,18 @@ It has the following methods:
   with respect to the other GridPosn.
 
 
-### GridRect
-A GridRect is an object that stores the location of an object by storing the GridPosns of its
+### GridArea
+A GridArea is an object that stores the location of an object by storing the GridPosns of its
 extreme points. This also allows access to the range of grid positions the entire object covers.
 
 It has the following methods:
-- intersects(GridRect that), which investigates both the GridRects have any grid positions that may
+- intersects(GridArea that), which investigates both the GridRects have any grid positions that may
   be common and hence, in representation, might "intersect".
-- containsRect(GridRect that), which considers both the GridRects and indicates whether this
-  GridRect have all the grid positions of the given GridRect, or in a sense, whether this GridRect
-  completely "contain" (is a superset of) the given GridRect.
+- containsRect(GridArea that), which considers both the GridRects and indicates whether this
+  GridArea have all the grid positions of the given GridArea, or in a sense, whether this GridArea
+  completely "contain" (is a superset of) the given GridArea.
 - containsPosn(GridPosn that), which checks if a GridPosn is one of the grid positions represented
-  by the GridRect.
+  by the GridArea.
 
 
 ### IList
@@ -228,7 +228,7 @@ The functions are as follows:
 - DrawToScene<T extends IGameObject>, which is a function object that draws the provided IGameObject
   to the provided WorldImage according to the IGameObject's position and draw method.
 - InRectPred<T extends IGameObject>, which is a function object predicate that determines whether
-  the provided IGameObject's GridRect is fully contained in the GridRect passed during construction.
+  the provided IGameObject's GridArea is fully contained in the GridArea passed during construction.
 - InWinningStatePred, which is a function object predicate that returns true if the provided
   IVehicle is in a winning state; i.e., if it, being a PlayerCar, implies it is overlapping an Exit.
 - OnClick, which is a function object that maps a car before a click event to a car after a click

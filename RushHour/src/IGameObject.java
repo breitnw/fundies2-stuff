@@ -10,11 +10,11 @@ interface IGameObject {
   
   // Returns an GridRect representing the span of this IGameObject, from its top left corner to
   // its bottom right corner.
-  GridRect getRect();
+  GridArea getRect();
   
   // Draws this GameObject to the provided WorldScene, aligned in the top-left corner and offset
   // according to its position.
-  WorldScene drawTo(WorldScene scene, int tileSize);
+  WorldScene drawTo(WorldScene scene);
 }
 
 // Represents any object in the game with a position
@@ -25,57 +25,27 @@ abstract class AGameObject implements IGameObject {
     this.posn = posn;
   }
   
-  /* TEMPLATE
-  FIELDS:
-  ... this.posn ...                                                   -- GridPosn
-  METHODS:
-  ... intersects(IGameObject that) ...                                  -- boolean
-  ... getRect() ...                                                   -- GridRect
-  ... xSize() ...                                                     -- int
-  ... ySize() ...                                                     -- int
-  ... getImage() ...                                                  -- WorldImage
-  ... drawTo(WorldScene scene) ...                                    -- WorldScene
-  METHODS ON FIElDS:
-  ... this.posn.offset(int dx, int dy) ...                            -- GridPosn
-  ... this.posn.drawPositioned(WorldImage im, WorldScene scene) ...   -- WorldScene
-   */
-  
   // Determines if this AGameObject intersects that IGameObject
   @Override
   public boolean intersects(IGameObject that) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... that ...             -- IGameObject
-    METHODS ON PARAMETERS:
-    ... that.getRect() ...   -- GridRect
-     */
     return this.getRect().intersects(that.getRect());
   }
   
   // Returns an GridRect representing the span of this IGameObject, from its top left corner to
   // its bottom right corner.
   @Override
-  public GridRect getRect() {
-    /* TEMPLATE
-    Template: Same as class template.
-     */
-    return new GridRect(this.posn, this.posn.offset(this.xSize(), this.ySize()));
+  public GridArea getRect() {
+    return new GridArea(this.posn, this.posn.offset(this.xSize(), this.ySize()));
   }
   
   // Returns the size of the horizontal span of this AGameObject (1 by default).
   int xSize() {
-    /* TEMPLATE
-    Template: Same as class template.
-    */
     return 1;
   }
   
   
   // Returns the size of the vertical span of this AGameObject (1 by default).
   int ySize() {
-    /* TEMPLATE
-    Template: Same as class template.
-    */
     return 1;
   }
   
@@ -86,12 +56,8 @@ abstract class AGameObject implements IGameObject {
   // Draws this GameObject to the provided WorldScene, aligned in the top-left corner and offset
   // according to its position.
   @Override
-  public WorldScene drawTo(WorldScene scene, int tileSize) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... scene ...   -- WorldScene
-     */
-    return this.posn.drawPositioned(this.getImage(), scene, tileSize);
+  public WorldScene drawTo(WorldScene scene) {
+    return this.posn.drawPositioned(this.getImage(), scene);
   }
 }
 
@@ -103,28 +69,10 @@ class Wall extends AGameObject {
     super(posn);
   }
   
-  /* TEMPLATE
-  FIELDS:
-  ... this.posn ...                                                   -- GridPosn
-  METHODS:
-  ... intersects(IGameObject that) ...                                  -- boolean
-  ... getRect() ...                                                   -- GridRect
-  ... xSize() ...                                                     -- int
-  ... ySize() ...                                                     -- int
-  ... getImage() ...                                                  -- WorldImage
-  ... drawTo(WorldScene scene) ...                                    -- WorldScene
-  METHODS ON FIElDS:
-  ... this.posn.offset(int dx, int dy) ...                            -- GridPosn
-  ... this.posn.drawPositioned(WorldImage im, WorldScene scene) ...   -- WorldScene
-   */
-  
   // Returns a WorldImage loaded from a file representing this Wall, with its pinhole
   // centered.
   @Override
   public WorldImage getImage() {
-    /* TEMPLATE
-    Template: Same as class template.
-     */
     return new FromFileImage("sprites/bush.png");
   }
 }
@@ -137,28 +85,10 @@ class Exit extends AGameObject {
     super(posn);
   }
   
-  /* TEMPLATE
-  FIELDS:
-  ... this.posn ...                                                   -- GridPosn
-  METHODS:
-  ... intersects(IGameObject that) ...                                  -- boolean
-  ... getRect() ...                                                   -- GridRect
-  ... xSize() ...                                                     -- int
-  ... ySize() ...                                                     -- int
-  ... getImage() ...                                                  -- WorldImage
-  ... drawTo(WorldScene scene) ...                                    -- WorldScene
-  METHODS ON FIElDS:
-  ... this.posn.offset(int dx, int dy) ...                            -- GridPosn
-  ... this.posn.drawPositioned(WorldImage im, WorldScene scene) ...   -- WorldScene
-   */
-  
   // Returns a WorldImage loaded from a file representing this Exit, with its pinhole
   // centered.
   @Override
   public WorldImage getImage() {
-    /* TEMPLATE
-    Template: Same as class template.
-     */
     return new FromFileImage("sprites/exit.png");
   }
 }
@@ -174,6 +104,12 @@ interface IVehicle extends IGameObject {
   // Registers a click event on this IVehicle, returning a new IVehicle representing the changed
   // vehicle state after the click.
   IVehicle registerClick(GridPosn clickPosn);
+  
+  // TODO: needs tests
+  // Registers a key event on this IVehicle, returning a new IVehicle representing the changed
+  // vehicle after the key. If this IVehicle is selected, moves it left, right, up, or down
+  // depending on which movements are available and which key was pressed.
+  IVehicle registerKey(String k, IList<Wall> walls, IList<IVehicle> vehicles);
 }
 
 // Represents a vehicle with several abstracted methods
@@ -188,32 +124,9 @@ abstract class AVehicle extends AGameObject implements IVehicle {
       throw new IllegalArgumentException("color must be an integer between 1 and 4");
     }
     this.isHorizontal = isHorizontal;
-    this.active = active;
     this.color = color;
+    this.active = active;
   }
-  
-  /* TEMPLATE
-  FIELDS:
-  ... this.posn ...                                                   -- GridPosn
-  ... this.color ...                                                  -- int
-  ... this.isHorizontal ...                                           -- boolean
-  ... this.active ...                                                 -- boolean
-  METHODS:
-  ... intersects(IGameObject that) ...                                -- boolean
-  ... getRect() ...                                                   -- GridRect
-  ... xSize() ...                                                     -- int
-  ... ySize() ...                                                     -- int
-  ... getImage() ...                                                  -- WorldImage
-  ... drawTo(WorldScene scene) ...                                    -- WorldScene
-  ... getWidth() ...                                                  -- int
-  ... getLength() ...                                                 -- int
-  ... inWinningState(IList<Exit> exits) ...                           -- boolean
-  ... drawFromFile(String filename) ...                               -- WorldImage
-  ... registerClick(GridPosn clickPosn) ...                           -- IVehicle
-  METHODS ON FIElDS:
-  ... this.posn.offset(int dx, int dy) ...                            -- GridPosn
-  ... this.posn.drawPositioned(WorldImage im, WorldScene scene) ...   -- WorldScene
-   */
   
   // Returns the width of this AVehicle (not accounting for rotation)
   abstract int getWidth();
@@ -225,9 +138,6 @@ abstract class AVehicle extends AGameObject implements IVehicle {
   // length or width depending on its rotation.
   @Override
   int xSize() {
-    /* TEMPLATE
-    Template: Same as class template.
-     */
     if (this.isHorizontal) {
       return this.getLength();
     } else {
@@ -239,9 +149,6 @@ abstract class AVehicle extends AGameObject implements IVehicle {
   // length or width depending on its rotation.
   @Override
   int ySize() {
-    /* TEMPLATE
-    Template: Same as class template.
-     */
     if (this.isHorizontal) {
       return this.getWidth();
     } else {
@@ -252,26 +159,75 @@ abstract class AVehicle extends AGameObject implements IVehicle {
   // Returns true if this AVehicle is in a winning state; i.e., if this being a PlayerCar implies
   // this is intersecting an Exit.
   public boolean inWinningState(IList<Exit> exits) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... exits ...   -- IList<Exit>
-     */
     return true;
   }
   
   // Given the filename corresponding with this AVehicle, creates a WorldImage to represent it,
   // rotated according to its orientation.
   public WorldImage drawFromFile(String filename) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... filename ...   -- String
-     */
     WorldImage sprite = new FromFileImage(filename);
     if (this.isHorizontal) {
       return new RotateImage(sprite, 90);
     } else {
       return new RotateImage(sprite, 180);
     }
+  }
+  
+  // TODO: needs tests
+  // Moves this AVehicle to the provided GridPosn, without checking for collisions.
+  abstract AVehicle moveTo(GridPosn newPosn);
+  
+  // TODO: needs tests
+  // If possible, moves this AVehicle dx tiles horizontally and dy tiles vertically.
+  // If the resultant AVehicle is colliding with any other vehicles on the grid, or if the
+  // movement isn't in this car's direction of travel, does nothing.
+  AVehicle move(int dx, int dy, IList<Wall> walls, IList<IVehicle> vehicles) {
+    // Do nothing if the car is horizontal and we're trying to move vertically, or the car is
+    // vertical and we're trying to move horizontally.
+    if ((this.isHorizontal && dy != 0) || (!this.isHorizontal && dx != 0)) {
+      return this;
+    }
+    
+    // Move the vehicle
+    AVehicle movedVehicle = this.moveTo(this.posn.offset(dx, dy));
+    
+    // Determine if there are any collisions with walls or _other_ vehicles
+    boolean collidesWithWall = walls.ormap(new IntersectsPred<>(movedVehicle));
+    boolean collidesWithVehicle = vehicles.remove(this)
+                                      .ormap(new IntersectsPred<>(movedVehicle));
+    
+    // Return the moved vehicle if there was no collision.
+    if (collidesWithWall || collidesWithVehicle) {
+      return this;
+    } else {
+      return movedVehicle;
+    }
+  }
+  
+  // TODO: needs tests
+  // Registers a key event on this IVehicle, returning a new IVehicle representing the changed
+  // vehicle after the key. If this IVehicle is selected, moves it left, right, up, or down
+  // depending on which movements are available and which key was pressed.
+  @Override
+  public IVehicle registerKey(String k, IList<Wall> walls, IList<IVehicle> vehicles) {
+    if (!this.active) {
+      return this;
+    }
+    switch (k) {
+      case "w":
+      case "up":
+        return this.move(0, -1, walls, vehicles);
+      case "a":
+      case "left":
+        return this.move(-1, 0, walls, vehicles);
+      case "s":
+      case "down":
+        return this.move(0, 1, walls, vehicles);
+      case "d":
+      case "right":
+        return this.move(1, 0, walls, vehicles);
+    }
+    return this;
   }
 }
 
@@ -281,54 +237,28 @@ class Car extends AVehicle {
     super(posn, color, isHorizontal, active);
   }
   
-  /* TEMPLATE
-  FIELDS:
-  ... this.posn ...                                                   -- GridPosn
-  ... this.color ...                                                  -- int
-  ... this.isHorizontal ...                                           -- boolean
-  ... this.active ...                                                 -- boolean
-  METHODS:
-  ... intersects(IGameObject that) ...                                -- boolean
-  ... getRect() ...                                                   -- GridRect
-  ... xSize() ...                                                     -- int
-  ... ySize() ...                                                     -- int
-  ... getImage() ...                                                  -- WorldImage
-  ... drawTo(WorldScene scene) ...                                    -- WorldScene
-  ... getWidth() ...                                                  -- int
-  ... getLength() ...                                                 -- int
-  ... inWinningState(IList<Exit> exits) ...                           -- boolean
-  ... drawFromFile(String filename) ...                               -- WorldImage
-  ... registerClick(GridPosn clickPosn) ...                           -- IVehicle
-  METHODS ON FIElDS:
-  ... this.posn.offset(int dx, int dy) ...                            -- GridPosn
-  ... this.posn.drawPositioned(WorldImage im, WorldScene scene) ...   -- WorldScene
-   */
-  
   // Returns the width of this Car (not accounting for rotation)
   @Override
   public int getWidth() {
-    /* TEMPLATE
-    Template: Same as class template.
-     */
     return 1;
   }
   
   // Returns the length of this IVehicle (not accounting for rotation)
   @Override
   public int getLength() {
-    /* TEMPLATE
-    Template: Same as class template.
-     */
     return 2;
+  }
+  
+  // Moves this Car to the provided GridPosn, without checking for collisions.
+  @Override
+  AVehicle moveTo(GridPosn posn) {
+    return new Car(posn, this.color, this.isHorizontal, this.active);
   }
   
   // Returns a WorldImage loaded from a file representing this Car, with its pinhole centered. If
   // the Car is selected, returns a yellow version of that WorldImage.
   @Override
   public WorldImage getImage() {
-    /* TEMPLATE
-    Template: Same as class template.
-     */
     if (this.active) {
       return this.drawFromFile("sprites/car/car-selected.png");
     } else {
@@ -340,10 +270,6 @@ class Car extends AVehicle {
   // state after the click.
   @Override
   public IVehicle registerClick(GridPosn clickPosn) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... clickPosn ...   -- GridPosn
-     */
     boolean active = this.getRect().containsPosn(clickPosn);
     return new Car(this.posn, this.color, this.isHorizontal, active);
   }
@@ -355,49 +281,23 @@ class PlayerCar extends Car {
     super(posn, 0, isHorizontal, active);
   }
   
-  /* TEMPLATE
-  FIELDS:
-  ... this.posn ...                                                   -- GridPosn
-  ... this.color ...                                                  -- int
-  ... this.isHorizontal ...                                           -- boolean
-  ... this.active ...                                                 -- boolean
-  METHODS:
-  ... intersects(IGameObject that) ...                                -- boolean
-  ... getRect() ...                                                   -- GridRect
-  ... xSize() ...                                                     -- int
-  ... ySize() ...                                                     -- int
-  ... getImage() ...                                                  -- WorldImage
-  ... drawTo(WorldScene scene) ...                                    -- WorldScene
-  ... getWidth() ...                                                  -- int
-  ... getLength() ...                                                 -- int
-  ... inWinningState(IList<Exit> exits) ...                           -- boolean
-  ... drawFromFile(String filename) ...                               -- WorldImage
-  ... registerClick(GridPosn clickPosn) ...                           -- IVehicle
-  METHODS ON FIElDS:
-  ... this.posn.offset(int dx, int dy) ...                            -- GridPosn
-  ... this.posn.drawPositioned(WorldImage im, WorldScene scene) ...   -- WorldScene
-   */
-  
   // Returns true if this IVehicle is in a winning state; i.e., if this being a PlayerCar implies
   // this is intersecting an Exit.
   @Override
   public boolean inWinningState(IList<Exit> exits) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... exits ...                                    -- IList<Exit>
-    METHODS ON PARAMETERS:
-    ... exits.ormap(Function<T, Boolean> func) ...   -- boolean
-     */
     return exits.ormap(new IntersectsPred<>(this));
+  }
+  
+  // Moves this PlayerCar to the provided GridPosn, without checking for collisions.
+  @Override
+  AVehicle moveTo(GridPosn posn) {
+    return new PlayerCar(posn, this.isHorizontal, this.active);
   }
   
   // Returns a WorldImage loaded from a file representing this PlayerCar, with its pinhole
   // centered. If the PlayerCar is selected, returns a yellow version of that WorldImage.
   @Override
   public WorldImage getImage() {
-    /* TEMPLATE
-    Template: Same as class template.
-     */
     if (this.active) {
       return this.drawFromFile("sprites/car/car-selected.png");
     } else {
@@ -409,10 +309,6 @@ class PlayerCar extends Car {
   // vehicle state after the click.
   @Override
   public IVehicle registerClick(GridPosn clickPosn) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... clickPosn ...   -- GridPosn
-     */
     boolean active = this.getRect().containsPosn(clickPosn);
     return new PlayerCar(this.posn, this.isHorizontal, active);
   }
@@ -424,54 +320,28 @@ class Truck extends AVehicle {
     super(posn, color, isHorizontal, active);
   }
   
-  /* TEMPLATE
-  FIELDS:
-  ... this.posn ...                                                   -- GridPosn
-  ... this.color ...                                                  -- int
-  ... this.isHorizontal ...                                           -- boolean
-  ... this.active ...                                                 -- boolean
-  METHODS:
-  ... intersects(IGameObject that) ...                                -- boolean
-  ... getRect() ...                                                   -- GridRect
-  ... xSize() ...                                                     -- int
-  ... ySize() ...                                                     -- int
-  ... getImage() ...                                                  -- WorldImage
-  ... drawTo(WorldScene scene) ...                                    -- WorldScene
-  ... getWidth() ...                                                  -- int
-  ... getLength() ...                                                 -- int
-  ... inWinningState(IList<Exit> exits) ...                           -- boolean
-  ... drawFromFile(String filename) ...                               -- WorldImage
-  ... registerClick(GridPosn clickPosn) ...                           -- IVehicle
-  METHODS ON FIElDS:
-  ... this.posn.offset(int dx, int dy) ...                            -- GridPosn
-  ... this.posn.drawPositioned(WorldImage im, WorldScene scene) ...   -- WorldScene
-   */
-  
   // Returns the width of this IVehicle (not accounting for rotation)
   @Override
   public int getWidth() {
-    /* TEMPLATE
-    Template: Same as class template.
-     */
     return 1;
   }
   
   // Returns the length of this IVehicle (not accounting for rotation)
   @Override
   public int getLength() {
-    /* TEMPLATE
-    Template: Same as class template.
-     */
     return 3;
+  }
+  
+  // Moves this Truck to the provided GridPosn, without checking for collisions.
+  @Override
+  AVehicle moveTo(GridPosn posn) {
+    return new Truck(posn, color, this.isHorizontal, this.active);
   }
   
   // Returns a WorldImage loaded from a file representing this Truck, with its pinhole
   // centered. If the Truck is selected, returns a yellow version of that WorldImage.
   @Override
   public WorldImage getImage() {
-    /* TEMPLATE
-    Template: Same as class template.
-     */
     if (this.active) {
       return this.drawFromFile("sprites/truck/truck-selected.png");
     } else {
@@ -483,10 +353,6 @@ class Truck extends AVehicle {
   // vehicle state after the click.
   @Override
   public IVehicle registerClick(GridPosn clickPosn) {
-    /* TEMPLATE
-    PARAMETERS:
-    ... clickPosn ...   -- GridPosn
-     */
     boolean active = this.getRect().containsPosn(clickPosn);
     return new Truck(this.posn, this.color, this.isHorizontal, active);
   }

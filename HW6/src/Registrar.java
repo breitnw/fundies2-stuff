@@ -18,10 +18,33 @@ class Course {
     this.prof.addCourse(this);
   }
   
+  /* TEMPLATE for Course
+  Fields:
+  ... name ...                                    -- String
+  ... prof ...                                    -- Instructor
+  ... students ...                                -- IList<Student>
+  Methods:
+  ... this.addStudent(Student) ...                -- void
+  ... this.hasStudent(Student) ...                -- boolean
+  Methods on fields:
+  ... this.prof.dejavu(Student) ...               -- boolean
+  ... this.prof.addCourse(Course) ...             -- void
+  ... this.students.ormap(Predicate<T>) ...       -- boolean
+  ... this.students.countTrue(Predicate<T>) ...   -- int
+   */
+  
   // Updates this course's list of enrolled students to include newStudent, throwing an exception
   // if newStudent is not enrolled in this course.
   // EFFECT: This course is mutated to contain newStudent in its list of students.
   void addStudent(Student newStudent) {
+    /* TEMPLATE
+    Parameters:
+    ... newStudent ...          -- Student
+    Fields on parameters:
+    ... newStudent.courses ...  -- IList<Course>
+    
+    NOTE: we only access fields on parameters for exceptions, as is done in the lecture notes
+    */
     if (!newStudent.courses.ormap(new SameInstancePred<>(this))) {
       throw new IllegalStateException("Student is not enrolled in this course");
     }
@@ -30,6 +53,10 @@ class Course {
   
   // Determines whether this Course contains a student that matches the provided student
   boolean hasStudent(Student s) {
+    /* TEMPLATE
+    Parameters:
+    ... s ...  -- Student
+    */
     return this.students.ormap(new SameStudentPred(s));
   }
 }
@@ -44,8 +71,24 @@ class Instructor {
     this.courses = new MtList<>();
   }
   
+  /* TEMPLATE for Instructor
+  Fields:
+  ... name ...                                   -- String
+  ... courses ...                                -- IList<Course>
+  Methods:
+  ... this.dejavu(Student) ...                   -- boolean
+  ... this.addCourse(Course) ...                 -- void
+  Methods on fields:
+  ... this.courses.ormap(Predicate<T>) ...       -- boolean
+  ... this.courses.countTrue(Predicate<T>) ...   -- int
+   */
+  
   // Determines whether the provided student is in more than one of this Instructor's courses
   boolean dejavu(Student s) {
+    /* TEMPLATE
+    Parameters:
+    ... s ...  -- Student
+    */
     return this.courses.countTrue(new HasStudentPred(s)) >= 2;
   }
   
@@ -53,6 +96,15 @@ class Instructor {
   // course is not taught by this instructor.
   // EFFECT: c is added to the beginning of courses, unless it is not taught by this instructor
   void addCourse(Course c) {
+    /* TEMPLATE
+    Parameters:
+    ... c ...       -- Course
+    Fields on parameters
+    ... c.prof ...  -- Instructor
+    
+    NOTE: we only access fields on parameters for exceptions, as is done in the lecture notes
+    */
+    
     // We use intensional equality, since the course we're adding must point to this Instructor
     // object in particular.
     if (c.prof != this) {
@@ -73,10 +125,30 @@ class Student {
     this.courses = new MtList<>();
   }
   
+  /* TEMPLATE for Student
+  Fields:
+  ... name ...                                   -- String
+  ... id ...                                     -- int
+  ... courses ...                                -- IList<Course>
+  Methods:
+  ... this.enroll(Course) ...                    -- void
+  ... this.sameStudent(Student) ...              -- boolean
+  ... this.classmates(Student) ...               -- boolean
+  Methods on fields:
+  ... this.courses.ormap(Predicate<T>) ...       -- boolean
+  ... this.courses.countTrue(Predicate<T>) ...   -- int
+   */
+  
   // Enrolls this student in the provided course.
   // EFFECT: Mutates this student to contain the provided course in its list of courses, and
   // updates the provided course to reflect this student's enrollment.
   void enroll(Course c) {
+    /* TEMPLATE
+    Parameters:
+    ... c ...                     -- Course
+    Methods on parameters:
+    ... c.addStudent(Student ...  -- void
+    */
     this.courses = new ConsList<>(c, this.courses);
     c.addStudent(this);
   }
@@ -88,11 +160,21 @@ class Student {
   // the nature of student IDs dictates that they are unique; hence, they can be used to alone
   // determine sameness among students.
   boolean sameStudent(Student that) {
+    /* TEMPLATE
+    Parameters:
+    ... that ...     -- Student
+    Fields on parameters:
+    ... that.id ...  -- int
+    */
     return this.id == that.id;
   }
   
   // Determines whether the given Student is in any of the same classes as this Student
   boolean classmates(Student s) {
+    /* TEMPLATE
+    Parameters:
+    ... s ...  -- Student
+    */
     return this.courses.ormap(new HasStudentPred(s));
   }
 }
@@ -107,9 +189,26 @@ class HasStudentPred implements Predicate<Course> {
     this.s = s;
   }
   
+  /* TEMPLATE for HasStudentPred
+  Fields:
+  ... s ...                            -- Student
+  Methods:
+  ... this.test(Course) ...            -- boolean
+  Methods on fields:
+  ... this.s.enroll(Course) ...        -- void
+  ... this.s.sameStudent(Student) ...  -- boolean
+  ... this.s.classmates(Student) ...   -- boolean
+   */
+  
   // Determines whether the provided student is enrolled in a course.
   @Override
   public boolean test(Course that) {
+    /* TEMPLATE
+    Parameters:
+    ... that ...             -- Course
+    Methods on parameters:
+    ... that.hasStudent ...  -- boolean
+    */
     return that.hasStudent(this.s);
   }
 }
@@ -123,10 +222,27 @@ class SameStudentPred implements Predicate<Student> {
     this.s = s;
   }
   
+  /* TEMPLATE for SameStudentPred
+  Fields:
+  ... s ...                            -- Student
+  Methods:
+  ... this.test(Student) ...           -- boolean
+  Methods on fields:
+  ... this.s.enroll(Course) ...        -- void
+  ... this.s.sameStudent(Student) ...  -- boolean
+  ... this.s.classmates(Student) ...   -- boolean
+   */
+  
   // Determines whether a student is the same (by student ID) as the one provided during
   // construction.
   @Override
   public boolean test(Student that) {
+    /* TEMPLATE
+    Parameters:
+    ... that ...              -- Student
+    Methods on parameters:
+    ... that.sameStudent ...  -- boolean
+    */
     return this.s.sameStudent(that);
   }
 }
@@ -140,9 +256,20 @@ class SameInstancePred<T> implements Predicate<T> {
     this.t = t;
   }
   
+  /* TEMPLATE for SameInstancePred<T>
+  Fields:
+  ... t ...             -- T
+  Methods:
+  ... this.test(T) ...  -- boolean
+   */
+  
   // Determines whether this object is the same instance (using intensional equality) as that
   @Override
   public boolean test(T t) {
+    /* TEMPLATE
+    Parameters:
+    ... t ...  -- T
+    */
     return this.t == t;
   }
 }
@@ -170,15 +297,39 @@ class ConsList<T> implements IList<T> {
     this.rest = rest;
   }
   
+  /* TEMPLATE for ConsList<T>
+  Fields:
+  ... first ...                              -- T
+  ... rest ...                               -- IList<T>
+  Methods:
+  ... this.ormap(Predicate<T>) ...           -- boolean
+  ... this.countTrue(Predicate<T>) ...       -- int
+  Methods on fields:
+  ... this.rest.ormap(Predicate<T>) ...      -- boolean
+  ... this.rest.countTrue(Predicate<T>) ...  -- int
+   */
+  
   // Applies pred to each of the elements of this Cons<T> and determines if any of the
   // applications resulted in true.
   public boolean ormap(Predicate<T> pred) {
+    /* TEMPLATE
+    Parameters:
+    ... pred ...       -- Predicate<T>
+    Methods on parameters:
+    ... pred.test ...  -- boolean
+    */
     return pred.test(first) || this.rest.ormap(pred);
   }
   
   // Applies pred to each of the elements of this Cons<T>, and returns the number of times it
   // returned true.
   public int countTrue(Predicate<T> pred) {
+    /* TEMPLATE
+    Parameters:
+    ... pred ...       -- Predicate<T>
+    Methods on parameters:
+    ... pred.test ...  -- boolean
+    */
     if (pred.test(this.first)) {
       return 1 + this.rest.countTrue(pred);
     } else {
@@ -189,15 +340,33 @@ class ConsList<T> implements IList<T> {
 
 // Represents an empty list of items of type T.
 class MtList<T> implements IList<T> {
+  /* TEMPLATE for ConsList<T>
+  Methods:
+  ... this.ormap(Predicate<T>) ...       -- boolean
+  ... this.countTrue(Predicate<T>) ...   -- int
+   */
+  
   // Applies pred to each of the elements of this Cons<T> and determines if any of the
   // applications resulted in true.
   public boolean ormap(Predicate<T> pred) {
+    /* TEMPLATE
+    Parameters:
+    ... pred ...       -- Predicate<T>
+    Methods on parameters:
+    ... pred.test ...  -- boolean
+    */
     return false;
   }
   
   // Applies pred to each of the elements of this Mt<T>, and returns the number of times it
   // returned true.
   public int countTrue(Predicate<T> pred) {
+    /* TEMPLATE
+    Parameters:
+    ... pred ...       -- Predicate<T>
+    Methods on parameters:
+    ... pred.test ...  -- boolean
+    */
     return 0;
   }
 }

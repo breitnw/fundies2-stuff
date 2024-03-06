@@ -10,7 +10,20 @@ import java.util.function.Consumer;
 // frequencies.
 class Huffman {
   IHuffmanTree tree;
-
+  
+  /*
+  TEMPLATE for Huffman
+  Fields:
+  ... this.tree ...                                -- IHuffmanTree
+  Methods:
+  ... this.encode(String) ...                      -- ArrayList<Boolean>
+  ... this.decode(ArrayList<Boolean>) ...          -- String
+  Methods on fields:
+  ... this.tree.frequency() ...                    -- int
+  ... this.tree.encodeChar(String) ...             -- Maybe<ArrayList<Boolean>>
+  ... this.tree.decodeNext(Iterator<Boolean>) ...  -- String
+   */
+  
   Huffman(ArrayList<String> chars, ArrayList<Integer> frequencies) {
     // Validate that the length of the list of strings is greater than or equal to 2
     if (chars.size() < 2) {
@@ -32,6 +45,11 @@ class Huffman {
   // Huffman tree, where false represents a leftward movement down the tree (0) and true
   // represents a rightward movement (1)
   ArrayList<Boolean> encode(String message) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... message ... -- String
+     */
     ArrayList<Boolean> code = new ArrayList<>();
     for (int i = 0; i < message.length(); i += 1) {
       String c = message.substring(i, i + 1);
@@ -46,6 +64,11 @@ class Huffman {
   // a false in the code represents a leftward movement down the tree (0) and a true represents
   // a rightward movement (1)
   public String decode(ArrayList<Boolean> code) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... code ... -- ArrayList<Boolean>
+     */
     String message = "";
     IHuffmanTree t = this.tree;
     Iterator<Boolean> codeIter = code.iterator();
@@ -88,9 +111,23 @@ class HTLeaf implements IHuffmanTree {
     this.freq = freq;
   }
   
+  /*
+  TEMPLATE for HTLeaf
+  Fields:
+  ... this.c ...                              -- String
+  ... this.freq ...                           -- int
+  Methods:
+  ... this.frequency() ...                    -- int
+  ... this.encodeChar(String) ...             -- Maybe<ArrayList<Boolean>>
+  ... this.decodeNext(Iterator<Boolean>) ...  -- String
+   */
+  
   // Gets the total frequency of this HTLeaf, calculated as the sum of the frequencies of all the
   // leaves in the tree.
   public int frequency() {
+    /*
+    TEMPLATE: Same as class template
+    */
     return this.freq;
   }
   
@@ -98,6 +135,11 @@ class HTLeaf implements IHuffmanTree {
   // Some<ArrayList<Boolean>> with the corresponding code if the character exists in the tree and
   // a None<> if it does not.
   public Maybe<ArrayList<Boolean>> encodeChar(String c) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... c ... -- String
+     */
     if (this.c.equals(c)) {
       return new Some<>(new ArrayList<>());
     } else {
@@ -108,6 +150,11 @@ class HTLeaf implements IHuffmanTree {
   // Decodes a single character from the given Iterator of Booleans, or produces "?" if
   // the Iterator does not have enough elements left to decode a character.
   public String decodeNext(Iterator<Boolean> codeIter) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... codeIter ... -- Iterator<Boolean>
+     */
     return this.c;
   }
 }
@@ -122,6 +169,25 @@ class HTNode implements IHuffmanTree {
     this.right = right;
   }
   
+  /*
+  TEMPLATE for HTNode
+  Fields:
+  ... this.left ...                                -- IHuffmanTree
+  ... this.right ...                               -- IHuffmanTree
+  Methods:
+  ... this.frequency() ...                         -- int
+  ... this.encodeChar(String) ...                  -- Maybe<ArrayList<Boolean>>
+  ... this.decodeNext(Iterator<Boolean>) ...       -- String
+  Methods on Fields:
+  ... this.left.frequency() ...                    -- int
+  ... this.left.encodeChar(String) ...             -- Maybe<ArrayList<Boolean>>
+  ... this.left.decodeNext(Iterator<Boolean>) ...  -- String
+  
+  ... this.right.frequency() ...                   -- int
+  ... this.right.encodeChar(String) ...            -- Maybe<ArrayList<Boolean>>
+  ... this.right.decodeNext(Iterator<Boolean>) ... -- String
+   */
+  
   // Gets the total frequency of this HTNode, calculated as the sum of the frequencies of all the
   // leaves in the tree.
   public int frequency() {
@@ -132,6 +198,11 @@ class HTNode implements IHuffmanTree {
   // Some<ArrayList<Boolean>> with the corresponding code if the character exists in the tree and
   // a None<> if it does not.
   public Maybe<ArrayList<Boolean>> encodeChar(String c) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... c ... -- String
+     */
     Maybe<ArrayList<Boolean>> left = this.left.encodeChar(c);
     Maybe<ArrayList<Boolean>> right = this.right.encodeChar(c);
     
@@ -146,6 +217,14 @@ class HTNode implements IHuffmanTree {
   // EFFECT: moves the cursor of codeIter the number of elements necessary to decode a single
   // character
   public String decodeNext(Iterator<Boolean> codeIter) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... codeIter ... -- Iterator<Boolean>
+    Methods on params:
+    ... codeIter.hasNext() ... -- boolean
+    ... codeIter.next() ...    -- Boolean
+     */
     if (codeIter.hasNext()) {
       boolean shouldGoRight = codeIter.next();
       if (shouldGoRight) {
@@ -180,37 +259,87 @@ class Some<T> implements Maybe<T> {
   Some(T t) {
     this.t = t;
   }
+  /*
+  TEMPLATE for Some
+  Fields:
+  ... this.t ...  -- T
+  Methods:
+  ... this.orIfNone(Maybe<T>) ...       -- Maybe<T>
+  ... this.mapMut(Consumer<T>) ...      -- void
+  ... this.expect(RunTimeException) ... -- T
+   */
   
   // Returns this Maybe if it contains a value, otherwise returns that
   public Maybe<T> orIfNone(Maybe<T> that) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... that ...  -- Maybe<T>
+     */
     return this;
   }
   
   // If this Maybe has contents, mutates those contents according to f; otherwise, does nothing.
   public void mapMut(Consumer<T> f) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... f ...         -- Consumer<T>
+    Methods on parameters:
+    ... f.accept ...  -- void
+     */
     f.accept(this.t);
   }
   
   // If this Maybe has contents, returns those contents; otherwise, throws ex.
   public T expect(RuntimeException ex) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... ex ...  -- RuntimeException
+     */
     return this.t;
   }
 }
 
 // Represents a value that does not exist
 class None<T> implements Maybe<T>  {
+  
+  /*
+  TEMPLATE for None
+  Methods:
+  ... this.orIfNone(Maybe<T>) ...       -- Maybe<T>
+  ... this.mapMut(Consumer<T>) ...      -- void
+  ... this.expect(RunTimeException) ... -- T
+   */
+  
   // Returns this Maybe if it contains a value, otherwise returns that
   public Maybe<T> orIfNone(Maybe<T> that) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... that ...  -- Maybe<T>
+     */
     return that;
   }
   
   // If this Maybe has contents, mutates those contents according to f; otherwise, does nothing.
   public void mapMut(Consumer<T> f) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... f ...  -- Consumer<T>
+     */
     // This method does not do anything, since None has no value to mutate
   }
   
   // If this Maybe has contents, returns those contents; otherwise, throws ex.
   public T expect(RuntimeException ex) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... ex ...  -- RuntimeException
+     */
     throw ex;
   }
 }
@@ -226,12 +355,26 @@ class ArrPrepend<T> implements Consumer<ArrayList<T>> {
     this.t = t;
   }
   
+  /* TEMPLATE for ArrPrepend
+  Fields:
+  ... this.t ... -- T
+  Methods:
+  ... this.accept(T) ... -- void
+   */
+  
   // A Consumer that consumes a reference to an ArrayList<T>, the T passed during construction to
   // the start.
   // EFFECT: adds the T passed during construction to the start of the provided ArrayList<T>.
   @Override
   public void accept(ArrayList<T> ts) {
-    ts.add(0, t);
+    /*
+    TEMPLATE
+    Parameters:
+    ... ts ...          -- ArrayList<T>
+    Methods on parameters:
+    ... ts.add(int, T)  -- void
+     */
+    ts.add(0, this.t);
   }
 }
 
@@ -240,8 +383,23 @@ class HuffmanTreeComparator implements Comparator<IHuffmanTree> {
   // Compares two IHuffmanTrees based on the total frequency of each, producing a negative number
   // if ht1 has a lower frequency, 0 if the frequencies are equal, and a positive number if ht1
   // has a greater frequency.
+  
+  /* TEMPLATE for HuffmanTreeComparator
+  Methods:
+  ... this.compare(IHuffmanTree, IHuffmanTree) ... -- int
+   */
+  
   @Override
   public int compare(IHuffmanTree ht1, IHuffmanTree ht2) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... ht1 ...             -- IHuffmanTree
+    ... ht2 ...             -- IHuffmanTree
+    Methods on params:
+    ... ht1.frequency() ... -- int
+    ... ht2.frequency() ... -- int
+     */
     return ht1.frequency() - ht2.frequency();
   }
 }
@@ -250,8 +408,21 @@ class HuffmanTreeComparator implements Comparator<IHuffmanTree> {
 // list of Strings and a list of Integers via the zip() function on ListUtils.
 class HuffmanTreeZipper implements BiFunction<String, Integer, IHuffmanTree> {
   // Constructs an IHuffmanTree provided a String and an Integer.
+  
+  /*
+  TEMPLATE for HuffmanTreeZipper
+  Methods:
+  ... this.apply(String, Integer) ... -- HTLeaf
+  
+   */
   @Override
   public HTLeaf apply(String c, Integer freq) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... c ...    -- String
+    ... freq ... -- Integer
+     */
     return new HTLeaf(c, freq);
   }
 }
@@ -260,9 +431,22 @@ class HuffmanTreeZipper implements BiFunction<String, Integer, IHuffmanTree> {
 
 // Represents a suite of utilities for working with generic lists.
 class ListUtils {
+  /* TEMPLATE for ListUtils
+  Methods:
+  ... <T> this.sorted(ArrayList<T>, Comparator<T>) ...                         -- ArrayList<T>
+  ... <T> this.insert(ArrayList<T>, T, Comparator<T>) ...                      -- void
+  ... <T, U, V> this.zip(ArrayList<T>, ArrayList<U>, BiFunction<T, U, V>) ...  -- ArrayList<V>
+   */
+  
   // Sorts the provided ArrayList low-to-high via a stable insertion sort, provided a Comparator
   // cmp that compares any two elements of the ArrayList.
   <T> ArrayList<T> sorted(ArrayList<T> arr, Comparator<T> cmp) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... arr ...  -- ArrayList<T>
+    ... cmp ...  -- Comparator<T>
+     */
     ArrayList<T> sorted = new ArrayList<>();
     for (T t : arr) {
       this.insert(sorted, t, cmp);
@@ -275,6 +459,17 @@ class ListUtils {
   // EFFECT: arr is mutated to contain el at an appropriate position, with all elements greater
   // than it shifted right one index.
   <T> void insert(ArrayList<T> arr, T el, Comparator<T> cmp) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... arr ...                -- ArrayList<T>
+    ... el ...                 -- T
+    ... cmp ...                -- Comparator<T>
+    Methods on parameters:
+    ... arr.add(int, T) ...    -- void
+    ... arr.size() ...         -- int
+    ... cmp.compare(T, T) ...  -- boolean
+     */
     for (int i = 0; i < arr.size(); i += 1) {
       if (cmp.compare(el, arr.get(i)) < 0) {
         arr.add(i, el);
@@ -289,6 +484,16 @@ class ListUtils {
   // of arr1 with the nth element of arr2 in an arbitrary way defined by cmbFunc.
   // If the lengths of the arrays are not equal, throws an IllegalArgumentException.
   <T, U, V> ArrayList<V> zip(ArrayList<T> arr1, ArrayList<U> arr2, BiFunction<T, U, V> cmbFunc) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... arr1 ...        -- ArrayList<T>
+    ... arr2 ...        -- ArrayList<U>
+    ... cmbFunc ...     -- BiFunction<T, U, V>
+    Methods on parameters:
+    ... arr1.size() ... -- int
+    ... arr2.size() ... -- int
+     */
     // Validate that the lengths of the lists are equal
     int a1size = arr1.size();
     int a2size = arr2.size();
@@ -308,9 +513,19 @@ class ListUtils {
 
 // Utilities for construction of a Huffman
 class HuffmanTreeUtils {
+  /* TEMPLATE for HuffmanTreeUtils
+  Methods:
+  ... this.condense(ArrayList<IHuffmanTree>) ...  -- IHuffmanTree
+   */
+  
   // Condenses a list of IHuffmanTrees into a single IHuffmanTree, combining the trees with the
   // lowest total frequencies bottom-up.
   IHuffmanTree condense(ArrayList<IHuffmanTree> trees) {
+    /*
+    TEMPLATE
+    Parameters:
+    ... trees ...  -- ArrayList<IHuffmanTree>
+     */
     ArrayList<IHuffmanTree> treesSorted = new ListUtils().sorted(
         trees, new HuffmanTreeComparator());
     
