@@ -204,7 +204,6 @@ abstract class AVehicle extends AGameObject implements IVehicle {
     }
   }
   
-  // TODO: needs tests
   // Registers a key event on this IVehicle, returning a new IVehicle representing the changed
   // vehicle after the key. If this IVehicle is selected, moves it left, right, up, or down
   // depending on which movements are available and which key was pressed.

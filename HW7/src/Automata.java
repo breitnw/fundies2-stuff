@@ -1,12 +1,8 @@
-import javalib.worldimages.*;
-import javalib.impworld.*;
-import tester.*; // The tester library
-
-import java.awt.*;
+import tester.*;                // The tester library
+import javalib.worldimages.*;   // images, like RectangleImage or OverlayImages
+import javalib.impworld.*;      // the abstract World class and the big-bang library for imperative worlds
+import java.awt.Color;          // general colors (as triples of red,green,blue values)
 import java.util.ArrayList;
-
-
-// general colors (as triples of red,green,blue values)
 // and predefined colors (Red, Green, Yellow, Blue, Black, White)
 
 
@@ -15,16 +11,40 @@ interface ICell {
   int getState();
   
   // render this ICell as an image of a rectangle with this width and height
-//    WorldImage render(int width, int height);
+  WorldImage render(int width, int height);
   
   // produces the child cell of this ICell with the given left and right neighbors
   ICell childCell(ICell left, ICell right);
 }
 
-class InertCell implements ICell {
+abstract class ACell implements ICell {
+  int state;
+  
+  ACell(int state) {
+    if (state != 0 && state != 1) {
+      throw new IllegalArgumentException("state must be 0 or 1, given " + state);
+    }
+    this.state = state;
+  }
+  
   // gets the state of this ICell
   public int getState() {
-    return 0;
+    return this.state;
+  }
+  
+  // render this ACell as an image of a rectangle with this width and height
+  public WorldImage render(int width, int height) {
+    if (this.getState() == 1) {
+      return new RectangleImage(width, height, OutlineMode.SOLID, Color.BLACK);
+    } else {
+      return new RectangleImage(width, height, OutlineMode.SOLID, Color.WHITE);
+    }
+  }
+}
+
+class InertCell extends ACell {
+  InertCell() {
+    super(0);
   }
   
   // produces the child cell of this ICell with the given left and right neighbors
@@ -33,17 +53,15 @@ class InertCell implements ICell {
   }
 }
 
-abstract class ACell implements ICell {
+abstract class ARuleCell extends ACell {
   int rule;
-  int state;
   
-  ACell(int state, int rule) {
-    this.state = state;
+  ARuleCell(int state, int rule) {
+    super(state);
+    if (rule < 0 || rule > 255) {
+      throw new IllegalArgumentException("rule must be between 0 and 255, given " + rule);
+    }
     this.rule = rule;
-  }
-  
-  public int getState() {
-    return this.state;
   }
   
   public int childState(ICell left, ICell right) {
@@ -72,7 +90,7 @@ abstract class ACell implements ICell {
   }
 }
 
-class Rule60 extends ACell {
+class Rule60 extends ARuleCell {
   Rule60(int state) {
     super(state, 60);
   }
@@ -82,54 +100,56 @@ class Rule60 extends ACell {
   }
 }
 
-
-class CellArray {
-  ArrayList<ICell> cells;
-
-  CellArray(ArrayList<ICell> cells) {
-    this.cells = cells;
+class Rule30 extends ARuleCell {
+  Rule30(int state) {
+    super(state, 30);
   }
-
-  public CellArray nextGen() {
-    ArrayList<ICell> newCells = new ArrayList<>();
-
-    for (int i = 0; i < this.cells.size(); i++) {
-      ICell left = new InertCell();
-      ICell right = new InertCell();
-      if (i - 1 >= 0) {
-        left = this.cells.get(i-1);
-      }
-      if (i + 1 < this.cells.size()) {
-        right = this.cells.get(i + 1);
-      }
-
-      newCells.add(this.cells.get(i).childCell(left, right));
-    }
-    return new CellArray(newCells);
-  }
-
-  public WorldImage draw(int cellWidth, int cellHeight) {
-    WorldImage img = new EmptyImage();
-    for (ICell cell : this.cells) {
-      Color color;
-      if (cell.getState() == 0) {
-        color = Color.WHITE;
-      }
-      else {
-        color = Color.BLACK;
-      }
-      img = new BesideImage(img,
-              new RectangleImage(
-                      cellWidth, cellHeight,
-                      OutlineMode.SOLID, color
-              ));
-    }
-    return img;
+  
+  public ICell childCell(ICell left, ICell right) {
+    return new Rule30(this.childState(left, right));
   }
 }
 
-class CAWorld extends World {
+class CellArray {
+  ArrayList<ICell> cells;
+  
+  CellArray(ArrayList<ICell> cells) {
+    this.cells = cells;
+  }
+  
+  // Produces a new generation of cells from the current population. Cells at the start and end
+  // of the list are treated as having InertCells as left and right neighbors, respectively.
+  CellArray nextGen() {
+    ArrayList<ICell> nextGen = new ArrayList<>();
+    for (int cellIndex = 0; cellIndex < this.cells.size(); cellIndex += 1) {
+      nextGen.add(this.get(cellIndex).childCell(this.get(cellIndex - 1), this.get(cellIndex + 1)));
+    }
+    return new CellArray(nextGen);
+  }
+  
+  // Gets the ICell at the provided index of this CellArray, or a new InertCell if the provided
+  // index is invalid.
+  ICell get(int index) {
+    if (index < 0 || index >= this.cells.size()) {
+      return new InertCell();
+    } else {
+      return this.cells.get(index);
+    }
+  }
+  
+  // takes in two numbers, representing the width and the height of an individual cell, and
+  // produces an image of all of this row's cells side-by-side.
+  WorldImage draw(int cellWidth, int cellHeight) {
+    WorldImage row = new EmptyImage();
+    for (ICell c : this.cells) {
+      row = new BesideImage(row, c.render(cellWidth, cellHeight));
+    }
+    return row;
+  };
+}
 
+class CAWorld extends World {
+  
   // constants
   static final int CELL_WIDTH = 10;
   static final int CELL_HEIGHT = 10;
@@ -138,60 +158,59 @@ class CAWorld extends World {
   static final int NUM_HISTORY = 41;
   static final int TOTAL_WIDTH = TOTAL_CELLS * CELL_WIDTH;
   static final int TOTAL_HEIGHT = NUM_HISTORY * CELL_HEIGHT;
-
+  
   // the current generation of cells
   CellArray curGen;
   // the history of previous generations (earliest state at the start of the list)
   ArrayList<CellArray> history;
-
+  
   // Constructs a CAWorld with INITIAL_OFF_CELLS of off cells on the left,
   // then one on cell, then INITIAL_OFF_CELLS of off cells on the right
   CAWorld(ICell off, ICell on) {
     this.history = new ArrayList<>();
+    
+    // Build a list of INITIAL_OFF_CELLS * 2 off cells
     ArrayList<ICell> cells = new ArrayList<>();
-    for (int i = 0; i < INITIAL_OFF_CELLS; i++) {
+    for (int index = 0; index < INITIAL_OFF_CELLS * 2; index += 1) {
       cells.add(off);
     }
-    cells.add(on);
-    for (int i = 0; i < INITIAL_OFF_CELLS; i++) {
-      cells.add(off);
-    }
+    // Insert an on cell at the middle of the list
+    cells.add(INITIAL_OFF_CELLS, on);
+    
     this.curGen = new CellArray(cells);
   }
-
+  
   // Modifies this CAWorld by adding the current generation to the history
   // and setting the current generation to the next one
   public void onTick() {
-    CellArray next = this.curGen.nextGen();
     this.history.add(this.curGen);
-    this.curGen = next;
+    this.curGen = this.curGen.nextGen();
   }
-
+  
   // Draws the current world, ``scrolling up'' from the bottom of the image
   public WorldImage makeImage() {
     // make a light-gray background image big enough to hold 41 generations of 41 cells each
     WorldImage bg = new RectangleImage(TOTAL_WIDTH, TOTAL_HEIGHT,
-            OutlineMode.SOLID, new Color(240, 240, 240));
-
+        OutlineMode.SOLID, new Color(240, 240, 240));
+    
     // build up the image containing the past and current cells
     WorldImage cells = new EmptyImage();
     for (CellArray array : this.history) {
       cells = new AboveImage(cells, array.draw(CELL_WIDTH, CELL_HEIGHT));
     }
     cells = new AboveImage(cells, this.curGen.draw(CELL_WIDTH, CELL_HEIGHT));
-
+    
     // draw all the cells onto the background
     return new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.BOTTOM,
-            cells, 0, 0, bg);
+        cells, 0, 0, bg);
   }
-
+  
   public WorldScene makeScene() {
     WorldScene canvas = new WorldScene(TOTAL_WIDTH, TOTAL_HEIGHT);
     canvas.placeImageXY(this.makeImage(), TOTAL_WIDTH / 2, TOTAL_HEIGHT / 2);
     return canvas;
   }
 }
-
 
 class ExamplesAutomata {
   Rule60 s0 = new Rule60(0);
@@ -253,4 +272,9 @@ class ExamplesAutomata {
   }
 
 
+  
+  void testSimulation(Tester t) {
+    new CAWorld(new Rule30(0), new Rule30(1))
+        .bigBang(CAWorld.TOTAL_WIDTH, CAWorld.TOTAL_HEIGHT, 0.5);
+  }
 }

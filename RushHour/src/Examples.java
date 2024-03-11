@@ -112,6 +112,7 @@ class ExamplesGame {
                                 + "| p       X\n"
                                 + "|   c     |\n"
                                 + "+---------+");
+  
   // Completely empty, 1x1
   Level level12 = new Level(" ");
   
@@ -149,12 +150,20 @@ class ExamplesGame {
                                 + "|      |\n"
                                 + "+--X---+");
   
+  // Irregular board shape
+  Level level18 = new Level("  +--+ +----+\n"
+                                + "  |  | |t  C|\n"
+                                + "+-+CC+-+C   +--+\n"
+                                + "|p             X\n"
+                                + "+--------------+");
+  
   
   Game game1 = new Game(level1);
   Game game2 = new Game(level2);
   Game game3 = new Game(level3);
   Game game4 = new Game(level4);
   Game game5 = new Game(level5);
+  Game game6 = new Game(level18);
   
   // +------------+
   // | Game Tests |
@@ -860,30 +869,60 @@ class ExamplesIList {
 
 // Examples for LoadUtils.java ====================================================================
 
-class ExamplesLoadUtils {
-  // Since the LoadUtils class has no fields, no examples are possible except for a regular
-  // instantiation:
-  LoadUtils lu = new LoadUtils();
-  
+class ExamplesParser {
+  Parser p1 = new Parser(" +|-X", new GridPosn(0, 0));
+  Parser p2 = new Parser("c");
+  Parser p3 = new Parser("C");
+  Parser p4 = new Parser("P");
+  Parser p5 = new Parser("t");
+  Parser p6 = new Parser("CPTc |\n"
+                             + "   p -\n"
+                             + "X+ t  ", new GridPosn(1, 0));
+  Parser p7 = new Parser("  +--+ +----+\n"
+                             + "  |  | |t  C|\n"
+                             + "+-+CC+-+C   +--+\n"
+                             + "|p             X\n"
+                             + "+--------------+");
   // +-------+
   // | Tests |
   // +-------+
   void testLoadVehicles(Tester t) {
-    t.checkExpect(lu.loadVehicles(" +|-X", 0, 0, new Random(6), new GridPosn(0, 0)),
-        new Mt<>());
-    t.checkExpect(lu.loadVehicles("c", 0, 0, new Random(6), new GridPosn(-1, -1)),
+    t.checkExpect(p1.loadVehicles(), new Mt<>());
+    t.checkExpect(p2.loadVehicles(),
         new Cons<>(new Car(new GridPosn(0, 0), 1, true, false), new Mt<>()));
-    t.checkExpect(lu.loadVehicles("c", 4, 2, new Random(6), new GridPosn(-1, -1)),
-        new Cons<>(new Car(new GridPosn(4, 2), 1, true, false), new Mt<>()));
-    t.checkExpect(lu.loadVehicles("c", 4, 2, new Random(6), new GridPosn(4, 2)),
-        new Cons<>(new Car(new GridPosn(4, 2), 1, true, true), new Mt<>()));
-    t.checkExpect(lu.loadVehicles("C", 0, 0, new Random(6), new GridPosn(-1, -1)),
+    t.checkExpect(p3.loadVehicles(),
         new Cons<>(new Car(new GridPosn(0, 0), 1, false, false), new Mt<>()));
-    t.checkExpect(lu.loadVehicles("P", 0, 0, new Random(6), new GridPosn(-1, -1)),
+    t.checkExpect(p4.loadVehicles(),
         new Cons<>(new PlayerCar(new GridPosn(0, 0), false, false), new Mt<>()));
-    t.checkExpect(lu.loadVehicles("t", 0, 0, new Random(6), new GridPosn(-1, -1)),
+    t.checkExpect(p5.loadVehicles(),
         new Cons<>(new Truck(new GridPosn(0, 0), 1, true, false), new Mt<>()));
-    t.checkExpect(lu.loadVehicles("CPTc |\n"
+    t.checkExpect(p6.loadVehicles(),
+        new Cons<>(
+            new Car(new GridPosn(0, 0), 3, false, false),
+            new Cons<>(new PlayerCar(new GridPosn(1, 0), false, true),
+                new Cons<>(new Truck(new GridPosn(2, 0), 0, false, false),
+                    new Cons<>(new Car(new GridPosn(3, 0), 3, true, false),
+                        new Cons<>(new PlayerCar(new GridPosn(3, 1),true, false),
+                            new Cons<>(new Truck(new GridPosn(3, 2), 1, true, false),
+                                new Mt<>())))))));
+  }
+  
+  void testLoadRemainingVehicles(Tester t) {
+    t.checkExpect(p1.loadRemainingVehicles(" +|-X", 0, 0, new Random(6), new GridPosn(0, 0)),
+        new Mt<>());
+    t.checkExpect(p1.loadRemainingVehicles("c", 0, 0, new Random(6), new GridPosn(-1, -1)),
+        new Cons<>(new Car(new GridPosn(0, 0), 1, true, false), new Mt<>()));
+    t.checkExpect(p1.loadRemainingVehicles("c", 4, 2, new Random(6), new GridPosn(-1, -1)),
+        new Cons<>(new Car(new GridPosn(4, 2), 1, true, false), new Mt<>()));
+    t.checkExpect(p1.loadRemainingVehicles("c", 4, 2, new Random(6), new GridPosn(4, 2)),
+        new Cons<>(new Car(new GridPosn(4, 2), 1, true, true), new Mt<>()));
+    t.checkExpect(p1.loadRemainingVehicles("C", 0, 0, new Random(6), new GridPosn(-1, -1)),
+        new Cons<>(new Car(new GridPosn(0, 0), 1, false, false), new Mt<>()));
+    t.checkExpect(p1.loadRemainingVehicles("P", 0, 0, new Random(6), new GridPosn(-1, -1)),
+        new Cons<>(new PlayerCar(new GridPosn(0, 0), false, false), new Mt<>()));
+    t.checkExpect(p1.loadRemainingVehicles("t", 0, 0, new Random(6), new GridPosn(-1, -1)),
+        new Cons<>(new Truck(new GridPosn(0, 0), 1, true, false), new Mt<>()));
+    t.checkExpect(p2.loadRemainingVehicles("CPTc |\n"
                                       + "   p -\n"
                                       + "X+ t  ", 0, 0, new Random(6), new GridPosn(1, 0)),
         new Cons<>(
@@ -943,6 +982,27 @@ class ExamplesLoadUtils {
                 new Mt<>())));
   }
   
+  void testLoadRemainingExits(Tester t) {
+    t.checkExpect(p1.loadRemainingExits(" CcPpTt+|-", 0, 0), new Mt<>());
+    t.checkExpect(p1.loadRemainingExits("X", 0, 0),
+        new Cons<>(new Exit(new GridPosn(0, 0)),
+            new Mt<>()));
+    t.checkExpect(p1.loadRemainingExits(" X X ", 0, 0),
+        new Cons<>(new Exit(new GridPosn(1, 0)),
+            new Cons<>(new Exit(new GridPosn(3, 0)),
+                new Mt<>())));
+    t.checkExpect(p1.loadRemainingExits(" X X ", 2, 1),
+        new Cons<>(new Exit(new GridPosn(3, 1)),
+            new Cons<>(new Exit(new GridPosn(5, 1)),
+                new Mt<>())));
+    t.checkExpect(p2.loadRemainingExits("CPTc |\n"
+                                            + "   p X\n"
+                                            + "X+ t  ", 0, 0),
+        new Cons<>(new Exit(new GridPosn(5, 1)),
+            new Cons<>(new Exit(new GridPosn(0, 2)),
+                new Mt<>())));
+  }
+  
   void testLoadWidth(Tester t) {
     t.checkExpect(lu.loadWidth(" "), 1);
     t.checkExpect(lu.loadWidth("       \n       "), 7);
@@ -955,67 +1015,6 @@ class ExamplesLoadUtils {
                                    + "|C   c |\n"
                                    + "|   t  |\n"
                                    + "+------+"), 8);
-  }
-  
-  void testLoadWidthEx(Tester t) {
-    String ex = "The length of each line in the provided layout (excluding newline characters) "
-                    + "should be equal";
-    t.checkException(new IllegalArgumentException(ex), lu, "loadWidth", " \n  ");
-    t.checkException(new IllegalArgumentException(ex), lu, "loadWidth",
-        "+------+\n"
-            + "|c P  T|\n"
-            + "|T  T  |\n"
-            + "| p    X\n"
-            + "|      ||\n"
-            + "+--X---+");
-  }
-  
-  void testHasSameLineLengths(Tester t) {
-    t.checkExpect(lu.hasSameLineLengths(" "), true);
-    t.checkExpect(lu.hasSameLineLengths(" \n "), true);
-    t.checkExpect(lu.hasSameLineLengths(" \n  "), false);
-    t.checkExpect(lu.hasSameLineLengths(
-        "+------+\n"
-            + "|c P  T|\n"
-            + "|T  T  |\n"
-            + "| p    X\n"
-            + "|      |\n"
-            + "+--X---+"
-    ), true);
-    t.checkExpect(lu.hasSameLineLengths(
-        "+------+\n"
-            + "|c P  T|\n"
-            + "|T  T  |\n"
-            + "| p    X\n"
-            + "|      ||\n"
-            + "+--X---+"
-    ), false);
-  }
-  
-  void testLineLengthsMatch(Tester t) {
-    t.checkExpect(lu.lineLengthsMatch(" ", 1), true);
-    t.checkExpect(lu.lineLengthsMatch("  ", 1), false);
-    t.checkExpect(lu.lineLengthsMatch(" \n ", 1), true);
-    t.checkExpect(lu.lineLengthsMatch("  \n ", 1), false);
-    t.checkExpect(lu.lineLengthsMatch(" \n  ", 1), false);
-    t.checkExpect(lu.lineLengthsMatch(
-        "+------+\n"
-            + "|c P  T|\n"
-            + "|T  T  |\n"
-            + "| p    X\n"
-            + "|      |\n"
-            + "+--X---+",
-        8
-    ), true);
-    t.checkExpect(lu.lineLengthsMatch(
-        "+------+\n"
-            + "|c P  T|\n"
-            + "|T  T  |\n"
-            + "| p    X\n"
-            + "|      ||\n"
-            + "+--X---+",
-        8
-    ), false);
   }
   
   void testLoadHeight(Tester t) {

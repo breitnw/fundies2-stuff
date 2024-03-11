@@ -4,10 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="827a564a-79d0-4ab1-a302-8f0d342a709c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/HW7.iml" beforeDir="false" />
+    <list default="true" id="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" name="Changes" comment="Automata functionality complete, needs tests/purpose statements/etc">
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/car/car-player.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/car/car-selected.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/car/car0.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/car/car1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/car/car2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/car/car3.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/car/car4.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/truck/truck-selected.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/truck/truck0.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/truck/truck1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/truck/truck2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/truck/truck3.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../RushHour/sprites/truck/truck4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Automata.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Automata.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,7 +26,32 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$/.." value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;breitnw&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="18f30e97-f13d-4225-a417-79e5a486f663" />
+        <option name="url" value="git@github.com:breitnw/fundies2-stuff.git" />
+      </UrlAndAccount>
+    </option>
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="ug0zy20a" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
@@ -25,29 +61,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Test.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/zengjoseph/Developer/fundies2-stuff/HW7&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Tester.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "bitwise",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/breitnw/Documents/neu/cs2510/fundies2-stuff/HW7",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "preferences.keymap",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
+  <component name="QodanaReportsService">
+    <option name="descriptions">
+      <ReportDescription localRun="true" path="/private/var/folders/8g/jh1d_gxs637gy_ss2wvldtw00000gn/T/qodana_output/qodana.sarif.json" reportGuid="2ebcbff3-9766-4fe0-81ee-d55d3c382079" reportId="HW7/qodana/2024-03-04" />
+    </option>
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src" />
+    </key>
+  </component>
   <component name="RunManager">
-    <configuration name="Test" type="Application" factoryName="Application">
+    <configuration name="Tester" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="tester.Main" />
       <module name="HW7" />
       <option name="PROGRAM_PARAMETERS" value="ExamplesAutomata" />
@@ -70,15 +117,40 @@
       <created>1709737876931</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1709737876931</updated>
-      <workItem from="1709737877927" duration="795000" />
-      <workItem from="1709989249473" duration="607000" />
-      <workItem from="1710081061953" duration="2386000" />
-      <workItem from="1710099944136" duration="1289000" />
+      <updated>1709580361340</updated>
+      <workItem from="1709580362353" duration="4903000" />
+      <workItem from="1709702022650" duration="154000" />
+      <workItem from="1709848052091" duration="6539000" />
     </task>
+    <task id="LOCAL-00001" summary="bitwise automata rule representation">
+      <option name="closed" value="true" />
+      <created>1709702173771</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1709702173771</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Automata functionality complete, needs tests/purpose statements/etc">
+      <option name="closed" value="true" />
+      <created>1709853371616</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1709853371616</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="bitwise automata rule representation" />
+    <MESSAGE value="Automata functionality complete, needs tests/purpose statements/etc" />
+    <option name="LAST_COMMIT_MESSAGE" value="Automata functionality complete, needs tests/purpose statements/etc" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

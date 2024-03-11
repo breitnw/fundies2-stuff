@@ -1,22 +1,6 @@
 import javalib.funworld.WorldScene;
 import javalib.worldimages.*;
 
-/* COORDINATES
-Our coordinate system starts with (0, 0) in the top-left corner. Positive x-values represent
-movements to the right, and positive y-values represent movements downward.
-
-Specifically, each GridPosn represents the top-left corner of a cell. This means, for example,
-that in a 2x2 grid, the corners would have the following coordinates:
-
-(0,0)--(1,0)--(2,0)
-  |      |      |
-  |      |      |
-(0,1)--(1,1)--(2,1)
-  |      |      |
-  |      |      |
-(0,2)--(1,2)--(2,2)
- */
-
 // Represents a position on the grid with integer x and y coordinates, following the coordinate
 // system defined above.
 class GridPosn {
