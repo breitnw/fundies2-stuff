@@ -1,5 +1,24 @@
 # PROGRAM DESIGN
 
+> Design two example levels whose playable area is not a straightforward rectangle. In your  
+> Design.txt file, explain what new implementation support, if any, you needed to build to make
+> this work.
+
+
+🚧 _Refer to section "Level loading helpers" for implementation details_
+
+We did not need to make many major changes to make this work. As mentioned in `Changes.txt`, we 
+already had support for placing obstacles anywhere in the game board. As a direct consequence for
+this feature, one can easily use these walls to create an irregular border for the board, 
+fulfilling functionality for non-rectangular levels. 
+
+The only significant change we made was more of a convenience: rather than throwing an 
+`IllegalArgumentException` when the rows of the level `String` are uneven lengths, we chose to 
+represent the undefined cells as empty cells. Methods to retrieve the width of the game board, 
+then, simply find the length of the longest row. 
+
+---
+
 ## GAME STATE
 Two classes manage the overall game state: Game and Level. As the names suggest, Game manages the
 state of the game as a whole, while Level manages an individual level.
@@ -14,10 +33,13 @@ Game extends javalib.funworld.World, and contains:
 It has the following methods:
 - bigBang(), which overloads the default bigBang method by determining the width and the height of
   the game based on the level
-- makeScene(), which draws the level to an empty scene
-- onMouseClicked(Posn pos), which manages mouse clicks by converting their positions from screen to
-  grid coordinates and calling handleClick on level
-
+- `makeScene()`, which draws the level to an empty scene
+- `onMouseClicked(Posn pos)`, which manages mouse clicks by converting their positions from screen to
+  grid coordinates and invoking `handleClick` on level
+- `onKeyEvent(String k)`, which handles a key event with code `k` by propagating it to the key 
+  event handler on `Level`
+- `shouldWorldEnd()`, which determines whether the `Level`'s win condition is satisfied
+- `lastScene(String msg)`, which draws the current game with an overlay of "You win!" text
 
 ### Level
 Level represents the logic for a level and its layout, including all of its vehicles, walls, exits,
@@ -48,14 +70,19 @@ We have three constructors for levels:
 
 
 ##### Level loading helpers
-To aid in loading levels from Strings, we have a LoadUtils class with several helper methods:
 
-loadVehicles loads a list of AVehicles defined by the provided layout String, assuming that the
-first character in the String is at the position defined by two accumulators, curX and curY. The
-vehicle at the specified GridPosn, if one exists, is selected. With each subsequent iteration,
-curX and curY are updated according to whether the next character is a newline.
+To aid in loading levels from Strings, we have a `Parser` class instantiated with a string 
+representation of the level and a `GridPosn` representing the selected tile on the level.
 
-The method also utilizes a seeded instance of the Random class to generate colors for cars. This
+`loadVehicles` loads a list of `AVehicles` within the parser's layout String. It calls 
+`loadRemainingVehicles` with a set of default parameters.
+
+`loadRemainingVehicles` assumes that the first character in the String is at the position 
+defined by two accumulators, `curX` and `curY`. The vehicle at the specified `GridPosn`, if one 
+exists, is selected. With each subsequent iteration, `curX` and `curY` are updated according to 
+whether the next character is a newline.
+
+The method also utilizes a seeded instance of the `Random` class to generate colors for cars. This
 instance always uses the same seed, since it isn't important to generate different colors each time
 the program is run.
 
@@ -109,6 +136,10 @@ IGameObject interface. The only two methods it contains are:
   over the list of cars, thus allowing for multiple PlayerCars as well.
 - registerClick, which registers a click at the provided GridPosn, acting on this Car depending on
   where the click occurred.
+- `registerKey`, which registers a key event, returning a new `IVehicle` representing the changed 
+  vehicle after the key. If this `IVehicle` is selected, moves it left, right, up, or down 
+  depending on which movements are available and which key was pressed. Collisions are tested 
+  with the provided lists of walls and vehicles before movement. 
 
 
 ### AVehicle
@@ -163,73 +194,93 @@ It has the following methods:
 
 
 ### GridArea
-A GridArea is an object that stores the location of an object by storing the GridPosns of its
-extreme points. This also allows access to the range of grid positions the entire object covers.
+
+A `GridArea` is an object that stores the location of an object by storing the `GridPosn`s of its
+extreme points. This allows for predicates to determine intersection or containing between two 
+`GridArea`s.
+
+Both the horizontal and vertical intervals of a `GridArea` are semi-open; i.e., the top and left 
+edges are inclusive, and the bottom and right edges are exclusive. This clarifies that  two 
+side-by-side `IGameObject`s are not intersecting, while allowing for an `IGameObject` to contain 
+its own `GridPosn`. 
 
 It has the following methods:
-- intersects(GridArea that), which investigates both the GridRects have any grid positions that may
-  be common and hence, in representation, might "intersect".
-- containsRect(GridArea that), which considers both the GridRects and indicates whether this
-  GridArea have all the grid positions of the given GridArea, or in a sense, whether this GridArea
-  completely "contain" (is a superset of) the given GridArea.
-- containsPosn(GridPosn that), which checks if a GridPosn is one of the grid positions represented
-  by the GridArea.
+
+- `intersects(GridArea that)`, which investigates both the `GridArea`s have any grid positions 
+  that may be common and hence, in representation, might "intersect".
+- `containsRect(GridArea that)`, which considers both the `GridRects` and indicates whether this
+  `GridArea` have all the grid positions of the given `GridArea`, or in a sense, whether this 
+  `GridArea` completely "contain" (is a superset of) the given `GridArea`.
+- `containsPosn(GridPosn that)`, which checks if a `GridPosn` is one of the grid positions 
+  represented by the `GridArea`.
 
 
 ### IList
-An IList is a generic list of a given type. It is either an empty list (one that doesn't contain
+
+An `IList` is a generic list of a given type. It is either an empty list (one that doesn't contain
 anything), or it is a structure that contains one of those given elements and a list of more of
 them. It is implemented to store a list of objects that are of some type (have some commonality).
 
+We decided to keep `IList` rather than refactoring to `ArrayList` because we found that direct index 
+access was not a large enough benefit to justify the change, and that many of our recursive 
+list abstractions were easier and cleaner to use than loops. 
+
 It has the following methods:
-- andmap(Function<T, Boolean> func), which goes over the entire list and checks whether every
+
+- `andmap(Function<T, Boolean> func)`, which goes over the entire list and checks whether every
   element in the list confers to a certain question/predicate/condition and if yes, it returns true.
   If not, it returns false.
-- ormap(Function<T, Boolean> func), which goes over the entire list and checks whether any element
+- `ormap(Function<T, Boolean> func)`, which goes over the entire list and checks whether any element
   in the list confers to a certain question/predicate/condition and if yes, it returns true. If none
   of them meet this given criteria, it returns false. Else, it returns true.
-- restOrmap(BiFunction<T, IList<T>, Boolean> func), which is a method similar to ormap, but it also
+- `restOrmap(BiFunction<T, IList<T>, Boolean> func)`, which is a method similar to ormap, but it also
   includes the rest of the list passed as a parameter in order to avoid making symmetrical
   comparisons twice, thereby reducing the number of comparisons by two.
-- foldr(BiFunction<T, U, U> func, U base), which goes over the list and accumulates all terms,
+- `foldr(BiFunction<T, U, U> func, U base)`, which goes over the list and accumulates all terms,
   combining them with some given operation, to return back the one combined term that constitutes
   all the members of list, combined in some fashion.
-- map(Function<T, U> func), which goes over the entire list and implements some operation on each
+- `map(Function<T, U> func)`, which goes over the entire list and implements some operation on each
   member of the list, essentially changing the list in some manner (based on the operation). This
   also introduces the possibility that the list of results may not be the same as the list of
   inputs.
 
 ### TiledImage
-A TiledImage represents a WorldImage (an in-built construct of the image library), that is drawn
+
+A `TiledImage` represents a `WorldImage` (an in-built construct of the image library), that is drawn
 or rendered on a specific tile (located at a specific position in the image of the game-board).
 
 It has the following methods:
-- drawRow(int width), which renders the given image for the given length of the row.
-- drawRows(int height), which renders the given image for the given length of the column.
-- draw(), which draws this TiledImage and renders it into an image.
+
+- `drawRow(int width)`, which renders the given image for the given length of the row.
+- `drawRows(int height)`, which renders the given image for the given length of the column.
+- `draw()`, which draws this `TiledImage` and renders it into an image.
 
 ### Functions
-These functions refers to carefully curated function objects used alongside the list abstraction
-methods.
+
+These functions refer to curated function objects used alongside the list abstraction methods.
 
 The functions are as follows:
-- IntersectsPred<T extends IGameObject>, which is a function object that constructs the condition
-  used in list abstractions, such as andmap and ormap, given that this specific function object
-  converts a generic type to a boolean. The condition here determines if this IGameObject intersects
-  with any IGameObject.
-- IntersectsAnyPred<T extends IGameObject>, which is a function object that constructs the condition
-  used in list abstractions, such as andmap and ormap, given that this specific function object
-  converts a generic type to a boolean. The condition here determines if this IGameObject intersects
-  with any other IGameObjects given in the String during Constructor call.
-- IntersectsAnyOtherPred<IList<U> otherObjects>, which is a function object that constructs the
-  condition used in list abstractions, such as andmap, ormap or restOrmap, given that this specific
-  function object converts a generic type to a boolean. The condition here determines if any of the
-  vehicles or walls provided on construction overlap with that.
-- DrawToScene<T extends IGameObject>, which is a function object that draws the provided IGameObject
-  to the provided WorldImage according to the IGameObject's position and draw method.
-- InRectPred<T extends IGameObject>, which is a function object predicate that determines whether
-  the provided IGameObject's GridArea is fully contained in the GridArea passed during construction.
-- InWinningStatePred, which is a function object predicate that returns true if the provided
-  IVehicle is in a winning state; i.e., if it, being a PlayerCar, implies it is overlapping an Exit.
-- OnClick, which is a function object that maps a car before a click event to a car after a click
+
+- `IntersectsPred<T extends IGameObject>`, which is a function object that constructs the condition
+  used in list abstractions, such as `andmap` and `ormap`, given that this specific function object
+  converts a generic type to a `boolean`. The condition here determines if this `IGameObject`  
+  intersects with any `IGameObject`.
+- `IntersectsAnyPred<T extends IGameObject>`, which is a function object that constructs the 
+  condition used in list abstractions, such as andmap and ormap, given that this specific 
+  function object converts a generic type to a `boolean`. The condition here determines if this 
+  `IGameObject` intersects with any other `IGameObject`s given in the `String` during 
+  Constructor call.
+- `IntersectsAnyOtherPred<IList<U> otherObjects>`, which is a function object that constructs the
+  condition used in list abstractions, such as `andmap`, `ormap` or `restOrmap`, given that this
+  specific function object converts a generic type to a boolean. The condition here determines 
+  if any of the vehicles or walls provided on construction overlap with that.
+- `DrawToScene<T extends IGameObject>`, which is a function object that draws the provided 
+  `IGameObject` to the provided WorldImage according to the IGameObject's position and draw method.
+- `InRectPred<T extends IGameObject>`, which is a function object predicate that determines whether
+  the provided `IGameObject`'s `GridArea` is fully contained in the `GridArea` passed during 
+  construction.
+- `InWinningStatePred`, which is a function object predicate that returns true if the provided
+  `IVehicle` is in a winning state; i.e., if it, being a `PlayerCar` implies it is overlapping 
+  an `Exit`.
+- `OnClick`, which is a function object that maps a car before a click event to a car after a click
   event, selecting it if it contains the click position and deselecting it if it does not.

@@ -4,16 +4,32 @@ We decided to base the merged implementation primarily off of Nick's work for HW
 finer implementation details from Joseph's design. This is primarily due to extensibility concerns:
 Nick's design was extensible enough as-is to address many of the HW7 requirements without major
 changes. It already had support for placing walls anywhere in the grid and representing object areas
-via the `Rect` class, and supports requirements that may be salient in the future as well (e.g.,
-dealing with multiple player cars and exits)
+via the `Rect` class (which was renamed to `Area`, and supports requirements that may be salient in 
+the future as well (e.g., dealing with multiple player cars and exits)
 
-However, for some of the finer details (namely, those involving the switch to ArrayLists) Nick's
-implementation was a bit less extensible, so we chose to merge in aspects of Joseph's
-implementation. For instance, the use of a boolean value on each car for selection proved fairly
-difficult to work with; meanwhile, Joseph's solution of storing a selection index is cleaner and
-works much better with ArrayLists.
+## Parsing
 
-Additionally, we decided to merge our parsing implementations together. We wanted to maintain the
-way Nick's implementation parsed Levels from the constructor; however, we also wanted the
-simplicity of Joseph's implementation in how it parses the vehicles, walls, and exit all from
-within one function. // TODO
+The main portion of the project that we decided to merge was the parsing implementation, since this 
+portion is fairly isolated from the rest of the game logic. We wanted to maintain the way Nick's 
+implementation parsed Levels from the constructor, but also create a simpler interface like Joseph's
+`Parser`/`ParseInformation` class. We ended up with a new `Parser` class representing a combination 
+of the two. Rather than taking a number of parameters—-many of which are irrelevant to the user—-
+every time a parse function is called, we store the layout and selection as fields. This way, 
+details such as random number generation and current positions are abstracted away from the 
+interface. 
+
+## Target Vehicle Representation
+
+The other merge that we considered was representing selections with indices, as Joseph's 
+implementation did, rather than storing it as a state on each `AVehicle` individually. We 
+thought that this would help prevent conflicting states between `AVehicles`, increase code 
+efficiency by allowing direct access to the target vehicle, and ease the transition from `IList` 
+to `ArrayList`. 
+
+However, we ultimately decided that refactoring our code to use `ArrayList`s was an unnecessary 
+modification, as imperative programming was unnecessary and would only complicate our 
+implementation. Indices also complicated the rendering code path, as we wanted to render each 
+`IGameObject` with a uniform interface. Therefore, we kept Nick's implementation of storing 
+the selected vehicle as state on `AVehicle`s.
+
+
