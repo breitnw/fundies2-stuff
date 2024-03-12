@@ -215,7 +215,7 @@ class CAWorld extends World {
 class ExamplesAutomata {
   Rule60 s0 = new Rule60(0);
   Rule60 s1 = new Rule60(1);
-  
+
   void testNextState(Tester t) {
     t.checkExpect(s0.childState(s0, s0), 0);
     t.checkExpect(s0.childState(s0, s1), 0);
@@ -226,6 +226,52 @@ class ExamplesAutomata {
     t.checkExpect(s1.childState(s1, s0), 0);
     t.checkExpect(s1.childState(s1, s1), 0);
   }
+
+  void testBigBang(Tester t) {
+    CAWorld g = new CAWorld(new Rule60(0), new Rule60(1));
+    g.bigBang(g.TOTAL_WIDTH, g.TOTAL_HEIGHT, 0.2);
+  }
+
+  void testRule60ChildCell(Tester t) {
+    ICell cellZero = new Rule60(0);
+    ICell cellOne = new Rule60(1);
+
+    // Test child cell creation
+    t.checkExpect(cellZero.childCell(cellZero, cellZero), new Rule60(0));
+    t.checkExpect(cellZero.childCell(cellOne, cellZero), new Rule60(1));
+    t.checkExpect(cellOne.childCell(cellZero, cellOne), new Rule60(1));
+    t.checkExpect(cellOne.childCell(cellOne, cellOne), new Rule60(0));
+  }
+
+  void testInertCellChildCell(Tester t) {
+    ICell inert = new InertCell();
+    ICell cellOne = new Rule60(1);
+
+    // Regardless of neighbors, an inert cell should always produce an inert cell
+    t.checkExpect(inert.childCell(inert, inert), new InertCell());
+    t.checkExpect(inert.childCell(cellOne, inert), new InertCell());
+  }
+
+  void testCellArrayNextGen(Tester t) {
+    ArrayList<ICell> initialCells = new ArrayList<>();
+    initialCells.add(new Rule60(0));
+    initialCells.add(new Rule60(1));
+    initialCells.add(new Rule60(0));
+
+    CellArray array = new CellArray(initialCells);
+    CellArray nextGen = array.nextGen();
+
+    ArrayList<ICell> expectedCellsNextGen = new ArrayList<>();
+    expectedCellsNextGen.add(new Rule60(1)); // Assuming this is the expected state based on your rules
+    expectedCellsNextGen.add(new Rule60(0)); // Adjust these based on the actual expected behavior
+    expectedCellsNextGen.add(new Rule60(1));
+
+    // Compare expected next generation with actual next generation
+    // This assumes you implement a method in CellArray to get its cells for comparison
+    t.checkExpect(nextGen.cells, expectedCellsNextGen);
+  }
+
+
   
   void testSimulation(Tester t) {
     new CAWorld(new Rule30(0), new Rule30(1))
