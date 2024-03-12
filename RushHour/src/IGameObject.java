@@ -105,7 +105,6 @@ interface IVehicle extends IGameObject {
   // vehicle state after the click.
   IVehicle registerClick(GridPosn clickPosn);
   
-  // TODO: needs tests
   // Registers a key event on this IVehicle, returning a new IVehicle representing the changed
   // vehicle after the key. If this IVehicle is selected, moves it left, right, up, or down
   // depending on which movements are available and which key was pressed.
@@ -173,11 +172,9 @@ abstract class AVehicle extends AGameObject implements IVehicle {
     }
   }
   
-  // TODO: needs tests
   // Moves this AVehicle to the provided GridPosn, without checking for collisions.
   abstract AVehicle moveTo(GridPosn newPosn);
   
-  // TODO: needs tests
   // If possible, moves this AVehicle dx tiles horizontally and dy tiles vertically.
   // If the resultant AVehicle is colliding with any other vehicles on the grid, or if the
   // movement isn't in this car's direction of travel, does nothing.

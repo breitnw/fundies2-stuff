@@ -171,13 +171,106 @@ class ExamplesGame {
   
   void testBigBang(Tester t) {
     // Runs the game via bigBang()
-    game6.bigBang();
+    game3.bigBang();
   }
   
   void testMakeScene(Tester t) {
     // Since we've tested Level.draw(), we're checking against its output in this test
     t.checkExpect(game1.makeScene(), level1.draw());
     t.checkExpect(game2.makeScene(), level2.draw());
+  }
+  
+  void testOnKeyEvent(Tester t) {
+    Game g = new Game(
+        new Level("+------+\n"
+                      + "|c    T|\n"
+                      + "|T     |\n"
+                      + "| p    X\n"
+                      + "|      |\n"
+                      + "|C   c |\n"
+                      + "|   t  |\n"
+                      + "+------+", new GridPosn(2, 3))
+    );
+    t.checkExpect(g.onKeyEvent("d"),
+        new Game(
+            new Level("+------+\n"
+                          + "|c    T|\n"
+                          + "|T     |\n"
+                          + "|  p   X\n"
+                          + "|      |\n"
+                          + "|C   c |\n"
+                          + "|   t  |\n"
+                          + "+------+", new GridPosn(3, 3))
+        ));
+    // blocked by vehicle
+    t.checkExpect(game5.onKeyEvent("d"),
+        new Game(
+            new Level("+------+\n"
+                          + "|c    T|\n"
+                          + "|T  T  |\n"
+                          + "| p    X\n"
+                          + "|      |\n"
+                          + "|C   c |\n"
+                          + "|   t  |\n"
+                          + "+------+", new GridPosn(2, 3))
+        ));
+    // cannot move truck down because blocked by obstacle
+    Game ob = new Game(new Level("+------+\n"
+                                  + "|c    T|\n"
+                                  + "|T +T  |\n"
+                                  + "| p    X\n"
+                                  + "|  +  +|\n"
+                                  + "+------+", new GridPosn(5, 0)));
+    t.checkExpect(ob.onKeyEvent("s"), ob);
+    
+    // no selected vehicle
+    t.checkExpect(game4.onKeyEvent("s"), game4);
+    // wrong direction
+    t.checkExpect(ob.onKeyEvent("a"), ob);
+  }
+  
+  
+  void testLastScene(Tester t) {
+    Game g = new Game(
+        new Level("+------+\n"
+                      + "|c     |\n"
+                      + "|T  T  |\n"
+                      + "|     pX\n"
+                      + "|      |\n"
+                      + "|C     |\n"
+                      + "|   t  |\n"
+                      + "+------+")
+    );
+    t.checkExpect(g.lastScene(""), g.level.draw().placeImageXY(
+            new FromFileImage("sprites/you-win.png"),
+            g.level.getWidthPixels() / 2,
+            g.level.getHeightPixels() / 2));
+  }
+  
+  void testShouldWorldEnd(Tester t) {
+    t.checkExpect(game1.shouldWorldEnd(), false);
+    Game g = new Game(
+        new Level("+------+\n"
+                      + "|c     |\n"
+                      + "|T  T  |\n"
+                      + "|     pX\n"
+                      + "|      |\n"
+                      + "|C     |\n"
+                      + "|   t  |\n"
+                      + "+------+")
+    );
+    t.checkExpect(g.shouldWorldEnd(), true);
+    Game g2 = new Game(
+        new Level("+------+\n"
+                      + "|c     |\n"
+                      + "|T  T  |\n"
+                      + "|    p X\n"
+                      + "|      |\n"
+                      + "|C     |\n"
+                      + "|   t  |\n"
+                      + "+------+")
+    );
+    t.checkExpect(g2.shouldWorldEnd(), false);
   }
   
   void testOnMouseClicked(Tester t) {
@@ -294,6 +387,21 @@ class ExamplesGame {
             new Exit(new GridPosn(0, 2)),
             new Mt<>()),
         6, 3));
+  }
+  
+  
+  void testLevelHandleKey(Tester t) {
+    // blocked by vehicle
+    t.checkExpect(level5.handleKey("d"),
+        new Level("+------+\n"
+                      + "|c    T|\n"
+                      + "|T  T  |\n"
+                      + "| p    X\n"
+                      + "|      |\n"
+                      + "|C   c |\n"
+                      + "|   t  |\n"
+                      + "+------+", new GridPosn(2, 3))
+    );
   }
   
   // An integration test to check the functionality of the draw method on a simple scene.
@@ -531,6 +639,87 @@ class ExamplesIGameObject {
         new Car(new GridPosn(0, 1), 2, false, true));
   }
   
+  void testRegisterKey(Tester t) {
+    Car moveCar = new Car(new GridPosn(), 1, true, true);
+    Truck moveTruck = new Truck(new GridPosn(2, 0), 3, false, true);
+    Truck inactiveCar = new Truck(new GridPosn(2, 0), 3, false, false);
+    Wall w = new Wall(new GridPosn(2, 0));
+    
+    // Do nothing if the car is inactive
+    t.checkExpect(inactiveCar.registerKey("a",
+            new Cons<>(w, new Mt<>()),
+            new Cons<>(inactiveCar, new Cons<>(moveTruck, new Mt<>()))),
+        inactiveCar);
+    
+    // Do nothing if the desired move isn't in the direction of movement
+    t.checkExpect(moveCar.registerKey("s", new Mt<>(), new Mt<>()), moveCar);
+    t.checkExpect(moveTruck.registerKey("d", new Mt<>(), new Mt<>()), moveTruck);
+    
+    // Do nothing if the move would cause a collision with another vehicle
+    t.checkExpect(moveCar.registerKey("d", new Mt<>(),
+            new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
+        moveCar);
+    
+    // Do nothing if the move would cause a collision with a wall
+    t.checkExpect(moveCar.registerKey("d", new Cons<>(w, new Mt<>()), new Mt<>()), moveCar);
+    
+    // Otherwise, move the vehicle
+    t.checkExpect(moveCar.registerKey("a",
+            new Cons<>(w, new Mt<>()),
+            new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
+        new Car(new GridPosn(-1, 0), 1, true, true));
+    t.checkExpect(moveCar.registerKey("d",
+            new Mt<>(),
+            new Cons<>(moveCar, new Mt<>())),
+        new Car(new GridPosn(1, 0), 1, true, true));
+    t.checkExpect(moveTruck.registerKey("w",
+            new Mt<>(),
+            new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
+        new Truck(new GridPosn(2, -1), 3, false, true));
+    t.checkExpect(moveTruck.registerKey("s",
+            new Mt<>(),
+            new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
+        new Truck(new GridPosn(2, 1), 3, false, true));
+    
+    // Arrow keys should work as well
+    t.checkExpect(moveCar.registerKey("left",
+            new Cons<>(w, new Mt<>()),
+            new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
+        new Car(new GridPosn(-1, 0), 1, true, true));
+  }
+  
+  void testMoveTo(Tester t) {
+   t.checkExpect(car1.moveTo(new GridPosn(1, 3)),
+       new Car(new GridPosn(1, 3), 0, true, true));
+   t.checkExpect(pCar1.moveTo(new GridPosn(1, 3)),
+       new PlayerCar(new GridPosn(1, 3), true, true));
+   t.checkExpect(truck1.moveTo(new GridPosn(1, 3)),
+       new Truck(new GridPosn(1, 3), 3, true, true));
+  }
+  
+  void testMove(Tester t) {
+    Car moveCar = new Car(new GridPosn(), 1, true, false);
+    Truck moveTruck = new Truck(new GridPosn(2, 0), 3, false, false);
+    Wall w = new Wall(new GridPosn(2, 0));
+    
+    // Do nothing if the desired move isn't in the direction of movement
+    t.checkExpect(moveCar.move(0, 1, new Mt<>(), new Mt<>()), moveCar);
+    t.checkExpect(moveTruck.move(1, 0, new Mt<>(), new Mt<>()), moveTruck);
+    
+    // Do nothing if the move would cause a collision with another vehicle
+    t.checkExpect(moveCar.move(1, 0, new Mt<>(),
+            new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
+        moveCar);
+    
+    // Do nothing if the move would cause a collision with a wall
+    t.checkExpect(moveCar.move(1, 0, new Cons<>(w, new Mt<>()), new Mt<>()), moveCar);
+    
+    // Otherwise, move the vehicle
+    t.checkExpect(moveCar.move(-1, 0,
+        new Cons<>(w, new Mt<>()),
+        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
+        new Car(new GridPosn(-1, 0), 1, true, false));
+  }
 }
 
 // Examples for Functions.java ====================================================================
@@ -864,6 +1053,18 @@ class ExamplesIList {
             new Cons<>("7",
                 new Cons<>("2",
                     new Mt<>()))));
+  }
+  
+  void testRemove(Tester t) {
+    t.checkExpect(mt.remove(1), mt);
+    t.checkExpect(ints1.remove(1), new Cons<>(7, new Cons<>(2, new Mt<>())));
+    t.checkExpect(ints2.remove(1), new Cons<>(1, new Cons<>(1, new Mt<>())));
+    t.checkExpect(ints1.remove(3), ints1);
+    
+    Car c1 = new Car(new GridPosn(1, 1), 0, false, false);
+    Car c2 = new Car(new GridPosn(1, 1), 0, false, false);
+    t.checkExpect(new Cons<>(c1, new Mt<>()).remove(c1), new Mt<>());
+    t.checkExpect(new Cons<>(c1, new Mt<>()).remove(c2), new Cons<>(c1, new Mt<>()));
   }
 }
 

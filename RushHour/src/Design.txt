@@ -20,18 +20,22 @@ then, simply find the length of the longest row.
 ---
 
 ## GAME STATE
-Two classes manage the overall game state: Game and Level. As the names suggest, Game manages the
-state of the game as a whole, while Level manages an individual level.
+
+Two classes manage the overall game state: `Game` and `Level`. As the names suggest, `Game` manages
+the state of the game as a whole, while `Level` manages an individual level.
 
 
 ### Game
-Game extends javalib.funworld.World, and contains:
-- An integer TILE_SIZE that represents the size of each tile, in pixels. As of now, this number is
+
+`Game` extends `javalib.funworld.World`, and contains:
+
+- An integer `TILE_SIZE` that represents the size of each tile, in pixels. As of now, this number is
   always 64, as that is the size of a tile in each sprite.
-- a Level that represents the level this game renders
+- a `Level` that represents the level this game renders
 
 It has the following methods:
-- bigBang(), which overloads the default bigBang method by determining the width and the height of
+
+- `bigBang()`, which overloads the default bigBang method by determining the width and the height of
   the game based on the level
 - `makeScene()`, which draws the level to an empty scene
 - `onMouseClicked(Posn pos)`, which manages mouse clicks by converting their positions from screen to
@@ -42,9 +46,10 @@ It has the following methods:
 - `lastScene(String msg)`, which draws the current game with an overlay of "You win!" text
 
 ### Level
-Level represents the logic for a level and its layout, including all of its vehicles, walls, exits,
-width, and height. Although they all implement the IGameObject interface, we chose to represent
-vehicles, walls, and exits as separate lists, as subclasses (i.e., vehicle) have unique
+
+`Level` represents the logic for a level and its layout, including all of its vehicles, walls,
+exits, width, and height. Although they all implement the `IGameObject` interface, we chose to 
+represent vehicles, walls, and exits as separate lists, as subclasses (i.e., vehicle) have unique
 functionality that we would like to be able to easily invoke. For example, we'd like to iterate over
 all the cars when registering clicks, without needing to redundantly iterate over walls or exits.
 
@@ -53,7 +58,9 @@ cars and exits, allowing for challenges that involve multiple exits we need to r
 
 
 #### Loading levels
-We have three constructors for levels:
+
+We have four constructors for levels:
+
 - The first takes in a list of vehicles, walls, exits, width, and height. It throws a variety of
   exceptions to validate its data:
   - If the width or height are less than 1
@@ -62,11 +69,13 @@ We have three constructors for levels:
   - If any vehicle extends beyond the limits of the grid
   - The latter three tests are _not_ performed with walls or exits, since we will realistically only
     ever be loading a level from a String, in which case it is impossible to make these mistakes.
-- The second takes in a String to simplify Level construction. For more information on how to format
-  the level strings, see the documentation for this constructor.
-- The third takes in a String and a GridPosn. The Level is constructed in the same manner as it
+- The second takes in a `String` to simplify `Level` construction. For more information on how 
+  to format the level strings, see the documentation for this constructor.
+- The third takes in a `String` and a `GridPosn`. The Level is constructed in the same manner as it
   would be in the second constructor, just with the car at the specified GridPosn (if one exists)
   selected.
+- The fourth takes in a `Parser` class and constructs a level using the corresponding 
+  information stored within the parser.
 
 
 ##### Level loading helpers
@@ -86,14 +95,16 @@ The method also utilizes a seeded instance of the `Random` class to generate col
 instance always uses the same seed, since it isn't important to generate different colors each time
 the program is run.
 
-loadWalls and loadExits function in a similar way to loadVehicles, but accept any of the valid
-wall characters or exit character, respectively, and produce a list of walls or exits instead
+`loadWalls` and `loadExits` function in a similar way to `loadVehicles`, but accept any of the valid
+wall characters or exit character, respectively, and produce a list of walls or exits instead. 
+`loadRemainingWalls` and `loadRemainingExits`, then, are analogous to `loadRemainingVehicles` 
+in the way that they accept current position and remaining string information.
 
-loadWidth retrieves the width of the level from the String by finding the index of the first newline
-character. It also throws an exception if hasSameLineLengths, which validates that all of the lines
-in the String are the same length, returns false.
+`loadWidth` determines the width of the level by finding the longest string length of the layout 
+string split by newline characters -- it takes the longest line as the width. Shorter lines are 
+assumed to be filled up with empty space.
 
-loadHeight retrieves the height of the level by counting the number of newline characters in the
+`loadHeight` retrieves the height of the level by counting the number of newline characters in the
 provided String.
 
 
@@ -102,40 +113,46 @@ provided String.
 ## GAME OBJECTS
 
 ### IGameObject
-To represent any object in our game with physical dimensions, we created the IGameObject interface.
-Every IGameObject has three publicly accessible (defined on the interface) methods:
-- intersects, which determines if this IGameObject overlaps another IGameObject utilizing the
-  methods on each IGameObject's generated GridArea
-- getRect, which creates a GridArea representing the two-dimensional span of this IGameObject,
+
+To represent any object in our game with physical dimensions, we created the `IGameObject`
+interface. Every `IGameObject` has three publicly accessible (defined on the interface) methods:
+
+- `intersects`, which determines if this `IGameObject` overlaps another `IGameObject` utilizing the
+  methods on each `IGameObject`'s generated `GridArea`
+- `getRect`, which creates a `GridArea` representing the two-dimensional span of this `IGameObject`,
   from its top-left to bottom-right corner.
-- drawTo, which given a scene and a tileSize, draws this IGameObject to the scene at its respective
-  GridPosn.
+- `drawTo`, which given a scene and a tileSize, draws this `IGameObject` to the scene at its 
+  respective `GridPosn`.
 
 
 ### AGameObject
-In order to abstract some of this functionality over the classes that implement IGameObject, we also
-added the abstract class AGameObject. This class contains a GridPosn representing the upper right
-corner of the game object. It also fills in some of the methods from the interface, such as
-intersects, getRect (based on two new methods, xSize and ySize) and drawTo (based on a new method,
-getImage).
 
-xSize and ySize have default implementations (namely, returning 1, since this is the most common
+In order to abstract some of this functionality over the classes that implement `IGameObject`, we
+also added the abstract class `AGameObject`. This class contains a `GridPosn` representing the 
+upper right corner of the game object. It also fills in some of the methods from the interface, 
+such as `intersects`, `getRect` (based on two new methods, xSize and ySize) and `drawTo` (based on a 
+new method, `getImage`).
+
+`xSize` and `ySize` have default implementations (namely, returning 1, since this is the most common
 width/height value), but they are overridden. getImage is left as an abstract method.
 
 
 ### Wall and Exit
-The Wall and Exit classes each use all the default implementations except for getImage(), since it
-has one. In each case, they just load an image from the corresponding file.
+
+The `Wall` and `Exit` classes each use all the default implementations except for `getImage()`, 
+since it doesn't have one. In each case, they just load an image from the corresponding file.
 
 
 ### IVehicle
-The IVehicle interface represents public functionality across all vehicles, and extends the
+
+The `IVehicle` interface represents public functionality across all vehicles, and extends the
 IGameObject interface. The only two methods it contains are:
-- inWinningState, which determines whether this IVehicle is in a winning state. We decided to make
-  this method accessible to all vehicles instead of just PlayerCars so that we can just run andmap
-  over the list of cars, thus allowing for multiple PlayerCars as well.
-- registerClick, which registers a click at the provided GridPosn, acting on this Car depending on
-  where the click occurred.
+
+- `inWinningState`, which determines whether this `IVehicle` is in a winning state. We decided to make
+  this method accessible to all vehicles instead of just `PlayerCars` so that we can just run andmap
+  over the list of cars, thus allowing for multiple `PlayerCars` as well.
+- `registerClick`, which registers a click at the provided `GridPosn`, acting on this `IVehicle` 
+  depending on where the click occurred.
 - `registerKey`, which registers a key event, returning a new `IVehicle` representing the changed 
   vehicle after the key. If this `IVehicle` is selected, moves it left, right, up, or down 
   depending on which movements are available and which key was pressed. Collisions are tested 
@@ -143,32 +160,38 @@ IGameObject interface. The only two methods it contains are:
 
 
 ### AVehicle
-The AVehicle interface abstracts some of the functionality present across all IVehicle implementors.
-It contains three fields:
-- color, which is an integer (validated to be between 0 and 4) representing the color of the
+
+The `AVehicle` interface abstracts some of the functionality present across all `IVehicle` 
+implementors. It contains three fields:
+
+- `color`, which is an integer (validated to be between 0 and 4) representing the color of the
   vehicle. It maps to the number present in the corresponding sprite's filename.
-- isHorizontal, which represents whether this vehicle is horizontal or vertical
-- active, which represents whether this vehicle is selected.
+- `isHorizontal`, which represents whether this vehicle is horizontal or vertical
+- `active`, which represents whether this vehicle is selected.
 
-This allows us to define xSize and ySize depending on two new abstract methods, getWidth and
-getHeight. These methods do not vary based on the orientation of the vehicle, but xSize and ySize
-transform the values, according to isHorizontal, such that they do.
 
-We also abstract inWinningState with a default implementation that always returns true, and define a
-method drawFromFile that, given a filename, retrieves a sprite and rotates it accordingly.
+This allows us to define `xSize` and `ySize` depending on two new abstract methods, `getWidth` and
+getHeight. These methods do not vary based on the orientation of the vehicle, but `xSize` and `ySize`
+transform the values, according to `isHorizontal`, such that they do.
+
+We also abstract `inWinningState` with a default implementation that always returns true, and define a
+method `drawFromFile` that, given a filename, retrieves a sprite and rotates it accordingly.
 
 
 ### Car and Truck
-The Car and Truck classes both extend AVehicle, overriding the getWidth and getLength methods
-according to their respective width and length. Both also override the getImage method by creating
+
+The `Car` and `Truck` classes both extend `AVehicle`, overriding the `getWidth` and `getLength` methods
+according to their respective width and length. Both also override the `getImage` method by creating
 an image based on a path string and modifying it based on the color, or choosing the selected sprite
-if necessary. Finally, they implement registerClick by returning a new object with its active field
+if necessary. Finally, they implement `registerClick` by returning a new object with its `active` field
 set based on the click location.
 
+
 ### PlayerCar
-Finally, PlayerCar extends Car to represent the car that needs to reach an exit to win the game. It
-overrides getImage to always return the player car image (unless selected), registerClick to return
-a PlayerCar instead of a Car, and inWinningState to check that one of the exits is intersecting with
+
+Finally, `PlayerCar` extends `Car` to represent the car that needs to reach an exit to win the game. It
+overrides `getImage` to always return the player car image (unless selected), `registerClick` to return
+a `PlayerCar` instead of a `Car`, and `inWinningState` to check that one of the exits is intersecting with
 this.
 
 
@@ -177,20 +200,22 @@ this.
 ## HELPER TYPES
 
 ### GridPosn
-A GridPosn represents a coordinate location on the game board, in terms of x-coordinate and
+
+A `GridPosn` represents a coordinate location on the game board, in terms of x-coordinate and
 y-coordinate of the grid-like cells on the game's board. Also referred to as the "grid position".
 
 It has the following methods:
-- samePosn(GridPosn other), which checks if this grid position refers to the same grid position
+
+- `samePosn(GridPosn other)`, which checks if this grid position refers to the same grid position
   referred to, by the other posn.
-- offset(int dx, int dy), which changes the grid position coordinates. It changes the grid
+- `offset(int dx, int dy)`, which changes the grid position coordinates. It changes the grid
   position's x-coordinate by dx, and the grid position's y-coordinate by dy.
-- drawPositioned(WorldImage im, WorldScene scene), which draws the given image onto the provided
+- `drawPositioned(WorldImage im, WorldScene scene)`, which draws the given image onto the provided
   scene, at this particular grid position.
-- compareX(GridPosn other), which is used to compute the relative x-coordinate of this GridPosn,
-  with respect to the other GridPosn.
-- compareY(GridPosn other), which is used to compute the relative y-coordinate of this GridPosn,
-  with respect to the other GridPosn.
+- `compareX(GridPosn other)`, which is used to compute the relative x-coordinate of this `GridPosn`,
+  with respect to the other `GridPosn`.
+- `compareY(GridPosn other)`, which is used to compute the relative y-coordinate of this `GridPosn`,
+  with respect to the other `GridPosn`.
 
 
 ### GridArea
@@ -208,9 +233,9 @@ It has the following methods:
 
 - `intersects(GridArea that)`, which investigates both the `GridArea`s have any grid positions 
   that may be common and hence, in representation, might "intersect".
-- `containsRect(GridArea that)`, which considers both the `GridRects` and indicates whether this
-  `GridArea` have all the grid positions of the given `GridArea`, or in a sense, whether this 
-  `GridArea` completely "contain" (is a superset of) the given `GridArea`.
+- `containsRect(GridArea that)`, which considers both the `GridArea`s and indicates whether this
+  `GridArea` has all the grid positions of the given `GridArea`, or in a sense, whether this 
+  `GridArea` completely "contains" (is a superset of) the given `GridArea`.
 - `containsPosn(GridPosn that)`, which checks if a `GridPosn` is one of the grid positions 
   represented by the `GridArea`.
 
@@ -244,7 +269,9 @@ It has the following methods:
   also introduces the possibility that the list of results may not be the same as the list of
   inputs.
 - `remove(T that)`, which produces a new list with the first instance of the provided element 
-  removed. If the provided element is not in this list, does nothing. Uses intensional equality for comparison.
+  removed. If the provided element is not in this list, does nothing. Uses `.equals()` equality 
+  to compare elements.
+
 
 ### TiledImage
 
@@ -256,6 +283,7 @@ It has the following methods:
 - `drawRow(int width)`, which renders the given image for the given length of the row.
 - `drawRows(int height)`, which renders the given image for the given length of the column.
 - `draw()`, which draws this `TiledImage` and renders it into an image.
+
 
 ### Functions
 
