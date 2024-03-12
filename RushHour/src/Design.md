@@ -243,6 +243,8 @@ It has the following methods:
   member of the list, essentially changing the list in some manner (based on the operation). This
   also introduces the possibility that the list of results may not be the same as the list of
   inputs.
+- `remove(T that)`, which produces a new list with the first instance of the provided element 
+  removed. If the provided element is not in this list, does nothing. Uses intensional equality for comparison.
 
 ### TiledImage
 

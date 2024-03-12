@@ -187,7 +187,7 @@ class CAWorld extends World {
     this.curGen = this.curGen.nextGen();
   }
   
-  // Draws the current world, ``scrolling up'' from the bottom of the image
+  // Draws the current world, scrolling up from the bottom of the image
   public WorldImage makeImage() {
     // make a light-gray background image big enough to hold 41 generations of 41 cells each
     WorldImage bg = new RectangleImage(TOTAL_WIDTH, TOTAL_HEIGHT,

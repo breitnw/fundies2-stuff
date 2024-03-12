@@ -171,7 +171,7 @@ class ExamplesGame {
   
   void testBigBang(Tester t) {
     // Runs the game via bigBang()
-    game1.bigBang();
+    game6.bigBang();
   }
   
   void testMakeScene(Tester t) {
@@ -936,23 +936,42 @@ class ExamplesParser {
   }
   
   void testLoadWalls(Tester t) {
-    t.checkExpect(lu.loadWalls(" CcPpTtX", 0, 0), new Mt<>());
-    t.checkExpect(lu.loadWalls("+|-", 0, 0),
+    t.checkExpect(new Parser(" CcPpTtX").loadWalls(), new Mt<>());
+    t.checkExpect(new Parser("+|-").loadWalls(),
         new Cons<>(new Wall(new GridPosn(0, 0)),
             new Cons<>(new Wall(new GridPosn(1, 0)),
                 new Cons<>(new Wall(new GridPosn(2, 0)),
                     new Mt<>()))));
-    t.checkExpect(lu.loadWalls(" + | - ", 0, 0),
+    t.checkExpect(new Parser(" + | - ").loadWalls(),
         new Cons<>(new Wall(new GridPosn(1, 0)),
             new Cons<>(new Wall(new GridPosn(3, 0)),
                 new Cons<>(new Wall(new GridPosn(5, 0)),
                     new Mt<>()))));
-    t.checkExpect(lu.loadWalls(" + | - ", 2, 1),
+    t.checkExpect(p6.loadWalls(),
+        new Cons<>(new Wall(new GridPosn(5, 0)),
+            new Cons<>(new Wall(new GridPosn(5, 1)),
+                new Cons<>(new Wall(new GridPosn(1, 2)),
+                    new Mt<>()))));
+  }
+  
+  void testLoadRemainingWalls(Tester t) {
+    t.checkExpect(p1.loadRemainingWalls(" CcPpTtX", 0, 0), new Mt<>());
+    t.checkExpect(p1.loadRemainingWalls("+|-", 0, 0),
+        new Cons<>(new Wall(new GridPosn(0, 0)),
+            new Cons<>(new Wall(new GridPosn(1, 0)),
+                new Cons<>(new Wall(new GridPosn(2, 0)),
+                    new Mt<>()))));
+    t.checkExpect(p1.loadRemainingWalls(" + | - ", 0, 0),
+        new Cons<>(new Wall(new GridPosn(1, 0)),
+            new Cons<>(new Wall(new GridPosn(3, 0)),
+                new Cons<>(new Wall(new GridPosn(5, 0)),
+                    new Mt<>()))));
+    t.checkExpect(p1.loadRemainingWalls(" + | - ", 2, 1),
         new Cons<>(new Wall(new GridPosn(3, 1)),
             new Cons<>(new Wall(new GridPosn(5, 1)),
                 new Cons<>(new Wall(new GridPosn(7, 1)),
                     new Mt<>()))));
-    t.checkExpect(lu.loadWalls("CPTc |\n"
+    t.checkExpect(p2.loadRemainingWalls("CPTc |\n"
                                    + "   p -\n"
                                    + "X+ t  ", 0, 0),
         new Cons<>(new Wall(new GridPosn(5, 0)),
@@ -962,24 +981,17 @@ class ExamplesParser {
   }
   
   void testLoadExits(Tester t) {
-    t.checkExpect(lu.loadExits(" CcPpTt+|-", 0, 0), new Mt<>());
-    t.checkExpect(lu.loadExits("X", 0, 0),
+    t.checkExpect(new Parser(" CcPpTt+|-").loadExits(), new Mt<>());
+    t.checkExpect(new Parser("X").loadExits(),
         new Cons<>(new Exit(new GridPosn(0, 0)),
             new Mt<>()));
-    t.checkExpect(lu.loadExits(" X X ", 0, 0),
+    t.checkExpect(new Parser(" X X ", new GridPosn(1, 0)).loadExits(),
         new Cons<>(new Exit(new GridPosn(1, 0)),
             new Cons<>(new Exit(new GridPosn(3, 0)),
                     new Mt<>())));
-    t.checkExpect(lu.loadExits(" X X ", 2, 1),
-        new Cons<>(new Exit(new GridPosn(3, 1)),
-            new Cons<>(new Exit(new GridPosn(5, 1)),
-                new Mt<>())));
-    t.checkExpect(lu.loadExits("CPTc |\n"
-                                   + "   p X\n"
-                                   + "X+ t  ", 0, 0),
-        new Cons<>(new Exit(new GridPosn(5, 1)),
-            new Cons<>(new Exit(new GridPosn(0, 2)),
-                new Mt<>())));
+    t.checkExpect(p6.loadExits(),
+        new Cons<>(new Exit(new GridPosn(0, 2)),
+            new Mt<>()));
   }
   
   void testLoadRemainingExits(Tester t) {
@@ -1004,32 +1016,33 @@ class ExamplesParser {
   }
   
   void testLoadWidth(Tester t) {
-    t.checkExpect(lu.loadWidth(" "), 1);
-    t.checkExpect(lu.loadWidth("       \n       "), 7);
-    t.checkExpect(lu.loadWidth("|+ p X cC |"), 11);
-    t.checkExpect(lu.loadWidth("+------+\n"
+    t.checkExpect(new Parser(" ").loadWidth(), 1);
+    t.checkExpect(new Parser("       \n       ").loadWidth(), 7);
+    t.checkExpect(new Parser("|+ p X cC |").loadWidth(), 11);
+    t.checkExpect(new Parser("+------+\n"
                                    + "|c    T|\n"
                                    + "|T  T  |\n"
                                    + "| p    X\n"
                                    + "|      |\n"
                                    + "|C   c |\n"
                                    + "|   t  |\n"
-                                   + "+------+"), 8);
+                                   + "+------+").loadWidth(), 8);
+    
+    
   }
   
   void testLoadHeight(Tester t) {
-    t.checkExpect(lu.loadHeight(" "), 1);
-    t.checkExpect(lu.loadHeight("   "), 1);
-    t.checkExpect(lu.loadHeight(" \n "), 2);
-    t.checkExpect(lu.loadHeight("x\n|x|\n\n"), 4);
-    t.checkExpect(lu.loadHeight(
+    t.checkExpect(new Parser(" ").loadHeight(), 1);
+    t.checkExpect(new Parser("   ").loadHeight(), 1);
+    t.checkExpect(new Parser(" \n ").loadHeight(), 2);
+    t.checkExpect(new Parser("x\n|x|\n\n").loadHeight(), 4);
+    t.checkExpect(new Parser(
         "+------+\n"
             + "|c P  T|\n"
             + "|T  T  |\n"
             + "| p    X\n"
             + "|      ||\n"
-            + "+--X---+"
-    ), 6);
+            + "+--X---+").loadHeight(), 6);
   }
 }
 

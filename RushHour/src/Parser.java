@@ -41,10 +41,10 @@ class Parser {
     }
     
     IList<IVehicle> rest;
-    if (layout.indexOf('\n') == 0) {
-      rest = loadVehicles(layout.substring(1), 0, curY + 1, rng, selection);
+    if (restLayout.indexOf('\n') == 0) {
+      rest = loadRemainingVehicles(restLayout.substring(1), 0, curY + 1, rng, selection);
     } else {
-      rest = loadVehicles(layout.substring(1), curX + 1, curY, rng, selection);
+      rest = loadRemainingVehicles(restLayout.substring(1), curX + 1, curY, rng, selection);
     }
     
     int color = rng.nextInt(5);
@@ -69,39 +69,49 @@ class Parser {
     }
   }
   
+  // Loads a list of walls defined by the provided layout String
+  IList<Wall> loadWalls() {
+    return this.loadRemainingWalls(this.layout, 0, 0);
+  }
+  
   // Loads a list of walls defined by the provided layout String, assuming that the first
   // character in the String is at the position defined by curX and curY
-  IList<Wall> loadWalls(String layout, int curX, int curY) {
-    if (layout.isEmpty()) {
+  IList<Wall> loadRemainingWalls(String restLayout, int curX, int curY) {
+    if (restLayout.isEmpty()) {
       return new Mt<>();
     }
     
     IList<Wall> rest;
-    if (layout.indexOf('\n') == 0) {
-      rest = loadWalls(layout.substring(1), 0, curY + 1);
+    if (restLayout.indexOf('\n') == 0) {
+      rest = loadRemainingWalls(restLayout.substring(1), 0, curY + 1);
     } else {
-      rest = loadWalls(layout.substring(1), curX + 1, curY);
+      rest = loadRemainingWalls(restLayout.substring(1), curX + 1, curY);
     }
     
-    if (layout.substring(0, 1).matches("[|+-]")) {
+    if (restLayout.substring(0, 1).matches("[|+-]")) {
       return new Cons<>(new Wall(new GridPosn(curX, curY)), rest);
     } else {
       return rest;
     }
   }
   
+  // Loads a list of exits defined by the provided layout String
+  IList<Exit> loadExits() {
+    return this.loadRemainingExits(this.layout, 0, 0);
+  }
+  
   // Loads a list of exits defined by the provided layout String, assuming that the first
   // character in the String is at the position defined by curX and curY
-  IList<Exit> loadExits(String layout, int curX, int curY) {
-    if (layout.isEmpty()) {
+  IList<Exit> loadRemainingExits(String restLayout, int curX, int curY) {
+    if (restLayout.isEmpty()) {
       return new Mt<Exit>();
     }
     
     IList<Exit> rest;
-    if (layout.indexOf('\n') == 0) {
-      rest = loadExits(layout.substring(1), 0, curY + 1);
+    if (restLayout.indexOf('\n') == 0) {
+      rest = loadRemainingExits(restLayout.substring(1), 0, curY + 1);
     } else {
-      rest = loadExits(layout.substring(1), curX + 1, curY);
+      rest = loadRemainingExits(restLayout.substring(1), curX + 1, curY);
     }
     
     if (restLayout.charAt(0) == 'X') {

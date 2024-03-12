@@ -67,8 +67,7 @@ interface IList<T> {
   <U> IList<U> map(Function<T, U> func);
   
   // Produces a new list with the first instance of the provided element removed. If the provided
-  // element is not in this list, does nothing. Uses double-equals (instance-wise) equality for
-  // comparison.
+  // element is not in this list, does nothing. Uses intensional equality for comparison.
   // TODO: needs tests
   IList<T> remove(T that);
 }
