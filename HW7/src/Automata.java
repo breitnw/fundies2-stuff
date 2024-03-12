@@ -3,9 +3,11 @@ import javalib.worldimages.*;   // images, like RectangleImage or OverlayImages
 import javalib.impworld.*;      // the abstract World class and the big-bang library for imperative worlds
 import java.awt.Color;          // general colors (as triples of red,green,blue values)
 import java.util.ArrayList;
+import java.util.List;
 // and predefined colors (Red, Green, Yellow, Blue, Black, White)
 
-
+// Represents a cell with an integer state that can be rendered and produce a child cell
+// depending on its neighbors
 interface ICell {
   // gets the state of this ICell
   int getState();
@@ -17,6 +19,7 @@ interface ICell {
   ICell childCell(ICell left, ICell right);
 }
 
+// Represents an abstract cell storing a state, capable of rendering itself based on that state.
 abstract class ACell implements ICell {
   int state;
   
@@ -28,11 +31,14 @@ abstract class ACell implements ICell {
   }
   
   // gets the state of this ICell
+  @Override
   public int getState() {
     return this.state;
   }
   
-  // render this ACell as an image of a rectangle with this width and height
+  // render this ACell as an image of a rectangle with the provided width and height. Renders as
+  // a black rectangle if the state is 1, or a white rectangle if the state is 0.
+  @Override
   public WorldImage render(int width, int height) {
     if (this.getState() == 1) {
       return new RectangleImage(width, height, OutlineMode.SOLID, Color.BLACK);
@@ -42,17 +48,22 @@ abstract class ACell implements ICell {
   }
 }
 
+// Represents a cell that is always off, and always produces an off cell as a child.
 class InertCell extends ACell {
   InertCell() {
     super(0);
   }
   
   // produces the child cell of this ICell with the given left and right neighbors
+  @Override
   public ICell childCell(ICell left, ICell right) {
     return new InertCell();
   }
 }
 
+// Represents a cell takes the states of its left and right neighbors, along with its own state,
+// into account when producing a child cell. Depending on these states and the provided rule from
+// 0 to 255, a specific child cell is produced.
 abstract class ARuleCell extends ACell {
   int rule;
   
@@ -64,6 +75,10 @@ abstract class ARuleCell extends ACell {
     this.rule = rule;
   }
   
+  // Determines the state of this cell's child depending on the states of this cell and its left
+  // and right neighbors. The nth bit of the rule is selected for the child state, where n is
+  // formed by combining the states of the left, middle, and right cells into a three-bit
+  // integer.
   public int childState(ICell left, ICell right) {
     /*
     by masking ruleNum with 2 raised to the power of our state, we get a number that is only
@@ -90,26 +105,31 @@ abstract class ARuleCell extends ACell {
   }
 }
 
+// Represents a cell that produces its child according to rule 60
 class Rule60 extends ARuleCell {
   Rule60(int state) {
     super(state, 60);
   }
   
+  // Produces a cell with rule 60 and state determined by this cell's child state.
   public ICell childCell(ICell left, ICell right) {
     return new Rule60(this.childState(left, right));
   }
 }
 
+// Represents a cell that produces its child according to rule 30
 class Rule30 extends ARuleCell {
   Rule30(int state) {
     super(state, 30);
   }
   
+  // Produces a cell with rule 30 and state determined by this cell's child state.
   public ICell childCell(ICell left, ICell right) {
     return new Rule30(this.childState(left, right));
   }
 }
 
+// Represents a row of cells, bounded by `InertCell`s on the left and right.
 class CellArray {
   ArrayList<ICell> cells;
   
@@ -145,9 +165,10 @@ class CellArray {
       row = new BesideImage(row, c.render(cellWidth, cellHeight));
     }
     return row;
-  };
+  }
 }
 
+// Represents an imperative world with a cellular automata simulation
 class CAWorld extends World {
   
   // constants
@@ -205,6 +226,7 @@ class CAWorld extends World {
         cells, 0, 0, bg);
   }
   
+  // Creates a WorldScene representing this CAWorld
   public WorldScene makeScene() {
     WorldScene canvas = new WorldScene(TOTAL_WIDTH, TOTAL_HEIGHT);
     canvas.placeImageXY(this.makeImage(), TOTAL_WIDTH / 2, TOTAL_HEIGHT / 2);
@@ -213,44 +235,76 @@ class CAWorld extends World {
 }
 
 class ExamplesAutomata {
-  Rule60 s0 = new Rule60(0);
-  Rule60 s1 = new Rule60(1);
-
-  void testNextState(Tester t) {
-    t.checkExpect(s0.childState(s0, s0), 0);
-    t.checkExpect(s0.childState(s0, s1), 0);
-    t.checkExpect(s1.childState(s0, s0), 1);
-    t.checkExpect(s1.childState(s0, s1), 1);
-    t.checkExpect(s0.childState(s1, s0), 1);
-    t.checkExpect(s0.childState(s1, s1), 1);
-    t.checkExpect(s1.childState(s1, s0), 0);
-    t.checkExpect(s1.childState(s1, s1), 0);
-  }
+  Rule60 r60Off = new Rule60(0);
+  Rule60 r60On = new Rule60(1);
+  Rule30 r30Off = new Rule30(0);
+  Rule30 r30On = new Rule30(1);
+  InertCell inert = new InertCell();
+  
+  CellArray ca1 = new CellArray(new ArrayList<>(
+      List.of(r60Off, r60On, r30Off, r30On, inert)
+  ));
 
   void testBigBang(Tester t) {
     CAWorld g = new CAWorld(new Rule60(0), new Rule60(1));
     g.bigBang(g.TOTAL_WIDTH, g.TOTAL_HEIGHT, 0.2);
   }
-
+  
+  // Methods on ICell -----------------------------------------------------------------------------
+  
+  void testICellGetState(Tester t) {
+    t.checkExpect(r60Off.getState(), 0);
+    t.checkExpect(r60On.getState(), 1);
+    t.checkExpect(r30Off.getState(), 0);
+    t.checkExpect(r30On.getState(), 1);
+    t.checkExpect(inert.getState(), 0);
+  }
+  
+  void testICellRender(Tester t) {
+    WorldImage onImg = new RectangleImage(10, 12, OutlineMode.SOLID, Color.BLACK);
+    WorldImage offImg = new RectangleImage(10, 12, OutlineMode.SOLID, Color.WHITE);
+    t.checkExpect(r30On.render(10, 12), onImg);
+    t.checkExpect(r60On.render(10, 12), onImg);
+    t.checkExpect(r30Off.render(10, 12), offImg);
+    t.checkExpect(r60Off.render(10, 12), offImg);
+    t.checkExpect(inert.render(10, 12), offImg);
+  }
+  
   void testRule60ChildCell(Tester t) {
-    ICell cellZero = new Rule60(0);
-    ICell cellOne = new Rule60(1);
-
-    // Test child cell creation
-    t.checkExpect(cellZero.childCell(cellZero, cellZero), new Rule60(0));
-    t.checkExpect(cellZero.childCell(cellOne, cellZero), new Rule60(1));
-    t.checkExpect(cellOne.childCell(cellZero, cellOne), new Rule60(1));
-    t.checkExpect(cellOne.childCell(cellOne, cellOne), new Rule60(0));
+    t.checkExpect(r60Off.childCell(r60Off, r60Off), r60Off);
+    t.checkExpect(r60Off.childCell(r60On, r60Off), r60On);
+    t.checkExpect(r60On.childCell(r60Off, r60On), r60On);
+    t.checkExpect(r60On.childCell(r60On, r60On), r60Off);
+    t.checkExpect(r60Off.childCell(r60Off, r60On), r60Off);
   }
-
+  
+  void testRule30ChildCell(Tester t) {
+    t.checkExpect(r30Off.childCell(r30Off, r30Off), r30Off);
+    t.checkExpect(r30Off.childCell(r30On, r30Off), r30On);
+    t.checkExpect(r30On.childCell(r30Off, r30On), r30On);
+    t.checkExpect(r30On.childCell(r30On, r30On), r30Off);
+    t.checkExpect(r30Off.childCell(r30Off, r30On), r30On);
+  }
+  
   void testInertCellChildCell(Tester t) {
-    ICell inert = new InertCell();
-    ICell cellOne = new Rule60(1);
-
-    // Regardless of neighbors, an inert cell should always produce an inert cell
-    t.checkExpect(inert.childCell(inert, inert), new InertCell());
-    t.checkExpect(inert.childCell(cellOne, inert), new InertCell());
+    t.checkExpect(inert.childCell(inert, inert), inert);
+    t.checkExpect(inert.childCell(r60On, inert), inert);
   }
+  
+  // Methods on ARuleCell -------------------------------------------------------------------------
+  
+  void testChildState(Tester t) {
+    t.checkExpect(r60Off.childState(r60Off, r60Off), 0);
+    t.checkExpect(r60Off.childState(r60Off, r60On), 0);
+    t.checkExpect(r60On.childState(r60Off, r60Off), 1);
+    t.checkExpect(r60On.childState(r60Off, r60On), 1);
+    t.checkExpect(r60Off.childState(r60On, r60Off), 1);
+    t.checkExpect(r60Off.childState(r60On, r60On), 1);
+    t.checkExpect(r60On.childState(r60On, r60Off), 0);
+    t.checkExpect(r60On.childState(r60On, r60On), 0);
+  }
+  
+  // Methods on CellArray -------------------------------------------------------------------------
 
   void testCellArrayNextGen(Tester t) {
     ArrayList<ICell> initialCells = new ArrayList<>();
@@ -262,19 +316,74 @@ class ExamplesAutomata {
     CellArray nextGen = array.nextGen();
 
     ArrayList<ICell> expectedCellsNextGen = new ArrayList<>();
-    expectedCellsNextGen.add(new Rule60(1)); // Assuming this is the expected state based on your rules
-    expectedCellsNextGen.add(new Rule60(0)); // Adjust these based on the actual expected behavior
+    expectedCellsNextGen.add(new Rule60(0));
     expectedCellsNextGen.add(new Rule60(1));
-
-    // Compare expected next generation with actual next generation
-    // This assumes you implement a method in CellArray to get its cells for comparison
+    expectedCellsNextGen.add(new Rule60(1));
     t.checkExpect(nextGen.cells, expectedCellsNextGen);
   }
-
-
   
-  void testSimulation(Tester t) {
-    new CAWorld(new Rule30(0), new Rule30(1))
-        .bigBang(CAWorld.TOTAL_WIDTH, CAWorld.TOTAL_HEIGHT, 0.5);
+  void testCellArrayGet(Tester t) {
+    t.checkExpect(ca1.get(0), r60Off);
+    t.checkExpect(ca1.get(1), r60On);
+    t.checkExpect(ca1.get(2), r30Off);
+    t.checkExpect(ca1.get(3), r30On);
+    t.checkExpect(ca1.get(4), inert);
+    
+    // out of index get operations should return inert
+    t.checkExpect(ca1.get(-1), inert);
+    t.checkExpect(ca1.get(5), inert);
+  }
+  
+  void testCellArrayDraw(Tester t) {
+    t.checkExpect(
+        ca1.draw(10, 12),
+        new BesideImage(
+            new BesideImage(
+                new BesideImage(
+                    new BesideImage(
+                        new BesideImage(new EmptyImage(),
+                            r60Off.render(10, 12)),
+                        r60On.render(10, 12)),
+                    r30Off.render(10, 12)),
+                r30On.render(10, 12)),
+            inert.render(10, 12)));
+  }
+  
+  // Methods on CAWorld ---------------------------------------------------------------------------
+  // Per Piazza, makeScene and makeImage are not tested here, as we assume them to work.
+  
+  void testCAWorldConstructor(Tester t) {
+    // there's only one CAWorld constructor. I need field access to test it.
+    // how should i test this one ok
+    // You can do field access for tests
+    CAWorld world = new CAWorld(inert, r30On);
+    t.checkExpect(world.history, new ArrayList<>());
+    t.checkExpect(world.curGen, new CellArray(new ArrayList<>(List.of(
+        inert, inert, inert, inert, inert, inert, inert, inert, inert, inert,
+        inert, inert, inert, inert, inert, inert, inert, inert, inert, inert,
+        r30On,
+        inert, inert, inert, inert, inert, inert, inert, inert, inert, inert,
+        inert, inert, inert, inert, inert, inert, inert, inert, inert, inert
+    ))));
+  }
+  
+  void testCAWorldOnTick(Tester t) {
+    CAWorld world = new CAWorld(r30Off, r30On);
+    world.onTick();
+    t.checkExpect(world.history.get(0), new CellArray(new ArrayList<>(List.of(
+        r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off,
+        r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off,
+        r30On,
+        r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off,
+        r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off
+    ))));
+
+    t.checkExpect(world.curGen, new CellArray(new ArrayList<>(List.of(
+        r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off,
+        r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30On,
+        r30On,
+        r30On, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off,
+        r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off, r30Off
+    ))));
   }
 }

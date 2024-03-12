@@ -39,21 +39,18 @@ class Game extends javalib.funworld.World {
     return new Game(this.level.handleClick(new GridPosn(pos)));
   }
   
-  // TODO: needs tests
   // Handles a key event by forwarding it to the level.
   @Override
   public Game onKeyEvent(String k) {
     return new Game(this.level.handleKey(k));
   }
   
-  // TODO: needs tests
   // determines if the game level has been won.
   @Override
   public boolean shouldWorldEnd() {
     return this.level.hasWon();
   }
   
-  // TODO: needs tests
   // draws the current game, overlaying a "You win!" text (img file) above the game.
   @Override
   public WorldScene lastScene(String msg) {
@@ -121,7 +118,7 @@ class Level {
    - The letter "C" represents the start of a vertical car, and the letter "c" represents the
      start of a horizontal car.
    - The letter "P" represents the start of a vertical player car, and the letter "p" represents
-     the start of a horizontal truck.
+     the start of a horizontal player car.
    - The letter "X" represents the exit.
    - The characters "+", "|", and "-" all represent walls.
    - The character " " indicates nothing is in a given cell
@@ -146,13 +143,12 @@ class Level {
   // used in the previous constructor. The vehicle originating at selection, if there is one, is
   // selected. Primary useful for testing selection methods.
   Level(String layout, GridPosn selection) {
-    Parser p = new Parser(layout, selection);
-    
-    this.vehicles = p.loadVehicles();
-    this.walls = p.loadWalls();
-    this.exits = p.loadExits();
-    this.width = p.loadWidth();
-    this.height = p.loadHeight();
+    this(new Parser(layout, selection));
+  }
+  
+  // Convenience constructor that creates a level from the information of a Parser p.
+  Level(Parser p) {
+    this(p.loadVehicles(), p.loadWalls(), p.loadExits(), p.loadWidth(), p.loadHeight());
   }
   
   // Renders the game to the provided WorldScene
@@ -193,8 +189,7 @@ class Level {
     );
   }
   
-  // TODO: needs tests
-  // Handles a key event
+   // Handles a key event by registering the event on each of the vehicles in this Level
   Level handleKey(String k) {
     return new Level(
         this.vehicles.map(new OnKey(k, this.walls, this.vehicles)),

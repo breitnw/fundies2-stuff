@@ -5,10 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" name="Changes" comment="Automata functionality complete, needs tests/purpose statements/etc">
+      <change beforePath="$PROJECT_DIR$/../HW7-2/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/HW7/ACell.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/HW7/ACell.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/HW7/ARuleCell.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/HW7/ARuleCell.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/HW7/CAWorld.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/HW7/CAWorld.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/HW7/CellArray.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/HW7/CellArray.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/HW7/ExamplesAutomata.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/HW7/ExamplesAutomata.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/HW7/InertCell.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/HW7/InertCell.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/HW7/Rule30.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/HW7/Rule30.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/HW7/Rule60.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/HW7/Rule60.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Automata.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Automata.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../RushHour/src/Design.md" beforeDir="false" afterPath="$PROJECT_DIR$/../RushHour/src/Design.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../RushHour/src/Examples.java" beforeDir="false" afterPath="$PROJECT_DIR$/../RushHour/src/Examples.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../RushHour/src/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/../RushHour/src/Parser.java" afterDir="false" />
+    </list>
+    <list id="31799e94-3b7f-4551-9dcd-13b58894a0d2" name="Changes by Joseph" comment="">
+      <change beforePath="$PROJECT_DIR$/src/Automata.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Automata.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,6 +47,41 @@
       </UrlAndAccount>
     </option>
   </component>
+  <component name="LineStatusTrackerManager">
+    <file path="$PROJECT_DIR$/src/Automata.java">
+      <ranges>
+        <range start1="5" end1="5" start2="5" end2="6" changelist="31799e94-3b7f-4551-9dcd-13b58894a0d2" />
+        <range start1="7" end1="8" start2="8" end2="10" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="19" end1="19" start2="21" end2="22" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="30" end1="30" start2="33" end2="34" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="34" end1="35" start2="38" end2="41" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="44" end1="44" start2="50" end2="51" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="50" end1="50" start2="57" end2="58" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="55" end1="55" start2="63" end2="66" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="66" end1="66" start2="77" end2="81" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="92" end1="92" start2="107" end2="108" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="97" end1="97" start2="113" end2="114" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="102" end1="102" start2="119" end2="120" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="107" end1="107" start2="125" end2="126" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="112" end1="112" start2="131" end2="132" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="147" end1="148" start2="167" end2="168" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="150" end1="150" start2="170" end2="171" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="207" end1="207" start2="228" end2="229" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="215" end1="217" start2="237" end2="246" changelist="31799e94-3b7f-4551-9dcd-13b58894a0d2" />
+        <range start1="218" end1="227" start2="247" end2="260" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="228" end1="232" start2="261" end2="270" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="233" end1="234" start2="271" end2="272" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="235" end1="243" start2="273" end2="278" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="244" end1="245" start2="279" end2="288" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="246" end1="252" start2="289" end2="291" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="253" end1="253" start2="292" end2="307" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="264" end1="266" start2="318" end2="320" changelist="31799e94-3b7f-4551-9dcd-13b58894a0d2" />
+        <range start1="267" end1="270" start2="321" end2="321" changelist="31799e94-3b7f-4551-9dcd-13b58894a0d2" />
+        <range start1="272" end1="278" start2="323" end2="334" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+        <range start1="279" end1="279" start2="335" end2="388" changelist="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" />
+      </ranges>
+    </file>
+  </component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="ug0zy20a" />
   </component>
@@ -51,28 +96,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Tester.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;bitwise&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/breitnw/Documents/neu/cs2510/fundies2-stuff/HW7&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon&quot;: &quot;&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Tester.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/breitnw/Documents/neu/cs2510/fundies2-stuff/HW7",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "preferences.keymap",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="QodanaReportsService">
     <option name="descriptions">
       <ReportDescription localRun="true" path="/private/var/folders/8g/jh1d_gxs637gy_ss2wvldtw00000gn/T/qodana_output/qodana.sarif.json" reportGuid="2ebcbff3-9766-4fe0-81ee-d55d3c382079" reportId="HW7/qodana/2024-03-04" />
@@ -96,14 +141,14 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="jdk-11.0.21-corretto-11.0.21-4caba194b151-b24ef850" />
+        <option value="jdk-21.0.1-openjdk-21.0.1-4caba194b151-9b16c6e2" />
       </set>
     </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="827a564a-79d0-4ab1-a302-8f0d342a709c" name="Changes" comment="" />
+      <changelist id="5177f69c-082b-4f9a-b8b0-c6e3e541ec6f" name="Changes" comment="Automata functionality complete, needs tests/purpose statements/etc" />
       <created>1709737876931</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -112,6 +157,7 @@
       <workItem from="1709702022650" duration="154000" />
       <workItem from="1709848052091" duration="6539000" />
       <workItem from="1710116481854" duration="49000" />
+      <workItem from="1710203006684" duration="5595000" />
     </task>
     <task id="LOCAL-00001" summary="bitwise automata rule representation">
       <option name="closed" value="true" />
