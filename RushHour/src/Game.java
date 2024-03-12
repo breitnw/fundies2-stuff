@@ -189,7 +189,7 @@ class Level {
     );
   }
   
-   // Handles a key event by registering the event on each of the vehicles in this Level
+  // Handles a key event by registering the event on each of the vehicles in this Level
   Level handleKey(String k) {
     return new Level(
         this.vehicles.map(new OnKey(k, this.walls, this.vehicles)),

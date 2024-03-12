@@ -222,8 +222,9 @@ abstract class AVehicle extends AGameObject implements IVehicle {
       case "d":
       case "right":
         return this.move(1, 0, walls, vehicles);
+      default:
+        return this;
     }
-    return this;
   }
 }
 

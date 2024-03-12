@@ -34,8 +34,8 @@ class Parser {
       int curX,
       int curY,
       Random rng,
-      GridPosn selection)
-  {
+      GridPosn selection) {
+    
     if (restLayout.isEmpty()) {
       return new Mt<>();
     }

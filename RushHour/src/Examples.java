@@ -689,12 +689,12 @@ class ExamplesIGameObject {
   }
   
   void testMoveTo(Tester t) {
-   t.checkExpect(car1.moveTo(new GridPosn(1, 3)),
-       new Car(new GridPosn(1, 3), 0, true, true));
-   t.checkExpect(pCar1.moveTo(new GridPosn(1, 3)),
-       new PlayerCar(new GridPosn(1, 3), true, true));
-   t.checkExpect(truck1.moveTo(new GridPosn(1, 3)),
-       new Truck(new GridPosn(1, 3), 3, true, true));
+    t.checkExpect(car1.moveTo(new GridPosn(1, 3)),
+        new Car(new GridPosn(1, 3), 0, true, true));
+    t.checkExpect(pCar1.moveTo(new GridPosn(1, 3)),
+        new PlayerCar(new GridPosn(1, 3), true, true));
+    t.checkExpect(truck1.moveTo(new GridPosn(1, 3)),
+        new Truck(new GridPosn(1, 3), 3, true, true));
   }
   
   void testMove(Tester t) {
@@ -1084,9 +1084,11 @@ class ExamplesParser {
                              + "+-+CC+-+C   +--+\n"
                              + "|p             X\n"
                              + "+--------------+");
+  
   // +-------+
   // | Tests |
   // +-------+
+  
   void testLoadVehicles(Tester t) {
     t.checkExpect(p1.loadVehicles(), new Mt<>());
     t.checkExpect(p2.loadVehicles(),
