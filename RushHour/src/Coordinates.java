@@ -87,7 +87,7 @@ class GridArea {
   
   // Determines if this GridArea contains that GridArea; i.e., every point in that GridArea is
   // also in this GridArea.
-  boolean containsRect(GridArea that) {
+  boolean containsArea(GridArea that) {
     return this.topLeft.compareX(that.topLeft) <= 0
         && this.topLeft.compareY(that.topLeft) <= 0
         && this.botRight.compareX(that.botRight) >= 0

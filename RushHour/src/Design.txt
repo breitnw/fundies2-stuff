@@ -306,7 +306,7 @@ The functions are as follows:
   if any of the vehicles or walls provided on construction overlap with that.
 - `DrawToScene<T extends IGameObject>`, which is a function object that draws the provided 
   `IGameObject` to the provided WorldImage according to the IGameObject's position and draw method.
-- `InRectPred<T extends IGameObject>`, which is a function object predicate that determines whether
+- `InAreaPred<T extends IGameObject>`, which is a function object predicate that determines whether
   the provided `IGameObject`'s `GridArea` is fully contained in the `GridArea` passed during 
   construction.
 - `InWinningStatePred`, which is a function object predicate that returns true if the provided

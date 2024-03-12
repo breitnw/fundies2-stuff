@@ -391,7 +391,7 @@ class ExamplesGame {
   
   
   void testLevelHandleKey(Tester t) {
-    // blocked by vehicle
+    // see testOnKeyEvent for more extensive integration tests
     t.checkExpect(level5.handleKey("d"),
         new Level("+------+\n"
                       + "|c    T|\n"
@@ -511,15 +511,15 @@ class ExamplesIGameObject {
     t.checkExpect(pCar2.intersects(wall1), false);
   }
   
-  void testGetRect(Tester t) {
-    t.checkExpect(wall1.getRect(), new GridArea(new GridPosn(), new GridPosn(1, 1)));
-    t.checkExpect(wall2.getRect(), new GridArea(new GridPosn(2, 4), new GridPosn(3, 5)));
-    t.checkExpect(exit2.getRect(), new GridArea(new GridPosn(2, 4), new GridPosn(3, 5)));
-    t.checkExpect(car1.getRect(), new GridArea(new GridPosn(), new GridPosn(2, 1)));
-    t.checkExpect(car2.getRect(), new GridArea(new GridPosn(0, 1), new GridPosn(1, 3)));
-    t.checkExpect(pCar2.getRect(), new GridArea(new GridPosn(1, 1), new GridPosn(2, 3)));
-    t.checkExpect(truck1.getRect(), new GridArea(new GridPosn(0, 2), new GridPosn(3, 3)));
-    t.checkExpect(truck2.getRect(), new GridArea(new GridPosn(1, 1), new GridPosn(2, 4)));
+  void testGetArea(Tester t) {
+    t.checkExpect(wall1.getArea(), new GridArea(new GridPosn(), new GridPosn(1, 1)));
+    t.checkExpect(wall2.getArea(), new GridArea(new GridPosn(2, 4), new GridPosn(3, 5)));
+    t.checkExpect(exit2.getArea(), new GridArea(new GridPosn(2, 4), new GridPosn(3, 5)));
+    t.checkExpect(car1.getArea(), new GridArea(new GridPosn(), new GridPosn(2, 1)));
+    t.checkExpect(car2.getArea(), new GridArea(new GridPosn(0, 1), new GridPosn(1, 3)));
+    t.checkExpect(pCar2.getArea(), new GridArea(new GridPosn(1, 1), new GridPosn(2, 3)));
+    t.checkExpect(truck1.getArea(), new GridArea(new GridPosn(0, 2), new GridPosn(3, 3)));
+    t.checkExpect(truck2.getArea(), new GridArea(new GridPosn(1, 1), new GridPosn(2, 4)));
   }
   
   void testXSize(Tester t) {
@@ -777,9 +777,9 @@ class ExamplesFunctions {
   DrawToScene<Exit> drawExitToScene = new DrawToScene<>();
   DrawToScene<IVehicle> drawVehicleToScene = new DrawToScene<>();
   
-  InRectPred<Wall> wallInRectPred = new InRectPred<>(r);
-  InRectPred<Exit> exitInRectPred = new InRectPred<>(r);
-  InRectPred<IVehicle> vehicleInRectPred = new InRectPred<>(r);
+  InAreaPred<Wall> wallInAreaPred = new InAreaPred<>(r);
+  InAreaPred<Exit> exitInAreaPred = new InAreaPred<>(r);
+  InAreaPred<IVehicle> vehicleInAreaPred = new InAreaPred<>(r);
   
   InWinningStatePred inWinningStatePred1 = new InWinningStatePred(new Mt<>());
   InWinningStatePred inWinningStatePred2 = new InWinningStatePred(exits);
@@ -836,16 +836,16 @@ class ExamplesFunctions {
         truck3.drawTo(new WorldScene(512, 512)));
   }
   
-  void testInRectPred(Tester t) {
-    t.checkExpect(wallInRectPred.apply(wall2), true);
-    t.checkExpect(wallInRectPred.apply(new Wall(new GridPosn(-1, 0))), false);
-    t.checkExpect(wallInRectPred.apply(new Wall(new GridPosn(0, 6))), false);
-    t.checkExpect(exitInRectPred.apply(exit2), true);
-    t.checkExpect(exitInRectPred.apply(new Exit(new GridPosn(0, -1))), false);
-    t.checkExpect(exitInRectPred.apply(new Exit(new GridPosn(6, 0))), false);
-    t.checkExpect(vehicleInRectPred.apply(car1), false);
-    t.checkExpect(vehicleInRectPred.apply(truck2), true);
-    t.checkExpect(vehicleInRectPred.apply(truck3), false);
+  void testInAreaPred(Tester t) {
+    t.checkExpect(wallInAreaPred.apply(wall2), true);
+    t.checkExpect(wallInAreaPred.apply(new Wall(new GridPosn(-1, 0))), false);
+    t.checkExpect(wallInAreaPred.apply(new Wall(new GridPosn(0, 6))), false);
+    t.checkExpect(exitInAreaPred.apply(exit2), true);
+    t.checkExpect(exitInAreaPred.apply(new Exit(new GridPosn(0, -1))), false);
+    t.checkExpect(exitInAreaPred.apply(new Exit(new GridPosn(6, 0))), false);
+    t.checkExpect(vehicleInAreaPred.apply(car1), false);
+    t.checkExpect(vehicleInAreaPred.apply(truck2), true);
+    t.checkExpect(vehicleInAreaPred.apply(truck3), false);
   }
   
   void testInWinningStatePred(Tester t) {
@@ -938,12 +938,12 @@ class ExamplesCoordinates {
     t.checkExpect(r5.intersects(r3), true);
   }
   
-  void testContainsRect(Tester t) {
-    t.checkExpect(r1.containsRect(r1), true);
-    t.checkExpect(r3.containsRect(r5), false);
-    t.checkExpect(r5.containsRect(r3), false);
-    t.checkExpect(r2.containsRect(r3), true);
-    t.checkExpect(r3.containsRect(r2), false);
+  void testContainsArea(Tester t) {
+    t.checkExpect(r1.containsArea(r1), true);
+    t.checkExpect(r3.containsArea(r5), false);
+    t.checkExpect(r5.containsArea(r3), false);
+    t.checkExpect(r2.containsArea(r3), true);
+    t.checkExpect(r3.containsArea(r2), false);
   }
   
   void testContainsPosn(Tester t) {

@@ -96,7 +96,7 @@ class Level {
     }
     
     // Validate that every car is fully contained within the grid
-    if (!vehicles.andmap(new InRectPred<>(new GridArea(
+    if (!vehicles.andmap(new InAreaPred<>(new GridArea(
         new GridPosn(),
         new GridPosn().offset(width, height))))) {
       throw new IllegalArgumentException("No vehicle may extend beyond the limits of the grid");

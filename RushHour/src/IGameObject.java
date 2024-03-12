@@ -10,7 +10,7 @@ interface IGameObject {
   
   // Returns an GridRect representing the span of this IGameObject, from its top left corner to
   // its bottom right corner.
-  GridArea getRect();
+  GridArea getArea();
   
   // Draws this GameObject to the provided WorldScene, aligned in the top-left corner and offset
   // according to its position.
@@ -28,13 +28,13 @@ abstract class AGameObject implements IGameObject {
   // Determines if this AGameObject intersects that IGameObject
   @Override
   public boolean intersects(IGameObject that) {
-    return this.getRect().intersects(that.getRect());
+    return this.getArea().intersects(that.getArea());
   }
   
   // Returns an GridRect representing the span of this IGameObject, from its top left corner to
   // its bottom right corner.
   @Override
-  public GridArea getRect() {
+  public GridArea getArea() {
     return new GridArea(this.posn, this.posn.offset(this.xSize(), this.ySize()));
   }
   
@@ -266,7 +266,7 @@ class Car extends AVehicle {
   // state after the click.
   @Override
   public IVehicle registerClick(GridPosn clickPosn) {
-    boolean active = this.getRect().containsPosn(clickPosn);
+    boolean active = this.getArea().containsPosn(clickPosn);
     return new Car(this.posn, this.color, this.isHorizontal, active);
   }
 }
@@ -305,7 +305,7 @@ class PlayerCar extends Car {
   // vehicle state after the click.
   @Override
   public IVehicle registerClick(GridPosn clickPosn) {
-    boolean active = this.getRect().containsPosn(clickPosn);
+    boolean active = this.getArea().containsPosn(clickPosn);
     return new PlayerCar(this.posn, this.isHorizontal, active);
   }
 }
@@ -349,7 +349,7 @@ class Truck extends AVehicle {
   // vehicle state after the click.
   @Override
   public IVehicle registerClick(GridPosn clickPosn) {
-    boolean active = this.getRect().containsPosn(clickPosn);
+    boolean active = this.getArea().containsPosn(clickPosn);
     return new Truck(this.posn, this.color, this.isHorizontal, active);
   }
 }

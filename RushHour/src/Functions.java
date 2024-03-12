@@ -60,18 +60,18 @@ class DrawToScene<T extends IGameObject> implements BiFunction<T, WorldScene, Wo
 
 // A predicate that determines whether the provided IGameObject's GridRect is fully contained in
 // the GridRect passed during construction
-class InRectPred<T extends IGameObject> implements Function<T, Boolean> {
-  GridArea rect;
+class InAreaPred<T extends IGameObject> implements Function<T, Boolean> {
+  GridArea area;
   
-  InRectPred(GridArea rect) {
-    this.rect = rect;
+  InAreaPred(GridArea area) {
+    this.area = area;
   }
   
   // Determines whether the provided IGameObject's GridRect is fully contained in the GridRect
   // passed during construction
   @Override
   public Boolean apply(T that) {
-    return rect.containsRect(that.getRect());
+    return this.area.containsArea(that.getArea());
   }
 }
 
