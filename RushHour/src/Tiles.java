@@ -109,13 +109,13 @@ class TiledImage {
   ITileset spriteSheet;
   int tilesX, tilesY;
   
-  // Creates a TiledImage with a sprite sheet
-  TiledImage(ITileset spriteSheet, int tilesX, int tilesY) {
+  // Creates a TiledImage with a tileset
+  TiledImage(ITileset tileset, int tilesX, int tilesY) {
     if (tilesX < 0 || tilesY < 0) {
       throw new IllegalArgumentException("tilesX and tilesY must both be non-negative integers");
     }
     
-    this.spriteSheet = spriteSheet;
+    this.spriteSheet = tileset;
     this.tilesX = tilesX;
     this.tilesY = tilesY;
   }

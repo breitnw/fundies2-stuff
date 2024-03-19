@@ -1,49 +1,6 @@
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
-
-/*
-class ListUtils {
-  // Iterates over all elements of the given ArrayList, returning true only if the provided
-  // predicate is satisfied on each.
-  <T> boolean andmap(List<T> ls, Function<T, Boolean> func) {
-    boolean res = true;
-    for (T t : ls) {
-      res &= func.apply(t);
-    }
-    return res;
-  }
-
-  // Iterates over all elements of this ArrayList, returning true if the provided predicate is
-  // satisfied on any one element.
-  <T> boolean ormap(List<T> ls, Function<T, Boolean> func) {
-    boolean res = false;
-    for (T t : ls) {
-      res |= func.apply(t);
-    }
-    return res;
-  }
-
-  // Like an ormap, but also includes the rest of the list after this element in the call to func.
-  <T> boolean restOrmap(List<T> ls, BiFunction<T, List<T>, Boolean> func) {
-    boolean res = false;
-    for (int i = 0; i < ls.size(); i += 1) {
-      res |= func.apply(ls.get(i), ls.subList(i + 1, ls.size()));
-    }
-    return res;
-  }
-
-  // Applies a function to the elements of one or more lists. Combines values in an arbitrary
-  // way that is determined by func. The first value is combined with base, and subsequent
-  // values are combined with previous return values.
-  <T, U> U foldl(List<T> ls, BiFunction<T, U, U> func, U base) {
-    U acc = base;
-    for (T t : ls) {
-      acc = func.apply(t, base);
-    }
-    return acc;
-  }
-}
- */
 
 // Represents a list of elements of type T
 interface IList<T> {
@@ -58,17 +15,13 @@ interface IList<T> {
   // Like an ormap, but also includes rest in the call to func.
   boolean restOrmap(BiFunction<T, IList<T>, Boolean> func);
   
-  // Applies a function to the elements of one or more lists. Combines values in an arbitrary
-  // way that is determined by func. The innermost value is combined with base, and subsequent
-  // values are combined with previous return values.
-  <U> U foldr(BiFunction<T, U, U> func, U base);
-  
-  // Maps each value in the list to a different value in an arbitrary way defined by func.
-  <U> IList<U> map(Function<T, U> func);
-  
   // Produces a new list with the first instance of the provided element removed. If the provided
   // element is not in this list, does nothing. Uses intensional equality for comparison.
-  IList<T> remove(T that);
+  IList<T> without(T that);
+
+  // Executes the provided consumer for each element in this list
+  // EFFECT: each element in the list is mutated according to the consumer
+  void forEach(Consumer<T> c);
 }
 
 // Represents a list of elements of type T with a first element and a list of remaining elements
@@ -101,29 +54,23 @@ class Cons<T> implements IList<T> {
     return func.apply(this.first, this.rest) || this.rest.restOrmap(func);
   }
   
-  // Applies a function to the elements of one or more lists. Combines values in an arbitrary
-  // way that is determined by func. The innermost value is combined with base, and subsequent
-  // values are combined with previous return values.
-  @Override
-  public <U> U foldr(BiFunction<T, U, U> func, U base) {
-    return func.apply(this.first, this.rest.foldr(func, base));
-  }
-  
-  // Maps each value in the list to a different value in an arbitrary way defined by func.
-  @Override
-  public <U> IList<U> map(Function<T, U> func) {
-    return new Cons<U>(func.apply(this.first), this.rest.map(func));
-  }
-  
   // Produces a new list with the first instance of the provided element removed. If the provided
   // element is not in this list, does nothing. Uses intensional equality for comparison
   @Override
-  public IList<T> remove(T that) {
+  public IList<T> without(T that) {
     if (this.first == that) {
       return this.rest;
     } else {
-      return new Cons<>(this.first, this.rest.remove(that));
+      return new Cons<>(this.first, this.rest.without(that));
     }
+  }
+
+  // Executes the provided consumer for each element in this list
+  // EFFECT: each element in the list is mutated according to the consumer
+  @Override
+  public void forEach(Consumer<T> c) {
+    c.accept(this.first);
+    this.rest.forEach(c);
   }
 }
 
@@ -150,26 +97,19 @@ class Mt<T> implements IList<T> {
     return false;
   }
   
-  // Applies a function to the elements of one or more lists. Combines values in an arbitrary
-  // way that is determined by func. The innermost value is combined with base, and subsequent
-  // values are combined with previous return values.
-  @Override
-  public <U> U foldr(BiFunction<T, U, U> func, U base) {
-    return base;
-  }
-  
-  // Maps each value in the list to a different value in an arbitrary way defined by func.
-  
-  @Override
-  public <U> IList<U> map(Function<T, U> func) {
-    return new Mt<U>();
-  }
-  
   // Produces a new list with the first instance of the provided element removed. If the provided
   // element is not in this list, does nothing. Uses double-equals (instance-wise) equality for
   // comparison.
   @Override
-  public IList<T> remove(T that) {
+  public IList<T> without(T that) {
     return this;
+  }
+
+  // Executes the provided consumer for each element in this list
+  // EFFECT: each element in the list is mutated according to the consumer
+  @Override
+  public void forEach(Consumer<T> c) {
+    // Since the list is empty and we only run the consumer for non-empty lists, we don't need to
+    // do anything here
   }
 }

@@ -1,4 +1,4 @@
-import javalib.funworld.WorldScene;
+import javalib.impworld.WorldScene;
 import javalib.worldimages.*;
 
 // Represents a position on the grid with integer x and y coordinates, following the coordinate
@@ -35,12 +35,13 @@ class GridPosn {
   }
   
   // Draws the provided image to the provided scene at this GridPosn, aligned at the top-left.
-  WorldScene drawPositioned(WorldImage im, WorldScene scene) {
+  // EFFECT: mutates scene to have the provided WorldImage drawn
+  void drawPositioned(WorldImage im, WorldScene scene) {
     WorldImage imPinholed = im.movePinhole(
         -im.getWidth() / 2,
         -im.getHeight() / 2
     );
-    return scene.placeImageXY(
+    scene.placeImageXY(
         imPinholed,
         this.x * IConstants.TILE_SIZE,
         this.y * IConstants.TILE_SIZE);
