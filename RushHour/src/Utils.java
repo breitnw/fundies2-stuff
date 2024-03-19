@@ -1,4 +1,10 @@
+import javalib.worldimages.FromFileImage;
+import javalib.worldimages.WorldImage;
+
+import java.nio.file.Path;
 import java.util.Random;
+
+// String utils -------------------------------------------------------------------------------------------------------
 
 // Represents a suite of utilities to allow loading a Level from a String. For information on how
 // to format level Strings, see the Level convenience constructor.
@@ -15,10 +21,10 @@ class Parser {
     this(layout, new GridPosn(-1, -1));
   }
   
-  // Loads a list of AVehicles defined by the provided layout String. The vehicle at the same
+  // Loads a list of IMovables defined by the provided layout String. The vehicle at the same
   // GridPosn as selection, if one exists, is selected.
-  IList<IVehicle>  loadVehicles() {
-    return this.loadRemainingVehicles(
+  IList<IMovable> loadVehicles() {
+    return this.loadMovables(
         this.layout,
         0,
         0,
@@ -26,10 +32,10 @@ class Parser {
         this.selection);
   }
   
-  // Loads a list of AVehicles defined by the provided layout String, assuming that the first
+  // Loads a list of IMovables defined by the provided layout String, assuming that the first
   // character in the String is at the position defined by curX and curY. The vehicle at the same
   // GridPosn as selection, if one exists, is selected.
-  IList<IVehicle> loadRemainingVehicles(
+  IList<IMovable> loadMovables(
       String restLayout,
       int curX,
       int curY,
@@ -40,11 +46,11 @@ class Parser {
       return new Mt<>();
     }
     
-    IList<IVehicle> rest;
+    IList<IMovable> rest;
     if (restLayout.indexOf('\n') == 0) {
-      rest = loadRemainingVehicles(restLayout.substring(1), 0, curY + 1, rng, selection);
+      rest = loadMovables(restLayout.substring(1), 0, curY + 1, rng, selection);
     } else {
-      rest = loadRemainingVehicles(restLayout.substring(1), curX + 1, curY, rng, selection);
+      rest = loadMovables(restLayout.substring(1), curX + 1, curY, rng, selection);
     }
     
     int color = rng.nextInt(5);
@@ -53,17 +59,25 @@ class Parser {
     
     switch (restLayout.charAt(0)) {
       case 'c':
-        return new Cons<>(new Car(pos, color, true, selected), rest);
+        return new Cons<>(new Car(pos, selected, color, true), rest);
       case 'C':
-        return new Cons<>(new Car(pos, color, false, selected), rest);
+        return new Cons<>(new Car(pos, selected, color, false), rest);
       case 't':
-        return new Cons<>(new Truck(pos, color, true, selected), rest);
+        return new Cons<>(new Truck(pos, color, selected, true), rest);
       case 'T':
-        return new Cons<>(new Truck(pos, color, false, selected), rest);
+        return new Cons<>(new Truck(pos, color, selected, false), rest);
       case 'p':
-        return new Cons<>(new PlayerCar(pos, true, selected), rest);
+        return new Cons<>(new PlayerCar(pos, selected, true), rest);
       case 'P':
-        return new Cons<>(new PlayerCar(pos, false, selected), rest);
+        return new Cons<>(new PlayerCar(pos, selected, false), rest);
+      case '.':
+        return new Cons<>(new NormalBox(pos, selected, 1, 1), rest);
+      case 'b':
+        return new Cons<>(new NormalBox(pos, selected, 2, 1), rest);
+      case 'B':
+        return new Cons<>(new NormalBox(pos, selected, 1, 2), rest);
+      case 'S':
+        return new Cons<>(new PlayerBox(pos, selected, 2, 2), rest);
       default:
         return rest;
     }
@@ -149,5 +163,18 @@ class Parser {
       }
     }
     return numNewlines + 1;
+  }
+}
+
+// Image utils ------------------------------------------------------------------------------------
+
+// Represents a set of utilities related to loading sprites
+class SpriteLoader {
+  // TODO: needs tests
+  // Loads an image from the /sprites directory based on the provided path
+  WorldImage fromSpritesDir(Path path) {
+    return new FromFileImage(
+        Path.of("sprites").resolve(path).toString()
+    );
   }
 }

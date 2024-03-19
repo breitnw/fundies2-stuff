@@ -77,7 +77,7 @@ class InAreaPred<T extends IGameObject> implements Function<T, Boolean> {
 
 // A predicate that returns true if the provided IVehicle is in a winning state; i.e., if it
 // being a PlayerCar implies it is overlapping an Exit.
-class InWinningStatePred implements Function<IVehicle, Boolean> {
+class InWinningStatePred implements Function<IMovable, Boolean> {
   IList<Exit> exits;
   
   InWinningStatePred(IList<Exit> exits) {
@@ -87,44 +87,46 @@ class InWinningStatePred implements Function<IVehicle, Boolean> {
   // A predicate that returns true if the provided IVehicle is in a winning state; i.e., if it
   // being a PlayerCar implies it is overlapping an Exit.
   @Override
-  public Boolean apply(IVehicle that) {
+  public Boolean apply(IMovable that) {
     return that.inWinningState(this.exits);
   }
 }
 
-// A function that maps a car before a click event to a car after a click event, selecting it if
-// it contains the click position and deselecting it if it does not.
-class OnClick implements Function<IVehicle, IVehicle> {
+// A function that maps a movable before a click event to a car after a click event, selecting
+// it if it contains the click position and deselecting it if it does not.
+class OnClick implements Function<IMovable, IMovable> {
   GridPosn clickedPosn;
   
   OnClick(GridPosn clickedPosn) {
     this.clickedPosn = clickedPosn;
   }
   
-  // Maps a car before a click event to a car after a click event, selecting it if it contains
+  // Maps a movable before a click event to a car after a click event, selecting it if it contains
   // the click position and deselecting it if it does not.
-  public IVehicle apply(IVehicle that) {
+  public IMovable apply(IMovable that) {
     return that.registerClick(this.clickedPosn);
   }
 }
 
-// A function that maps a car before a key event to a car after a key event, moving it if it is
+// A function that maps a movable before a key event to a car after a key event, moving it if it is
 // selected and the key represents an available movement direction.
-class OnKey implements Function<IVehicle, IVehicle> {
+class OnKey implements Function<IMovable, IMovable> {
   String key;
   IList<Wall> walls;
-  IList<IVehicle> vehicles;
+  IList<Exit> exits;
+  IList<IMovable> movables;
+
   
-  
-  OnKey(String key, IList<Wall> walls, IList<IVehicle> vehicles) {
+  OnKey(String key, IList<Wall> walls, IList<Exit> exits, IList<IMovable> movables) {
     this.key = key;
     this.walls = walls;
-    this.vehicles = vehicles;
+    this.exits = exits;
+    this.movables = movables;
   }
   
   // Maps a car before a click event to a car after a click event, selecting it if it contains
   // the click position and deselecting it if it does not.
-  public IVehicle apply(IVehicle that) {
-    return that.registerKey(key, walls, vehicles);
+  public IMovable apply(IMovable that) {
+    return that.registerKey(key, walls, exits, movables);
   }
 }

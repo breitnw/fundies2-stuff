@@ -1,5 +1,6 @@
 import javalib.funworld.WorldScene;
 import javalib.worldimages.*;
+import java.nio.file.Path;
 
 interface IConstants {
   // The size of each tile, in pixels
@@ -55,7 +56,7 @@ class Game extends javalib.funworld.World {
   @Override
   public WorldScene lastScene(String msg) {
     return this.level.draw().placeImageXY(
-        new FromFileImage("sprites/you-win.png"),
+        new SpriteLoader().fromSpritesDir(Path.of("you-win.png")),
         this.level.getWidthPixels() / 2,
         this.level.getHeightPixels() / 2);
   }
@@ -64,14 +65,14 @@ class Game extends javalib.funworld.World {
 // Represents a level in the game with a width, height, and layout comprised of vehicles, walls
 // and exits.
 class Level {
-  IList<IVehicle> vehicles;
+  IList<IMovable> vehicles;
   IList<Wall> walls;
   IList<Exit> exits;
   int width;
   int height;
   
   Level(
-      IList<IVehicle> vehicles,
+      IList<IMovable> vehicles,
       IList<Wall> walls,
       IList<Exit> exits,
       int width,
@@ -155,7 +156,10 @@ class Level {
   WorldScene draw() {
     WorldScene s = new WorldScene(0, 0);
     TiledImage background = new TiledImage(
-        new FromFileImage("sprites/grid-cell.png"), this.width, this.height);
+        new OneSlice(Path.of("grid-cell.png")),
+        this.width,
+        this.height
+    );
     return this.vehicles.foldr(new DrawToScene<>(),
         this.walls.foldr(new DrawToScene<>(),
             this.exits.foldr(new DrawToScene<>(),
@@ -192,7 +196,7 @@ class Level {
   // Handles a key event by registering the event on each of the vehicles in this Level
   Level handleKey(String k) {
     return new Level(
-        this.vehicles.map(new OnKey(k, this.walls, this.vehicles)),
+        this.vehicles.map(new OnKey(k, this.walls, this.exits, this.vehicles)),
         this.walls,
         this.exits,
         this.width,
