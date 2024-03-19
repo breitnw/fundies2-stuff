@@ -6,6 +6,7 @@ import java.awt.*;
 import java.util.Random;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.nio.file.Path;
 
 // Examples for Game.java =========================================================================
 
@@ -156,7 +157,23 @@ class ExamplesGame {
                                 + "+-+CC+-+C   +--+\n"
                                 + "|p             X\n"
                                 + "+--------------+");
-  
+
+  // Klotski level
+  Level kLevel1 = new Level("+----+\n"
+                                + "|BS B|\n"
+                                + "|    |\n"
+                                + "|Bb B|\n"
+                                + "| .. |\n"
+                                + "|.  .|\n"
+                                + "+-XX-+");
+  // Easy klotski level for testing
+  Level kLevel2 = new Level("+----+\n"
+                                + "|BS B|\n"
+                                + "|    |\n"
+                                + "|B  B|\n"
+                                + "|    |\n"
+                                + "|.  .|\n"
+                                + "+-XX-+");
   
   Game game1 = new Game(level1);
   Game game2 = new Game(level2);
@@ -164,6 +181,7 @@ class ExamplesGame {
   Game game4 = new Game(level4);
   Game game5 = new Game(level5);
   Game game6 = new Game(level18);
+  Game kGame1 = new Game(kLevel1);
   
   // +------------+
   // | Game Tests |
@@ -171,7 +189,7 @@ class ExamplesGame {
   
   void testBigBang(Tester t) {
     // Runs the game via bigBang()
-    game3.bigBang();
+    kGame1.bigBang();
   }
   
   void testMakeScene(Tester t) {
@@ -242,7 +260,7 @@ class ExamplesGame {
                       + "+------+")
     );
     t.checkExpect(g.lastScene(""), g.level.draw().placeImageXY(
-            new FromFileImage("sprites/you-win.png"),
+            new SpriteLoader().fromSpritesDir(Path.of("you-win.png")),
             g.level.getWidthPixels() / 2,
             g.level.getHeightPixels() / 2));
   }
@@ -333,17 +351,17 @@ class ExamplesGame {
     t.checkExpect(level12, new Level(new Mt<>(), new Mt<>(), new Mt<>(), 1, 1));
     t.checkExpect(level13, new Level(
         new Cons<>(
-            new Car(new GridPosn(0, 0), 3, false, false),
+            new Car(new GridPosn(0, 0), false, 3, false),
             new Cons<>(
                 new PlayerCar(new GridPosn(1, 0), false, false),
                 new Cons<>(
                     new Truck(new GridPosn(2, 0), 0, false, false),
                     new Cons<>(
-                        new Car(new GridPosn(3, 0), 3, true, false),
+                        new Car(new GridPosn(3, 0), false, 3, true),
                         new Cons<>(
-                            new PlayerCar(new GridPosn(3, 1),true, false),
+                            new PlayerCar(new GridPosn(3, 1), false, true),
                             new Cons<>(
-                                new Truck(new GridPosn(3, 2), 1, true, false),
+                                new Truck(new GridPosn(3, 2), 1, false, true),
                                 new Mt<>())))))),
         new Cons<>(
             new Wall(new GridPosn(5, 0)),
@@ -364,17 +382,17 @@ class ExamplesGame {
     t.checkExpect(new Level(" ", new GridPosn(-1, -1)), level12);
     t.checkExpect(level14, new Level(
         new Cons<>(
-            new Car(new GridPosn(0, 0), 3, false, false),
+            new Car(new GridPosn(0, 0), false, 3, false),
             new Cons<>(
                 new PlayerCar(new GridPosn(1, 0), false, false),
                 new Cons<>(
                     new Truck(new GridPosn(2, 0), 0, false, false),
                     new Cons<>(
-                        new Car(new GridPosn(3, 0), 3, true, false),
+                        new Car(new GridPosn(3, 0), false, 3, true),
                         new Cons<>(
-                            new PlayerCar(new GridPosn(3, 1),true, true),
+                            new PlayerCar(new GridPosn(3, 1), true, true),
                             new Cons<>(
-                                new Truck(new GridPosn(3, 2), 1, true, false),
+                                new Truck(new GridPosn(3, 2), 1, false, true),
                                 new Mt<>())))))),
         new Cons<>(
             new Wall(new GridPosn(5, 0)),
@@ -408,19 +426,19 @@ class ExamplesGame {
   // Utilizes draw methods on IGameObject and GridPosn that are tested individually below.
   void testDraw(Tester t) {
     t.checkExpect(level13.draw(),
-        new Car(new GridPosn(0, 0), 3, false, false).drawTo(
+        new Car(new GridPosn(0, 0), false, 3, false).drawTo(
             new PlayerCar(new GridPosn(1, 0), false, false).drawTo(
                 new Truck(new GridPosn(2, 0), 0, false, false).drawTo(
-                    new Car(new GridPosn(3, 0), 3, true, false).drawTo(
-                        new PlayerCar(new GridPosn(3, 1),true, true).drawTo(
-                            new Truck(new GridPosn(3, 2), 1, true, false).drawTo(
+                    new Car(new GridPosn(3, 0), false, 3, true).drawTo(
+                        new PlayerCar(new GridPosn(3, 1), true, true).drawTo(
+                            new Truck(new GridPosn(3, 2), 1, false, true).drawTo(
                                 new Exit(new GridPosn(0, 2)).drawTo(
                                     new Wall(new GridPosn(5, 0)).drawTo(
                                         new Wall(new GridPosn(5, 1)).drawTo(
                                             new Wall(new GridPosn(1, 2)).drawTo(
                                                 new GridPosn().drawPositioned(
                                                     new TiledImage(
-                                                        new FromFileImage("sprites/grid-cell.png"),
+                                                        new OneSlice(Path.of("grid-cell.png")),
                                                         6, 3).draw(),
                                                     new WorldScene(0, 0)))))))))))));
   }
@@ -479,9 +497,9 @@ class ExamplesIGameObject {
   Exit exit1 = new Exit(new GridPosn());
   Exit exit2 = new Exit(new GridPosn(2, 4));
   // Cars
-  Car car1 = new Car(new GridPosn(), 0, true, true);
-  Car car2 = new Car(new GridPosn(0, 1), 2, false, false);
-  Car car3 = new Car(new GridPosn(1, 0), 4, false, false);
+  Car car1 = new Car(new GridPosn(), true, 0, true);
+  Car car2 = new Car(new GridPosn(0, 1), false, 2, false);
+  Car car3 = new Car(new GridPosn(1, 0), false, 4, false);
   // PlayerCars
   PlayerCar pCar1 = new PlayerCar(new GridPosn(), true, true);
   PlayerCar pCar2 = new PlayerCar(new GridPosn(1, 1), false, false);
@@ -543,20 +561,20 @@ class ExamplesIGameObject {
   }
   
   void testGetImage(Tester t) {
-    t.checkExpect(wall1.getImage(), new FromFileImage("sprites/bush.png"));
-    t.checkExpect(exit1.getImage(), new FromFileImage("sprites/exit.png"));
+    t.checkExpect(wall1.getImage(), new SpriteLoader().fromSpritesDir(Path.of("bush.png")));
+    t.checkExpect(exit1.getImage(), new SpriteLoader().fromSpritesDir(Path.of("exit.png")));
     t.checkExpect(car1.getImage(), new RotateImage(
-        new FromFileImage("sprites/car/car-selected.png"), 90.0));
+        new SpriteLoader().fromSpritesDir(Path.of("car","car-selected.png")), 90.0));
     t.checkExpect(car2.getImage(), new RotateImage(
-        new FromFileImage("sprites/car/car2.png"), 180.0));
+        new SpriteLoader().fromSpritesDir(Path.of("car", "car2.png")), 180.0));
     t.checkExpect(pCar1.getImage(), new RotateImage(
-        new FromFileImage("sprites/car/car-selected.png"), 90.0));
+        new SpriteLoader().fromSpritesDir(Path.of("car", "car-selected.png")), 90.0));
     t.checkExpect(pCar2.getImage(), new RotateImage(
-        new FromFileImage("sprites/car/car-player.png"), 180));
+        new SpriteLoader().fromSpritesDir(Path.of("car", "car-player.png")), 180));
     t.checkExpect(truck1.getImage(), new RotateImage(
-        new FromFileImage("sprites/truck/truck-selected.png"), 90.0));
+        new SpriteLoader().fromSpritesDir(Path.of("truck", "truck-selected.png")), 90.0));
     t.checkExpect(truck2.getImage(), new RotateImage(
-        new FromFileImage("sprites/truck/truck1.png"), 180.0));
+        new SpriteLoader().fromSpritesDir(Path.of("truck", "truck1.png")), 180.0));
   }
   
   void testDrawTo(Tester t) {
@@ -606,91 +624,107 @@ class ExamplesIGameObject {
   }
   
   void testDrawFromFile(Tester t) {
-    t.checkExpect(car1.drawFromFile("sprites/car/car-selected.png"), new RotateImage(
-        new FromFileImage("sprites/car/car-selected.png"), 90.0));
-    t.checkExpect(car1.drawFromFile("sprites/car/car1.png"), new RotateImage(
-        new FromFileImage("sprites/car/car1.png"), 90.0));
-    t.checkExpect(car1.drawFromFile("sprites/truck/truck1.png"), new RotateImage(
-        new FromFileImage("sprites/truck/truck1.png"), 90.0));
-    t.checkExpect(car2.drawFromFile("sprites/car/car2.png"), new RotateImage(
-        new FromFileImage("sprites/car/car2.png"), 180.0));
-    t.checkExpect(pCar1.drawFromFile("sprites/car/car-selected.png"), new RotateImage(
-        new FromFileImage("sprites/car/car-selected.png"), 90.0));
-    t.checkExpect(pCar2.drawFromFile("sprites/car/car-player.png"), new RotateImage(
-        new FromFileImage("sprites/car/car-player.png"), 180));
-    t.checkExpect(truck1.drawFromFile("sprites/truck/truck-selected.png"), new RotateImage(
-        new FromFileImage("sprites/truck/truck-selected.png"), 90.0));
-    t.checkExpect(truck2.drawFromFile("sprites/truck/truck1.png"), new RotateImage(
-        new FromFileImage("sprites/truck/truck1.png"), 180.0));
+    Path pathCarSelected = Path.of("car", "car-selected.png");
+    Path pathCarPlayer = Path.of("car", "car-player.png");
+    Path pathCar1 = Path.of("car", "car1.png");
+    Path pathTruck1 = Path.of("truck", "truck1.png");
+    Path pathTruckSelected = Path.of("truck", "truck-selected.png");
+    Path pathCar2 = Path.of("car", "car2.png");
+    
+    t.checkExpect(car1.drawFromFile(pathCarSelected), new RotateImage(
+        new SpriteLoader().fromSpritesDir(pathCarSelected), 90.0));
+    t.checkExpect(car1.drawFromFile(pathCar1), new RotateImage(
+        new SpriteLoader().fromSpritesDir(pathCar1), 90.0));
+    t.checkExpect(car1.drawFromFile(pathTruck1), new RotateImage(
+        new SpriteLoader().fromSpritesDir(pathTruck1), 90.0));
+    t.checkExpect(car2.drawFromFile(pathCar2), new RotateImage(
+        new SpriteLoader().fromSpritesDir(pathCar2), 180.0));
+    t.checkExpect(pCar1.drawFromFile(pathCarSelected), new RotateImage(
+        new SpriteLoader().fromSpritesDir(pathCarSelected), 90.0));
+    t.checkExpect(pCar2.drawFromFile(pathCarPlayer), new RotateImage(
+        new SpriteLoader().fromSpritesDir(pathCarPlayer), 180));
+    t.checkExpect(truck1.drawFromFile(pathTruckSelected), new RotateImage(
+        new SpriteLoader().fromSpritesDir(pathTruckSelected), 90.0));
+    t.checkExpect(truck2.drawFromFile(pathTruck1), new RotateImage(
+        new SpriteLoader().fromSpritesDir(pathTruck1), 180.0));
   }
   
   void testRegisterClick(Tester t) {
     // clicking an already active car yields an active car
     t.checkExpect(car1.registerClick(new GridPosn(1, 0)),
-        new Car(new GridPosn(), 0, true, true));
+        new Car(new GridPosn(), true, 0, true));
     // clicking outside an already active car yields an inactive car
     t.checkExpect(car1.registerClick(new GridPosn(1, 1)),
-        new Car(new GridPosn(), 0, true, false));
+        new Car(new GridPosn(), false, 0, true));
     // clicking outside an inactive car yields an inactive car
     t.checkExpect(car2.registerClick(new GridPosn(1, 1)),
-        new Car(new GridPosn(0, 1), 2, false, false));
+        new Car(new GridPosn(0, 1), false, 2, false));
     // clicking an inactive car yields an active car
     t.checkExpect(car2.registerClick(new GridPosn(0, 1)),
-        new Car(new GridPosn(0, 1), 2, false, true));
+        new Car(new GridPosn(0, 1), true, 2, false));
   }
   
   void testRegisterKey(Tester t) {
-    Car moveCar = new Car(new GridPosn(), 1, true, true);
-    Truck moveTruck = new Truck(new GridPosn(2, 0), 3, false, true);
+    Car moveCar = new Car(new GridPosn(), true, 1, true);
+    Truck moveTruck = new Truck(new GridPosn(2, 0), 3, true, false);
     Truck inactiveCar = new Truck(new GridPosn(2, 0), 3, false, false);
     Wall w = new Wall(new GridPosn(2, 0));
     
     // Do nothing if the car is inactive
     t.checkExpect(inactiveCar.registerKey("a",
             new Cons<>(w, new Mt<>()),
+            new Mt<>(),
             new Cons<>(inactiveCar, new Cons<>(moveTruck, new Mt<>()))),
         inactiveCar);
     
     // Do nothing if the desired move isn't in the direction of movement
-    t.checkExpect(moveCar.registerKey("s", new Mt<>(), new Mt<>()), moveCar);
-    t.checkExpect(moveTruck.registerKey("d", new Mt<>(), new Mt<>()), moveTruck);
+    t.checkExpect(moveCar.registerKey("s", new Mt<>(), new Mt<>(), new Mt<>()), moveCar);
+    t.checkExpect(moveTruck.registerKey("d", new Mt<>(), new Mt<>(), new Mt<>()), moveTruck);
     
     // Do nothing if the move would cause a collision with another vehicle
-    t.checkExpect(moveCar.registerKey("d", new Mt<>(),
+    t.checkExpect(moveCar.registerKey("d",
+            new Mt<>(),
+            new Mt<>(),
             new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
         moveCar);
     
     // Do nothing if the move would cause a collision with a wall
-    t.checkExpect(moveCar.registerKey("d", new Cons<>(w, new Mt<>()), new Mt<>()), moveCar);
+    t.checkExpect(moveCar.registerKey("d", new Cons<>(w, new Mt<>()), new Mt<>(), new Mt<>()),
+        moveCar);
     
     // Otherwise, move the vehicle
     t.checkExpect(moveCar.registerKey("a",
             new Cons<>(w, new Mt<>()),
+            new Mt<>(),
             new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
-        new Car(new GridPosn(-1, 0), 1, true, true));
+        new Car(new GridPosn(-1, 0), true, 1, true));
     t.checkExpect(moveCar.registerKey("d",
             new Mt<>(),
+            new Mt<>(),
             new Cons<>(moveCar, new Mt<>())),
-        new Car(new GridPosn(1, 0), 1, true, true));
+        new Car(new GridPosn(1, 0), true, 1, true));
     t.checkExpect(moveTruck.registerKey("w",
             new Mt<>(),
-            new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
-        new Truck(new GridPosn(2, -1), 3, false, true));
-    t.checkExpect(moveTruck.registerKey("s",
             new Mt<>(),
             new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
-        new Truck(new GridPosn(2, 1), 3, false, true));
+        new Truck(new GridPosn(2, -1), 3, true, false));
+    t.checkExpect(moveTruck.registerKey("s",
+            new Mt<>(),
+            new Mt<>(),
+            new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
+        new Truck(new GridPosn(2, 1), 3, true, false));
     
     // Arrow keys should work as well
     t.checkExpect(moveCar.registerKey("left",
             new Cons<>(w, new Mt<>()),
+            new Mt<>(),
             new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
-        new Car(new GridPosn(-1, 0), 1, true, true));
+        new Car(new GridPosn(-1, 0), true, 1, true));
   }
   
   void testMoveTo(Tester t) {
     t.checkExpect(car1.moveTo(new GridPosn(1, 3)),
-        new Car(new GridPosn(1, 3), 0, true, true));
+        new Car(new GridPosn(1, 3), true, 0, true));
     t.checkExpect(pCar1.moveTo(new GridPosn(1, 3)),
         new PlayerCar(new GridPosn(1, 3), true, true));
     t.checkExpect(truck1.moveTo(new GridPosn(1, 3)),
@@ -698,27 +732,30 @@ class ExamplesIGameObject {
   }
   
   void testMove(Tester t) {
-    Car moveCar = new Car(new GridPosn(), 1, true, false);
+    Car moveCar = new Car(new GridPosn(), false, 1, true);
     Truck moveTruck = new Truck(new GridPosn(2, 0), 3, false, false);
     Wall w = new Wall(new GridPosn(2, 0));
     
     // Do nothing if the desired move isn't in the direction of movement
-    t.checkExpect(moveCar.move(0, 1, new Mt<>(), new Mt<>()), moveCar);
-    t.checkExpect(moveTruck.move(1, 0, new Mt<>(), new Mt<>()), moveTruck);
+    t.checkExpect(moveCar.move(0, 1, new Mt<>(), new Mt<>(), new Mt<>()), moveCar);
+    t.checkExpect(moveTruck.move(1, 0, new Mt<>(), new Mt<>(), new Mt<>()), moveTruck);
     
     // Do nothing if the move would cause a collision with another vehicle
-    t.checkExpect(moveCar.move(1, 0, new Mt<>(),
+    t.checkExpect(moveCar.move(1, 0,
+            new Mt<>(),
+            new Mt<>(),
             new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
         moveCar);
     
     // Do nothing if the move would cause a collision with a wall
-    t.checkExpect(moveCar.move(1, 0, new Cons<>(w, new Mt<>()), new Mt<>()), moveCar);
+    t.checkExpect(moveCar.move(1, 0, new Cons<>(w, new Mt<>()), new Mt<>(), new Mt<>()), moveCar);
     
     // Otherwise, move the vehicle
     t.checkExpect(moveCar.move(-1, 0,
         new Cons<>(w, new Mt<>()),
+        new Mt<>(),
         new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>()))),
-        new Car(new GridPosn(-1, 0), 1, true, false));
+        new Car(new GridPosn(-1, 0), false, 1, true));
   }
 }
 
@@ -738,18 +775,18 @@ class ExamplesFunctions {
   Exit exit1 = new Exit(new GridPosn());
   Exit exit2 = new Exit(new GridPosn(2, 4));
   // Cars
-  Car car1 = new Car(new GridPosn(), 0, true, true);
-  Car car2 = new Car(new GridPosn(0, 1), 2, false, false);
-  Car car3 = new Car(new GridPosn(1, 0), 4, false, false);
+  Car car1 = new Car(new GridPosn(), true, 0, true);
+  Car car2 = new Car(new GridPosn(0, 1), false, 2, false);
+  Car car3 = new Car(new GridPosn(1, 0), false, 4, false);
   // PlayerCars
   PlayerCar pCar1 = new PlayerCar(new GridPosn(), true, true);
   PlayerCar pCar2 = new PlayerCar(new GridPosn(1, 1), false, false);
   // Trucks
   Truck truck1 = new Truck(new GridPosn(0, 2), 3, true, true);
   Truck truck2 = new Truck(new GridPosn(1, 1), 1, false, false);
-  Truck truck3 = new Truck(new GridPosn(4, 1), 1, true, false);
+  Truck truck3 = new Truck(new GridPosn(4, 1), 1, false, true);
   // Lists of IGameObjects
-  IList<IVehicle> vehicles = new Cons<>(car1, new Cons<>(pCar2, new Cons<>(truck1, new Mt<>())));
+  IList<IMovable> vehicles = new Cons<>(car1, new Cons<>(pCar2, new Cons<>(truck1, new Mt<>())));
   IList<Wall> walls = new Cons<>(wall1, new Cons<>(wall2, new Mt<>()));
   IList<Exit> exits = new Cons<>(exit1, new Cons<>(exit2, new Mt<>()));
   // GridAreas
@@ -758,28 +795,28 @@ class ExamplesFunctions {
   // ... Function examples
   IntersectsPred<Wall> wallIntersectsWall1 = new IntersectsPred<>(wall1);
   IntersectsPred<Exit> exitIntersectsWall1 = new IntersectsPred<>(wall1);
-  IntersectsPred<IVehicle> vehicleIntersectsExit1 = new IntersectsPred<>(exit1);
-  IntersectsPred<IVehicle> vehicleIntersectsPCar2 = new IntersectsPred<>(pCar2);
+  IntersectsPred<IMovable> vehicleIntersectsExit1 = new IntersectsPred<>(exit1);
+  IntersectsPred<IMovable> vehicleIntersectsPCar2 = new IntersectsPred<>(pCar2);
   
   IntersectsAnyPred<Wall, Wall> wallIntersectsAnyWall1 = new IntersectsAnyPred<>(new Mt<>());
   IntersectsAnyPred<Wall, Wall> wallIntersectsAnyWall2 = new IntersectsAnyPred<>(walls);
   IntersectsAnyPred<Wall, Exit> wallIntersectsAnyExit = new IntersectsAnyPred<>(exits);
   IntersectsAnyPred<Exit, Wall> exitIntersectsAnyWall = new IntersectsAnyPred<>(walls);
-  IntersectsAnyPred<IVehicle, Wall> vehicleIntersectsAnyWall = new IntersectsAnyPred<>(walls);
-  IntersectsAnyPred<IVehicle, IVehicle> vehicleIntersectsAnyVehicle =
+  IntersectsAnyPred<IMovable, Wall> vehicleIntersectsAnyWall = new IntersectsAnyPred<>(walls);
+  IntersectsAnyPred<IMovable, IMovable> vehicleIntersectsAnyVehicle =
       new IntersectsAnyPred<>(vehicles);
   
   IntersectsAnyOtherPred<Wall> wallIntersectsAnyOther = new IntersectsAnyOtherPred<>();
   IntersectsAnyOtherPred<Exit> exitIntersectsAnyOther = new IntersectsAnyOtherPred<>();
-  IntersectsAnyOtherPred<IVehicle> vehicleIntersectsAnyOther = new IntersectsAnyOtherPred<>();
+  IntersectsAnyOtherPred<IMovable> vehicleIntersectsAnyOther = new IntersectsAnyOtherPred<>();
   
   DrawToScene<Wall> drawWallToScene = new DrawToScene<>();
   DrawToScene<Exit> drawExitToScene = new DrawToScene<>();
-  DrawToScene<IVehicle> drawVehicleToScene = new DrawToScene<>();
+  DrawToScene<IMovable> drawVehicleToScene = new DrawToScene<>();
   
   InAreaPred<Wall> wallInAreaPred = new InAreaPred<>(r);
   InAreaPred<Exit> exitInAreaPred = new InAreaPred<>(r);
-  InAreaPred<IVehicle> vehicleInAreaPred = new InAreaPred<>(r);
+  InAreaPred<IMovable> vehicleInAreaPred = new InAreaPred<>(r);
   
   InWinningStatePred inWinningStatePred1 = new InWinningStatePred(new Mt<>());
   InWinningStatePred inWinningStatePred2 = new InWinningStatePred(exits);
@@ -1061,8 +1098,8 @@ class ExamplesIList {
     t.checkExpect(ints2.remove(1), new Cons<>(1, new Cons<>(1, new Mt<>())));
     t.checkExpect(ints1.remove(3), ints1);
     
-    Car c1 = new Car(new GridPosn(1, 1), 0, false, false);
-    Car c2 = new Car(new GridPosn(1, 1), 0, false, false);
+    Car c1 = new Car(new GridPosn(1, 1), false, 0, false);
+    Car c2 = new Car(new GridPosn(1, 1), false, 0, false);
     t.checkExpect(new Cons<>(c1, new Mt<>()).remove(c1), new Mt<>());
     t.checkExpect(new Cons<>(c1, new Mt<>()).remove(c2), new Cons<>(c1, new Mt<>()));
   }
@@ -1092,49 +1129,49 @@ class ExamplesParser {
   void testLoadVehicles(Tester t) {
     t.checkExpect(p1.loadVehicles(), new Mt<>());
     t.checkExpect(p2.loadVehicles(),
-        new Cons<>(new Car(new GridPosn(0, 0), 1, true, false), new Mt<>()));
+        new Cons<>(new Car(new GridPosn(0, 0), false, 1, true), new Mt<>()));
     t.checkExpect(p3.loadVehicles(),
-        new Cons<>(new Car(new GridPosn(0, 0), 1, false, false), new Mt<>()));
+        new Cons<>(new Car(new GridPosn(0, 0), false, 1, false), new Mt<>()));
     t.checkExpect(p4.loadVehicles(),
         new Cons<>(new PlayerCar(new GridPosn(0, 0), false, false), new Mt<>()));
     t.checkExpect(p5.loadVehicles(),
-        new Cons<>(new Truck(new GridPosn(0, 0), 1, true, false), new Mt<>()));
+        new Cons<>(new Truck(new GridPosn(0, 0), 1, false, true), new Mt<>()));
     t.checkExpect(p6.loadVehicles(),
         new Cons<>(
-            new Car(new GridPosn(0, 0), 3, false, false),
-            new Cons<>(new PlayerCar(new GridPosn(1, 0), false, true),
+            new Car(new GridPosn(0, 0), false, 3, false),
+            new Cons<>(new PlayerCar(new GridPosn(1, 0), true, false),
                 new Cons<>(new Truck(new GridPosn(2, 0), 0, false, false),
-                    new Cons<>(new Car(new GridPosn(3, 0), 3, true, false),
-                        new Cons<>(new PlayerCar(new GridPosn(3, 1),true, false),
-                            new Cons<>(new Truck(new GridPosn(3, 2), 1, true, false),
+                    new Cons<>(new Car(new GridPosn(3, 0), false, 3, true),
+                        new Cons<>(new PlayerCar(new GridPosn(3, 1), false, true),
+                            new Cons<>(new Truck(new GridPosn(3, 2), 1, false, true),
                                 new Mt<>())))))));
   }
   
   void testLoadRemainingVehicles(Tester t) {
-    t.checkExpect(p1.loadRemainingVehicles(" +|-X", 0, 0, new Random(6), new GridPosn(0, 0)),
+    t.checkExpect(p1.loadMovables(" +|-X", 0, 0, new Random(6), new GridPosn(0, 0)),
         new Mt<>());
-    t.checkExpect(p1.loadRemainingVehicles("c", 0, 0, new Random(6), new GridPosn(-1, -1)),
-        new Cons<>(new Car(new GridPosn(0, 0), 1, true, false), new Mt<>()));
-    t.checkExpect(p1.loadRemainingVehicles("c", 4, 2, new Random(6), new GridPosn(-1, -1)),
-        new Cons<>(new Car(new GridPosn(4, 2), 1, true, false), new Mt<>()));
-    t.checkExpect(p1.loadRemainingVehicles("c", 4, 2, new Random(6), new GridPosn(4, 2)),
-        new Cons<>(new Car(new GridPosn(4, 2), 1, true, true), new Mt<>()));
-    t.checkExpect(p1.loadRemainingVehicles("C", 0, 0, new Random(6), new GridPosn(-1, -1)),
-        new Cons<>(new Car(new GridPosn(0, 0), 1, false, false), new Mt<>()));
-    t.checkExpect(p1.loadRemainingVehicles("P", 0, 0, new Random(6), new GridPosn(-1, -1)),
+    t.checkExpect(p1.loadMovables("c", 0, 0, new Random(6), new GridPosn(-1, -1)),
+        new Cons<>(new Car(new GridPosn(0, 0), false, 1, true), new Mt<>()));
+    t.checkExpect(p1.loadMovables("c", 4, 2, new Random(6), new GridPosn(-1, -1)),
+        new Cons<>(new Car(new GridPosn(4, 2), false, 1, true), new Mt<>()));
+    t.checkExpect(p1.loadMovables("c", 4, 2, new Random(6), new GridPosn(4, 2)),
+        new Cons<>(new Car(new GridPosn(4, 2), true, 1, true), new Mt<>()));
+    t.checkExpect(p1.loadMovables("C", 0, 0, new Random(6), new GridPosn(-1, -1)),
+        new Cons<>(new Car(new GridPosn(0, 0), false, 1, false), new Mt<>()));
+    t.checkExpect(p1.loadMovables("P", 0, 0, new Random(6), new GridPosn(-1, -1)),
         new Cons<>(new PlayerCar(new GridPosn(0, 0), false, false), new Mt<>()));
-    t.checkExpect(p1.loadRemainingVehicles("t", 0, 0, new Random(6), new GridPosn(-1, -1)),
-        new Cons<>(new Truck(new GridPosn(0, 0), 1, true, false), new Mt<>()));
-    t.checkExpect(p2.loadRemainingVehicles("CPTc |\n"
+    t.checkExpect(p1.loadMovables("t", 0, 0, new Random(6), new GridPosn(-1, -1)),
+        new Cons<>(new Truck(new GridPosn(0, 0), 1, false, true), new Mt<>()));
+    t.checkExpect(p2.loadMovables("CPTc |\n"
                                       + "   p -\n"
                                       + "X+ t  ", 0, 0, new Random(6), new GridPosn(1, 0)),
         new Cons<>(
-            new Car(new GridPosn(0, 0), 3, false, false),
-            new Cons<>(new PlayerCar(new GridPosn(1, 0), false, true),
+            new Car(new GridPosn(0, 0), false, 3, false),
+            new Cons<>(new PlayerCar(new GridPosn(1, 0), true, false),
                 new Cons<>(new Truck(new GridPosn(2, 0), 0, false, false),
-                    new Cons<>(new Car(new GridPosn(3, 0), 3, true, false),
-                        new Cons<>(new PlayerCar(new GridPosn(3, 1),true, false),
-                            new Cons<>(new Truck(new GridPosn(3, 2), 1, true, false),
+                    new Cons<>(new Car(new GridPosn(3, 0), false, 3, true),
+                        new Cons<>(new PlayerCar(new GridPosn(3, 1), false, true),
+                            new Cons<>(new Truck(new GridPosn(3, 2), 1, false, true),
                                 new Mt<>())))))));
   }
   
@@ -1249,89 +1286,194 @@ class ExamplesParser {
   }
 }
 
-// Examples for TiledImage.java ===================================================================
+// Examples for Tiles.java ========================================================================
 
-class ExamplesTiledImage {
+class ExamplesTiles {
   
   // +----------+
   // | Examples |
   // +----------+
+
+  // Automatically creating a OneSlice
+  ITileset oneSliceAuto = new OneSlice(Path.of("grid-cell.png"));
+  // Manually creating the same OneSlice
+  WorldImage gCellSprite = new SpriteLoader().fromSpritesDir(Path.of("grid-cell.png"));
+  ITileset oneSliceManual = new OneSlice(gCellSprite);
+
+  // Automatically creating a NineSlice
+  NineSlice nineSliceAuto = new NineSlice(Path.of("klotski","normal-box.png"));
+  // Manually creating an identical NineSlice
+  WorldImage spriteSheet = new SpriteLoader().fromSpritesDir(Path.of("klotski", "normal-box.png"));
+  WorldImage topLeft = new CropImage(0, 0, 32, 32, spriteSheet);
+  WorldImage topMid = new CropImage(32, 0, 32, 32, spriteSheet);
+  WorldImage topRight = new CropImage(64, 0, 32, 32, spriteSheet);
+  WorldImage midLeft = new CropImage(0, 32, 32, 32, spriteSheet);
+  WorldImage midMid = new CropImage(32, 32, 32, 32, spriteSheet);
+  WorldImage midRight = new CropImage(64, 32, 32, 32, spriteSheet);
+  WorldImage botLeft = new CropImage(0, 64, 32, 32, spriteSheet);
+  WorldImage botMid = new CropImage(32, 64, 32, 32, spriteSheet);
+  WorldImage botRight = new CropImage(64, 64, 32, 32, spriteSheet);
+  ITileset nineSliceManual = new NineSlice(
+      topLeft, topMid, topRight,
+      midLeft, midMid, midRight,
+      botLeft, botMid, botRight
+  );
+
+  // Creating TiledImages from the above OneSlice and NineSlice
+  TiledImage tiMt = new TiledImage(oneSliceAuto, 0, 0);
+  TiledImage tiMtVert = new TiledImage(oneSliceAuto, 0, 2);
+  TiledImage tiMtHoriz = new TiledImage(oneSliceAuto, 2, 0);
+  TiledImage ti1 = new TiledImage(oneSliceAuto, 1, 1);
+  TiledImage ti2 = new TiledImage(oneSliceAuto, 4, 1);
+  TiledImage ti3 = new TiledImage(oneSliceAuto, 1, 5);
+  TiledImage ti4 = new TiledImage(oneSliceAuto, 4, 5);
+  TiledImage ti5 = new TiledImage(nineSliceAuto, 4, 5);
+
   
-  WorldImage im1 = new RectangleImage(16, 32, OutlineMode.SOLID, Color.BLACK);
-  WorldImage im2 = new FromFileImage("sprites/grid-cell.png");
-  
-  TiledImage ti1 = new TiledImage(im1, 1, 1);
-  TiledImage ti2 = new TiledImage(im1, 4, 1);
-  TiledImage ti3 = new TiledImage(im1, 1, 5);
-  TiledImage ti4 = new TiledImage(im1, 4, 5);
-  TiledImage ti5 = new TiledImage(im2, 4, 5);
-  
-  
-  // +-------+
-  // | Tests |
-  // +-------+
+  // +--------------------+
+  // | Tests for ITileset |
+  // +--------------------+
+
+  void testTilesetConstructors(Tester t) {
+    t.checkExpect(oneSliceAuto, oneSliceManual);
+    t.checkExpect(nineSliceAuto, nineSliceManual);
+  }
+
+  void testDrawTile(Tester t) {
+    // OneSlice always returns the same image regardless of the inputs
+    t.checkExpect(oneSliceAuto.drawTile(false, false, false, false), gCellSprite);
+    t.checkExpect(oneSliceAuto.drawTile(true, true, false, false), gCellSprite);
+    t.checkExpect(oneSliceAuto.drawTile(false, true, true, true), gCellSprite);
+
+    // NineSlice changes depending on the inputs according to the following truth table:
+    t.checkExpect(nineSliceAuto.drawTile(false, false, false, false), midMid);
+    t.checkExpect(nineSliceAuto.drawTile(false, false, false, true), midRight);
+    t.checkExpect(nineSliceAuto.drawTile(false, false, true, false), midLeft);
+    t.checkExpect(nineSliceAuto.drawTile(false, false, true, true), midLeft);
+    t.checkExpect(nineSliceAuto.drawTile(false, true, false, false), botMid);
+    t.checkExpect(nineSliceAuto.drawTile(false, true, false, true), botRight);
+    t.checkExpect(nineSliceAuto.drawTile(false, true, true, false), botLeft);
+    t.checkExpect(nineSliceAuto.drawTile(false, true, true, true), botLeft);
+    t.checkExpect(nineSliceAuto.drawTile(true, false, false, false), topMid);
+    t.checkExpect(nineSliceAuto.drawTile(true, false, false, true), topRight);
+    t.checkExpect(nineSliceAuto.drawTile(true, false, true, false), topLeft);
+    t.checkExpect(nineSliceAuto.drawTile(true, false, true, true), topLeft);
+    t.checkExpect(nineSliceAuto.drawTile(true, true, false, false), topMid);
+    t.checkExpect(nineSliceAuto.drawTile(true, true, false, true), topRight);
+    t.checkExpect(nineSliceAuto.drawTile(true, true, true, false), topLeft);
+    t.checkExpect(nineSliceAuto.drawTile(true, true, true, true), topLeft);
+  }
+
+  // +----------------------+
+  // | Tests for TiledImage |
+  // +----------------------+
+
   void testConstructorEx(Tester t) {
     t.checkConstructorException(
-        new IllegalArgumentException("tilesX and tilesY must both be positive integers"),
+        new IllegalArgumentException("tilesX and tilesY must both be non-negative integers"),
         "TiledImage",
-        im1, 0, 1
+        oneSliceAuto, -1, 1
     );
     t.checkConstructorException(
-        new IllegalArgumentException("tilesX and tilesY must both be positive integers"),
+        new IllegalArgumentException("tilesX and tilesY must both be non-negative integers"),
         "TiledImage",
-        im1, 1, 0
+        oneSliceAuto, 1, -1
     );
     t.checkConstructorException(
-        new IllegalArgumentException("tilesX and tilesY must both be positive integers"),
+        new IllegalArgumentException("tilesX and tilesY must both be non-negative integers"),
         "TiledImage",
-        im1, -1, -1
+        oneSliceAuto, -1, -1
     );
   }
   
   void testDrawRow(Tester t) {
-    t.checkExpect(ti1.drawRow(1), im1);
-    t.checkExpect(ti1.drawRow(3),
-        new BesideImage(im1,
-            new BesideImage(im1, im1)));
-    t.checkExpect(ti4.drawRow(3),
-        new BesideImage(im1,
-            new BesideImage(im1, im1)));
-    t.checkExpect(ti5.drawRow(3),
-        new BesideImage(im2,
-            new BesideImage(im2, im2)));
+    // Drawing a row with one element and an empty row
+    t.checkExpect(tiMt.drawRow(false, false),
+        new EmptyImage());
+    t.checkExpect(tiMtVert.drawRow(false, false),
+        new EmptyImage());
+    t.checkExpect(ti1.drawRow(false, false),
+        new BesideImage(gCellSprite, new EmptyImage()));
+
+    // When making a row with a one-sliced image, the image should always be the same
+    t.checkExpect(ti4.drawRow(false, false),
+        new BesideImage(gCellSprite,
+                new BesideImage(gCellSprite,
+                    new BesideImage(gCellSprite,
+                        new BesideImage(gCellSprite, new EmptyImage())))));
+    t.checkExpect(ti4.drawRow(true, false),
+        new BesideImage(gCellSprite,
+            new BesideImage(gCellSprite,
+                new BesideImage(gCellSprite,
+                    new BesideImage(gCellSprite, new EmptyImage())))));
+
+    // When making a row with a nine-sliced tileset, the image should be dependent on its position
+    // according to the tileset
+    t.checkExpect(ti5.drawRow(false, false),
+        new BesideImage(midLeft,
+            new BesideImage(midMid,
+                new BesideImage(midMid,
+                    new BesideImage(midRight, new EmptyImage())))));
+    t.checkExpect(ti5.drawRow(false, true),
+        new BesideImage(botLeft,
+            new BesideImage(botMid,
+                new BesideImage(botMid,
+                    new BesideImage(botRight, new EmptyImage())))));
+    t.checkExpect(ti5.drawRow(true, false),
+        new BesideImage(topLeft,
+            new BesideImage(topMid,
+                new BesideImage(topMid,
+                    new BesideImage(topRight, new EmptyImage())))));
   }
-  
-  void testDrawRows(Tester t) {
-    WorldImage row = new BesideImage(im1,
-        new BesideImage(im1,
-            new BesideImage(im1, im1)));
-    
-    t.checkExpect(ti1.drawRows(1), im1);
-    t.checkExpect(ti1.drawRows(3),
-        new AboveImage(im1,
-            new AboveImage(im1, im1)));
-    t.checkExpect(ti2.drawRows(2),
-        new AboveImage(row, row));
-    t.checkExpect(ti4.drawRows(3),
-        new AboveImage(row,
-            new AboveImage(row, row)));
-  }
-  
+
   void testDraw(Tester t) {
-    WorldImage row = new BesideImage(im1,
-        new BesideImage(im1,
-            new BesideImage(im1, im1)));
-    t.checkExpect(ti1.draw(), im1);
-    t.checkExpect(ti2.draw(), row);
-    t.checkExpect(ti3.draw(),
-        new AboveImage(im1,
-            new AboveImage(im1,
-                new AboveImage(im1,
-                    new AboveImage(im1, im1)))));
+    WorldImage gCellRow = new BesideImage(gCellSprite,
+        new BesideImage(gCellSprite,
+            new BesideImage(gCellSprite,
+                new BesideImage(gCellSprite,
+                    new EmptyImage()))));
+
+    WorldImage boxTopRow = new BesideImage(topLeft,
+        new BesideImage(topMid,
+            new BesideImage(topMid,
+                new BesideImage(topRight,
+                    new EmptyImage()))));
+    WorldImage boxMidRow = new BesideImage(midLeft,
+        new BesideImage(midMid,
+            new BesideImage(midMid,
+                new BesideImage(midRight,
+                    new EmptyImage()))));
+    WorldImage boxBotRow = new BesideImage(botLeft,
+        new BesideImage(botMid,
+            new BesideImage(botMid,
+                new BesideImage(botRight,
+                    new EmptyImage()))));
+
+    // Drawing a TiledImage with one element or empty
+    t.checkExpect(tiMt.draw(),
+        new EmptyImage());
+    t.checkExpect(tiMtHoriz.draw(),
+        new EmptyImage());
+    t.checkExpect(tiMtVert.draw(),
+        new AboveImage(new EmptyImage(),
+            new AboveImage(new EmptyImage(), new EmptyImage())));
+    t.checkExpect(ti1.draw(),
+        new AboveImage(new BesideImage(gCellSprite), new EmptyImage()));
+
+    // Drawing a TiledImage with multiple rows
     t.checkExpect(ti4.draw(),
-        new AboveImage(row,
-            new AboveImage(row,
-                new AboveImage(row,
-                    new AboveImage(row, row)))));
+        new AboveImage(gCellRow,
+            new AboveImage(gCellRow,
+                new AboveImage(gCellRow,
+                    new AboveImage(gCellRow,
+                        new AboveImage(gCellRow,
+                            new EmptyImage()))))));
+    t.checkExpect(ti5.draw(),
+        new AboveImage(boxTopRow,
+            new AboveImage(boxMidRow,
+                new AboveImage(boxMidRow,
+                    new AboveImage(boxMidRow,
+                        new AboveImage(boxBotRow,
+                            new EmptyImage()))))));
   }
 }

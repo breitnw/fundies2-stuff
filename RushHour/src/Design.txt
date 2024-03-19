@@ -143,25 +143,25 @@ The `Wall` and `Exit` classes each use all the default implementations except fo
 since it doesn't have one. In each case, they just load an image from the corresponding file.
 
 
-### IVehicle
+### IMovable
 
-The `IVehicle` interface represents public functionality across all vehicles, and extends the
+The `IMovable` interface represents public functionality across all vehicles, and extends the
 IGameObject interface. The only two methods it contains are:
 
-- `inWinningState`, which determines whether this `IVehicle` is in a winning state. We decided to make
+- `inWinningState`, which determines whether this `IMovable` is in a winning state. We decided to make
   this method accessible to all vehicles instead of just `PlayerCars` so that we can just run andmap
   over the list of cars, thus allowing for multiple `PlayerCars` as well.
-- `registerClick`, which registers a click at the provided `GridPosn`, acting on this `IVehicle` 
+- `registerClick`, which registers a click at the provided `GridPosn`, acting on this `IMovable`
   depending on where the click occurred.
-- `registerKey`, which registers a key event, returning a new `IVehicle` representing the changed 
-  vehicle after the key. If this `IVehicle` is selected, moves it left, right, up, or down 
+- `registerKey`, which registers a key event, returning a new `IMovable` representing the changed
+  vehicle after the key. If this `IMovable` is selected, moves it left, right, up, or down
   depending on which movements are available and which key was pressed. Collisions are tested 
   with the provided lists of walls and vehicles before movement. 
 
 
 ### AVehicle
 
-The `AVehicle` interface abstracts some of the functionality present across all `IVehicle` 
+The `AVehicle` interface abstracts some of the functionality present across all `IMovable`
 implementors. It contains three fields:
 
 - `color`, which is an integer (validated to be between 0 and 4) representing the color of the
@@ -310,7 +310,7 @@ The functions are as follows:
   the provided `IGameObject`'s `GridArea` is fully contained in the `GridArea` passed during 
   construction.
 - `InWinningStatePred`, which is a function object predicate that returns true if the provided
-  `IVehicle` is in a winning state; i.e., if it, being a `PlayerCar` implies it is overlapping 
+  `IMovable` is in a winning state; i.e., if it, being a `PlayerCar` implies it is overlapping
   an `Exit`.
 - `OnClick`, which is a function object that maps a car before a click event to a car after a click
   event, selecting it if it contains the click position and deselecting it if it does not.

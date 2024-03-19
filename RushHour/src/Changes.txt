@@ -38,3 +38,10 @@ instead of having boundary checks.
 
 We had to update our `loadWidth` and `loadHeight` methods to accommodate varying line widths, 
 only taking the maximum instead of throwing an error when the latter was detected.
+
+---
+
+1. changed IVehicle to IMovable
+2. changed AVehicle to AMovable
+3. refactor TiledImage to support defining different tiles based on relative locations
+4. added new characters to represent boxes in klotski
