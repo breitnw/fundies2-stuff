@@ -105,14 +105,36 @@ interface IMovable extends IGameObject {
 
   // Registers a click event on this IMovable, selecting it if the click was within its area and 
   // deselecting it otherwise
-  // EFFECT: mutates the selected field of this IMovable
-  void registerClick(GridPosn clickPosn);
+  // EFFECT: mutates the selected field of this AMovable. The ScoreCounter and record are mutated
+  // to register new clicks if movable was not previously selected but now is.
+  void registerClick(GridPosn clickPosn, ScoreCounter sc, StateRecord record);
 
   // Registers a key event on this IMovable. If this IMovable is selected, moves it left, right,
   // up, or down depending on which movements are available and which key was pressed.
   // EFFECT: the position of this IMovable is mutated depending on which key was pressed and
-  // which moves are available
-  void registerKey(String k, IList<Wall> walls, IList<Exit> exits, IList<IMovable> movables);
+  // which moves are available, and sc is mutated to register movements if necessary (if there is
+  // a new selection and the key successfully resulted in a movement). Record is also mutated to
+  // reflect any movements.
+  void registerKey(
+      String k,
+      IList<Wall> walls,
+      IList<Exit> exits,
+      IList<IMovable> movables,
+      ScoreCounter sc,
+      StateRecord record
+  );
+
+  // Selects this IMovable if selected is true, otherwise deselects it. Updates sc to register a
+  // new selection if there is one.
+  // EFFECT: updates this.selected to reflect the new selection state. If this movable wasn't
+  // previously selected but now is, registers a reselect on sc and sr.
+  // TODO: needs tests
+  void registerSelectEvent(boolean selected, ScoreCounter sc, StateRecord sr);
+
+  // moves this AMovable dx tiles horizontally and dy tiles vertically, without checking for
+  // collisions or valid directions of movement.
+  // EFFECT: the position of this movable is offset by dx units horizontally and dy vertically
+  void moveUnchecked(int dx, int dy);
 }
 
 // Represents a movable object with several abstracted methods
@@ -130,13 +152,31 @@ abstract class AMovable extends AGameObject implements IMovable {
     return true;
   }
 
+  // moves this AMovable dx tiles horizontally and dy tiles vertically, without checking for
+  // collisions or valid directions of movement.
+  // EFFECT: the position of this movable is offset by dx units horizontally and dy vertically
+  @Override
+  public void moveUnchecked(int dx, int dy) {
+    this.posn = this.posn.offset(dx, dy);
+  }
+
   // If possible, moves this AMovable dx tiles horizontally and dy tiles vertically.
   // If the resultant AMovable is colliding with any other vehicles on the grid, or if the
   // movement isn't in this car's direction of travel, does nothing.
-  // EFFECT: changes the posn of this vehicle if the provided move doesn't result in a collision
-  void move(int dx, int dy, IList<Wall> walls, IList<Exit> exits, IList<IMovable> movables) {
+  // EFFECT: the position of this movable is mutated depending on whether there was a collision,
+  // and sc is mutated to register movements if necessary (if there is a new selection and the
+  // key successfully resulted in a movement)
+  void move(
+      int dx,
+      int dy,
+      IList<Wall> walls,
+      IList<Exit> exits,
+      IList<IMovable> movables,
+      ScoreCounter sc,
+      StateRecord record
+  ) {
     // Move the AMovable
-    this.posn = this.posn.offset(dx, dy);
+    this.moveUnchecked(dx, dy);
 
     // Determine if there are any collisions with walls or _other_ vehicles
     boolean collidesWithWall = walls.ormap(new IntersectsPred<>(this));
@@ -146,30 +186,38 @@ abstract class AMovable extends AGameObject implements IMovable {
 
     // Move the vehicle back to where it was if there was a collision
     if (collidesWithWall || collidesWithVehicle) {
-      this.posn = this.posn.offset(-dx, -dy);
+      this.moveUnchecked(-dx, -dy);
+      return;
     }
+
+    // If we didn't return, the move was successful, so we register a move on the score counter
+    sc.registerMove();
+    record.registerMove(dx, dy);
   }
 
-  // Registers a click event on this IMovable, selecting it if the clicked GridPosn is contained
-  // by this IMovable's Area
-  // EFFECT: mutates this IMovable's selected field according to whether its area contains the
-  // provided GridPosn
+  // Registers a click event on this AMovable, selecting it if the clicked GridPosn is contained
+  // by this AMovable's Area
+  // EFFECT: mutates the selected field of this AMovable. The ScoreCounter and sr are mutated to
+  // register new clicks if movable was not previously selected but now is.
   @Override
-  public void registerClick(GridPosn clickPosn) {
-    this.selected = this.getArea().containsPosn(clickPosn);
+  public void registerClick(GridPosn clickPosn, ScoreCounter sc, StateRecord sr) {
+    this.registerSelectEvent(this.getArea().containsPosn(clickPosn), sc, sr);
   }
 
-  // Registers a key event on this IMovable, returning a new IMovable representing the changed
-  // vehicle after the key. If this IMovable is selected, moves it left, right, up, or down
+  // Registers a key event on this AMovable, returning a new IMovable representing the changed
+  // vehicle after the key. If this AMovable is selected, moves it left, right, up, or down
   // depending on which movements are available and which key was pressed.
-  // EFFECT: changes the posn of this vehicle if the provided key represents a valid move,
-  // doesn't result in a collision, and the car is selected.
+  // EFFECT: the position of this IMovable is mutated depending on which key was pressed and
+  // which moves are available, and sc and record are mutated to register movements if necessary
+  // (if there is a new selection and the key successfully resulted in a movement)
   @Override
   public void registerKey(
       String k,
       IList<Wall> walls,
       IList<Exit> exits,
-      IList<IMovable> movables
+      IList<IMovable> movables,
+      ScoreCounter sc,
+      StateRecord record
   ) {
     if (!this.selected) {
       return;
@@ -177,21 +225,34 @@ abstract class AMovable extends AGameObject implements IMovable {
     switch (k) {
       case "w":
       case "up":
-        this.move(0, -1, walls, exits, movables);
+        this.move(0, -1, walls, exits, movables, sc, record);
         break;
       case "a":
       case "left":
-        this.move(-1, 0, walls, exits, movables);
+        this.move(-1, 0, walls, exits, movables, sc, record);
         break;
       case "s":
       case "down":
-        this.move(0, 1, walls, exits, movables);
+        this.move(0, 1, walls, exits, movables, sc, record);
         break;
       case "d":
       case "right":
-        this.move(1, 0, walls, exits, movables);
+        this.move(1, 0, walls, exits, movables, sc, record);
+        break;
+      default:
         break;
     }
+  }
+
+  // Selects this AVehicle if selected is true, otherwise deselects it. Updates sc to register a
+  // new selection if there is one.
+  @Override
+  public void registerSelectEvent(boolean selected, ScoreCounter sc, StateRecord sr) {
+    if (selected && !this.selected) {
+      sc.registerReselect();
+      sr.startAction(this);
+    }
+    this.selected = selected;
   }
 }
 
@@ -256,14 +317,26 @@ abstract class AVehicle extends AMovable {
   // If possible, moves this AMovable dx tiles horizontally and dy tiles vertically.
   // If the resultant AMovable is colliding with any other vehicles on the grid, or if the
   // movement isn't in this car's direction of travel, does nothing.
-  // EFFECT: changes the posn of this vehicle if the provided move doesn't result in a collision
+  // EFFECT: the position of this movable is mutated depending on whether there was a collision,
+  // and sc is mutated to register movements if necessary (if there is a new selection and the
+  // command successfully resulted in a movement)
   @Override
-  void move(int dx, int dy, IList<Wall> walls, IList<Exit> exits, IList<IMovable> movables) {
-    // Only move if the car is horizontal or there's no horizontal movement, AND the car is
-    // vertical or there's no vertical movement.
-    if ((this.isHorizontal || dx == 0) && (!this.isHorizontal || dy == 0)) {
-      super.move(dx, dy, walls, exits, movables);
+  void move(
+      int dx,
+      int dy,
+      IList<Wall> walls,
+      IList<Exit> exits,
+      IList<IMovable> movables,
+      ScoreCounter sc,
+      StateRecord record
+  ) {
+    // If we're horizontal and trying to move vertically, or vertical and trying to move
+    // horizontally, do nothing.
+    if ((!this.isHorizontal && dx != 0) || (this.isHorizontal && dy != 0)) {
+      return;
     }
+    // Otherwise, proceed with normal movement
+    super.move(dx, dy, walls, exits, movables, sc, record);
   }
 }
 
@@ -351,11 +424,10 @@ class Truck extends AVehicle {
 
 // Klotski pieces ---------------------------------------------------------------------------------
 
-// TODO: needs tests for everything
-
 // Represents an abstract Klotski piece with functionality for generating images
 abstract class ABox extends AMovable {
-  int width, height;
+  int width;
+  int height;
 
   ABox(GridPosn posn, boolean selected, int width, int height) {
     super(posn, selected);
@@ -413,21 +485,27 @@ class NormalBox extends ABox {
   // If possible, moves this NormalBox dx tiles horizontally and dy tiles vertically.
   // If the resultant NormalBox is colliding with any other movables (boxes), walls, or the
   // exit tile, returns the NormalBox in its original position
+  // EFFECT: the position of this movable is mutated depending on whether there was a collision,
+  // and sc is mutated to register movements if necessary (if there is a new selection and the
+  // key successfully resulted in a movement)
   @Override
-  void move(int dx, int dy, IList<Wall> walls, IList<Exit> exits, IList<IMovable> movables) {
-    // Move the NormalBox
-    this.posn = this.posn.offset(dx, dy);
-
-    // Determine if there are any collisions with walls or _other_ vehicles
-    boolean collidesWithWall = walls.ormap(new IntersectsPred<>(this));
+  void move(
+      int dx,
+      int dy,
+      IList<Wall> walls,
+      IList<Exit> exits,
+      IList<IMovable> movables,
+      ScoreCounter sc,
+      StateRecord record
+  ) {
+    // Determine if there are any collisions with exits
+    this.moveUnchecked(dx, dy);
     boolean collidesWithExit = exits.ormap(new IntersectsPred<>(this));
-    boolean collidesWithVehicle = movables
-        .without(this)
-        .ormap(new IntersectsPred<>(this));
+    this.moveUnchecked(-dx, -dy);
 
-    // Move the vehicle back to where it was if there was a collision
-    if (collidesWithWall || collidesWithVehicle || collidesWithExit) {
-      this.posn = this.posn.offset(-dx, -dy);
+    // If there was no collision, we proceed with normal movement:
+    if (!collidesWithExit) {
+      super.move(dx, dy, walls, exits, movables, sc, record);
     }
   }
 }

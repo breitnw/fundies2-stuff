@@ -1,0 +1,14 @@
+Algorithms ,Comparators      ,Sizes  ,Milliseconds
+Algorithm 1,byZipCode        ,  4000 ,       2
+Algorithms ,Comparators      ,Sizes  ,Milliseconds
+Algorithm 1,byZipCode        ,  4000 ,       0
+Algorithms ,Comparators      ,Sizes  ,Milliseconds
+Algorithm 1,byZipCode        ,  4000 ,       1
+Algorithms ,Comparators      ,Sizes  ,Milliseconds
+Algorithm 1,byZipCode        ,  4000 ,       1
+Algorithms ,Comparators      ,Sizes  ,Milliseconds
+Algorithm 1,byZipCode        ,  4000 ,       1
+Algorithms ,Comparators      ,Sizes  ,Milliseconds
+Algorithm 1,byZipCode        ,  4000 ,       1
+Algorithms ,Comparators      ,Sizes  ,Milliseconds
+Algorithm 1,byZipCode        ,  4000 ,       1

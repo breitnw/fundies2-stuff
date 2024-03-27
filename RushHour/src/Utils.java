@@ -4,7 +4,7 @@ import javalib.worldimages.WorldImage;
 import java.nio.file.Path;
 import java.util.Random;
 
-// String utils -------------------------------------------------------------------------------------------------------
+// String utils -----------------------------------------------------------------------------------
 
 // Represents a suite of utilities to allow loading a Level from a String. For information on how
 // to format level Strings, see the Level convenience constructor.
@@ -140,6 +140,8 @@ class Parser {
   int loadWidth() {
     int maxWidth = 0;
     int curWidth = 0;
+    // EFFECT: mutates curWidth to represent the length of the current line being traversed, and
+    // maxWidth to the maximum length of any line traversed so far.
     for (int i = 0; i < this.layout.length(); i += 1) {
       String cur = this.layout.substring(i, i + 1);
       if (cur.equals("\n")) {
@@ -156,6 +158,8 @@ class Parser {
   // layout.
   int loadHeight() {
     int numNewlines = 0;
+    // EFFECT: mutates numNewlines, adding 1 every time a newline character is encountered in the
+    // layout string
     for (int i = 0; i < this.layout.length(); i += 1) {
       String curChar = this.layout.substring(i, i + 1);
       if (curChar.equals("\n")) {
@@ -168,9 +172,8 @@ class Parser {
 
 // Image utils ------------------------------------------------------------------------------------
 
-// Represents a set of utilities related to loading sprites
+// Represents a utility for loading sprites from the file system
 class SpriteLoader {
-  // TODO: needs tests
   // Loads an image from the /sprites directory based on the provided path
   WorldImage fromSpritesDir(Path path) {
     return new FromFileImage(

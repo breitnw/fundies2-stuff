@@ -1,47 +1,24 @@
-## Implementing obstacles
+# MAJOR CHANGES
 
-> What changes did you have to make to your data definitions from the previous assignment, and why?
+## Switching to `impworld`
 
-We did not have to make any changes to our data definitions from the previous assignment to 
-implement obstacles. Rather than representing the grid border as a distinct construct, we chose 
-to represent the border with the `Wall` class, which implements the same `IGameObject` interface 
-as vehicles. We found that this was the best approach in terms of both abstraction and 
-extensibility: it allowed us to represent collisions between vehicles and walls with the same 
-methods we used for collisions between two vehicles, and also allowed us to place walls anywhere 
-on the board, which we figured might be a relevant feature in the future. As it turns out, this 
-was a very relevant feature, and we didn't need to do anything else to support it. 
+We chose to switch to `impworld` because we found that we were repeating a lot of code when
+constructing vehicles, and this could be removed by mutating data on abstract types. Also,
+it eased the process of dealing with scoring, since we could have mutable scorekeeper and action
+tracker objects. We could then pass these objects as fields of our function objects, allowing us
+to map over our vehicles while mutating them.
 
-> Had you known in the prior assignment that obstacles would be arriving now, would you have 
-> designed your data differently?
+## Implementing Klotski
 
-We would not have designed the data any differently. Although we did not know that obstacles 
-would be arriving for the next assignment, their implementation followed directly from our 
-data abstractions, and they seemed like a plausible feature to support. As such, we didn't see 
-any reason not to support them. 
+To implement Klotski, we chose to keep our code as tightly coupled with our Rush Hour code as 
+possible. To do this, we abstracted functionality common to all movable objects via our AMovable
+class, and modified AVehicle and ABox (our new abstract class for Klotski boxes) to extend this
+class. This enabled us to layer extra checks on existing methods in our subclasses. For instance,
+when invoking the `move` method on AVehicle, we check that we are facing the right direction before
+invoking the method on `super`. Similarly, for normal boxes, we check that we are not going to
+collide with an exit.
 
-> If we were to enhance the game with new kinds of items in the next assignment, would your 
-> revised data definitions accommodate those changes more easily?
-
-We think that our revised data definitions would be able to support different types of objects 
-very easily. Since we maintain `IGameObject` and `AGameObject` as abstractions for anything with 
-area that can be collided or intersected with and drawn to the grid, we can easily create new types 
-that support this functionality. Our existing types are created with extensibility in mind as 
-well: the `AVehicle` class, for instance, can technically support vehicles of any width and 
-height.  
-
-## Irregular shaped levels
-
-Non-rectangular levels were also already mostly achievable with our previous implementation and
-level string parsing thanks to the position-aware parsing methods we defined in the `Parser`
-(previously `ListUtils`) class. This was also available thanks to the `Wall` class we defined, 
-instead of having boundary checks.
-
-We had to update our `loadWidth` and `loadHeight` methods to accommodate varying line widths, 
-only taking the maximum instead of throwing an error when the latter was detected.
-
----
-
-1. changed IVehicle to IMovable
-2. changed AVehicle to AMovable
-3. refactor TiledImage to support defining different tiles based on relative locations
-4. added new characters to represent boxes in klotski
+As a result of this abstraction, it is fully possible to create levels with Klotski boxes and Rush
+Hour cars at the same time. The Level class simply contains a list of `IMovable`s, which may be
+Klotski boxes _or_ Rush Hour cars. Since they all share the same interface, they are able to move,
+collide with each other, and register the same events, despite their individual restrictions.

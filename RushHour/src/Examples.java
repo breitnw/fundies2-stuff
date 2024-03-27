@@ -4,30 +4,29 @@ import tester.Tester;
 
 import java.awt.*;
 import java.util.Random;
+import java.util.Stack;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.nio.file.Path;
 
-// TODO: tests for klotski in Game?
-
 // Examples for Game.java =========================================================================
 
+
 class ExamplesGame {
-  
+
   // +----------+
   // | Examples |
   // +----------+
-  
+
   // ==== Provided example levels ====
-  
+
   Level level1;
   Level level2;
   Level level3;
   Level level4;
-  
+
   // ==== Other extraneous (but valid) cases ====
-  
+
   // level1, but with the player car selected
   Level level5;
   // No walls
@@ -63,7 +62,7 @@ class ExamplesGame {
   Level kLevel1;
   // Easy klotski level for testing
   Level kLevel2;
-  
+
   Game game1;
   Game game2;
   Game game3;
@@ -121,7 +120,10 @@ class ExamplesGame {
         + "|      |\n"
         + "|C   c |\n"
         + "|   t  |\n"
-        + "+------+", new GridPosn(2, 3));
+        + "+------+",
+        new GridPosn(2, 3),
+        new ScoreCounter(0, true),
+        new StateRecord());
 
     // No walls
     level6 = new Level("        \n"
@@ -182,7 +184,10 @@ class ExamplesGame {
     // Very simple, including every possible element, for testing
     level14 = new Level("CPTc |\n"
         + "   p -\n"
-        + "X+ t  ", new GridPosn(3, 1));
+        + "X+ t  ",
+        new GridPosn(3, 1),
+        new ScoreCounter(0, true),
+        new StateRecord());
 
     // Game is in a winning state with one PlayerCar
     level15 = new Level("+------+\n"
@@ -238,9 +243,9 @@ class ExamplesGame {
     game4 = new Game(level4);
     game5 = new Game(level5);
     game6 = new Game(level18);
-    kGame1 = new Game(kLevel2);
+    kGame1 = new Game(kLevel1);
   }
-  
+
   // +------------+
   // | Game Tests |
   // +------------+
@@ -249,18 +254,19 @@ class ExamplesGame {
     // Runs the game via bigBang()
     kGame1.bigBang();
   }
-  
+
   void testMakeScene(Tester t) {
     this.resetExamples();
     // Since we've tested Level.draw(), we're checking against its output in this test
     t.checkExpect(game1.makeScene(), level1.draw());
     t.checkExpect(game2.makeScene(), level2.draw());
   }
-  
+
   void testOnKeyEvent(Tester t) {
     this.resetExamples();
 
-    Game g = new Game(
+    // A game with a newly selected car
+    Game gNewSelection = new Game(
         new Level("+------+\n"
                       + "|c    T|\n"
                       + "|T     |\n"
@@ -268,35 +274,38 @@ class ExamplesGame {
                       + "|      |\n"
                       + "|C   c |\n"
                       + "|   t  |\n"
-                      + "+------+", new GridPosn(2, 3)));
+                      + "+------+",
+            new GridPosn(2, 3),
+            new ScoreCounter(0, true),
+            new StateRecord()));
+
+    // A game with a car that was already moved on this selection
+    Game gOldSelection = new Game(
+        new Level("+------+\n"
+                      + "|c    T|\n"
+                      + "|T     |\n"
+                      + "| p    X\n"
+                      + "|      |\n"
+                      + "|C   c |\n"
+                      + "|   t  |\n"
+                      + "+------+",
+            new GridPosn(2, 3),
+            new ScoreCounter(0, false),
+            new StateRecord()));
+
+    // A game where the player car is blocked on both sides
     Game blocked = new Game(
         new Level("+------+\n"
                       + "|c    T|\n"
                       + "|T +T  |\n"
                       + "| p    X\n"
                       + "|  +  +|\n"
-                      + "+------+", new GridPosn(5, 0)));
-    Game almostDone = new Game(
-        new Level("+------+\n"
-            + "|c     |\n"
-            + "|T +T  |\n"
-            + "|    p X\n"
-            + "|  +  +|\n"
-            + "+------+", new GridPosn(5, 0)));
+                      + "+------+",
+            new GridPosn(5, 0),
+            new ScoreCounter(),
+            new StateRecord()));
 
-    // Moving player car to the right
-    g.onKeyEvent("d");
-    t.checkExpect(g, new Game(
-        new Level("+------+\n"
-                      + "|c    T|\n"
-                      + "|T     |\n"
-                      + "|  p   X\n"
-                      + "|      |\n"
-                      + "|C   c |\n"
-                      + "|   t  |\n"
-                      + "+------+", new GridPosn(3, 3))));
-
-    // blocked by vehicle
+    // cannot move player car right (blocked by vehicle)
     game5.onKeyEvent("d");
     t.checkExpect(game5, new Game(
         new Level("+------+\n"
@@ -306,9 +315,12 @@ class ExamplesGame {
                       + "|      |\n"
                       + "|C   c |\n"
                       + "|   t  |\n"
-                      + "+------+", new GridPosn(2, 3))));
+                      + "+------+",
+            new GridPosn(2, 3),
+            new ScoreCounter(0, true),
+            new StateRecord()))); // We still have a new selection
 
-    // cannot move truck down because blocked by obstacle
+    // cannot move truck down (blocked by obstacle)
     blocked.onKeyEvent("s");
     t.checkExpect(blocked, new Game(
         new Level("+------+\n"
@@ -316,7 +328,10 @@ class ExamplesGame {
                       + "|T +T  |\n"
                       + "| p    X\n"
                       + "|  +  +|\n"
-                      + "+------+", new GridPosn(5, 0))));
+                      + "+------+",
+            new GridPosn(5, 0),
+            new ScoreCounter(),
+            new StateRecord())));
 
     // wrong direction
     blocked.onKeyEvent("a");
@@ -326,8 +341,11 @@ class ExamplesGame {
                       + "|T +T  |\n"
                       + "| p    X\n"
                       + "|  +  +|\n"
-                      + "+------+", new GridPosn(5, 0))));
-    
+                      + "+------+",
+            new GridPosn(5, 0),
+            new ScoreCounter(),
+            new StateRecord())));
+
     // no selected vehicle
     game4.onKeyEvent("s");
     t.checkExpect(game4, new Game(
@@ -340,13 +358,40 @@ class ExamplesGame {
                       + "|   t  |\n"
                       + "+------+")));
 
-    // Moving the player car to the exit should trigger game completion
-    t.checkExpect(almostDone.hasWorldEnded(), false);
-    almostDone.onKeyEvent("d");
-    t.checkExpect(almostDone.hasWorldEnded(), false);
+    // Moving player car to the right when it was just selected
+    gNewSelection.onKeyEvent("d");
+    t.checkExpect(gNewSelection, new Game(
+        new Level("+------+\n"
+                      + "|c    T|\n"
+                      + "|T     |\n"
+                      + "|  p   X\n"
+                      + "|      |\n"
+                      + "|C   c |\n"
+                      + "|   t  |\n"
+                      + "+------+",
+            new GridPosn(3, 3),
+            new ScoreCounter(1, false),
+            new StateRecord())));
+
+    // Moving player car to the right when it has already been moved during this selection
+    gOldSelection.onKeyEvent("d");
+    t.checkExpect(gOldSelection, new Game(
+        new Level("+------+\n"
+                      + "|c    T|\n"
+                      + "|T     |\n"
+                      + "|  p   X\n"
+                      + "|      |\n"
+                      + "|C   c |\n"
+                      + "|   t  |\n"
+                      + "+------+",
+            new GridPosn(3, 3),
+            new ScoreCounter(0, false),
+            new StateRecord())));
   }
 
   void testLastScene(Tester t) {
+    this.resetExamples();
+
     WorldScene levelScene = game1.level.draw();
     levelScene.placeImageXY(
         new SpriteLoader().fromSpritesDir(Path.of("you-win.png")),
@@ -354,14 +399,20 @@ class ExamplesGame {
         game1.level.getHeightPixels() / 2);
     t.checkExpect(game1.lastScene(""), levelScene);
   }
-  
+
+
   void testOnMouseClicked(Tester t) {
     this.resetExamples();
 
     // Clicking on the player car to select it
+    // Also mutates the score counter to register a new selection
     game1.onMouseClicked(new Posn(130, 200));
-    t.checkExpect(game1, game5);
+    t.checkExpect(game1.level.movables, game5.level.movables);
+    t.checkExpect(game1.level.sc, game5.level.sc);
+    t.checkExpect(game1.level.record.record.size(), 1);
+
     // Doing nothing by clicking on a wall
+    this.resetExamples();
     game1.onMouseClicked(new Posn(30, 30));
     t.checkExpect(game1,
         new Game(
@@ -376,9 +427,21 @@ class ExamplesGame {
     // Deselecting the player car
     this.resetExamples();
     game5.onMouseClicked(new Posn(30, 30));
-    t.checkExpect(game5, game1);
+    t.checkExpect(game5,
+        new Game(
+            new Level("+------+\n"
+                + "|c    T|\n"
+                + "|T  T  |\n"
+                + "| p    X\n"
+                + "|      |\n"
+                + "|C   c |\n"
+                + "|   t  |\n"
+                + "+------+",
+                new GridPosn(-1, -1),
+                new ScoreCounter(0, true),
+                new StateRecord())));
   }
-  
+
   // +-------------+
   // | Level Tests |
   // +-------------+
@@ -387,12 +450,14 @@ class ExamplesGame {
     t.checkConstructorException(
         new IllegalArgumentException("Grid width must be greater than zero"),
         "Level",
-        new Mt<AVehicle>(), new Mt<Wall>(), new Mt<Exit>(), 0, 7);
+        new Mt<AVehicle>(), new Mt<Wall>(), new Mt<Exit>(), 0, 7,
+        new ScoreCounter(), new StateRecord());
     // Grid has a height of 0
     t.checkConstructorException(
         new IllegalArgumentException("Grid height must be greater than zero"),
         "Level",
-        new Mt<AVehicle>(), new Mt<Wall>(), new Mt<Exit>(), 8, 0);
+        new Mt<AVehicle>(), new Mt<Wall>(), new Mt<Exit>(), 8, 0,
+        new ScoreCounter(), new StateRecord());
     // A vehicle is overlapping a wall
     t.checkConstructorException(
         new IllegalArgumentException("No vehicle may overlap with a wall"),
@@ -424,11 +489,13 @@ class ExamplesGame {
             + "+------+"
     );
   }
-  
+
   // Test the second constructor, which builds a level based on a String with no active cars
   void testConstructor2(Tester t) {
     this.resetExamples();
-    t.checkExpect(level12, new Level(new Mt<>(), new Mt<>(), new Mt<>(), 1, 1));
+    t.checkExpect(level12, new Level(new Mt<>(), new Mt<>(), new Mt<>(), 1, 1,
+        new ScoreCounter(),
+        new StateRecord()));
     t.checkExpect(level13, new Level(
         new Cons<>(
             new Car(new GridPosn(0, 0), false, 3, false),
@@ -453,14 +520,18 @@ class ExamplesGame {
         new Cons<>(
             new Exit(new GridPosn(0, 2)),
             new Mt<>()),
-        6, 3));
+        6, 3,
+        new ScoreCounter(),
+        new StateRecord()));
   }
-  
+
   // Tests the third constructor, which builds a level from a String with the car at the
   // specified position (if any) selected
   void testConstructor3(Tester t) {
     this.resetExamples();
-    t.checkExpect(new Level(" ", new GridPosn(-1, -1)), level12);
+    t.checkExpect(
+        new Level(" ", new GridPosn(-1, -1), new ScoreCounter(0, false), new StateRecord()),
+        level12);
     t.checkExpect(level14, new Level(
         new Cons<>(
             new Car(new GridPosn(0, 0), false, 3, false),
@@ -485,12 +556,13 @@ class ExamplesGame {
         new Cons<>(
             new Exit(new GridPosn(0, 2)),
             new Mt<>()),
-        6, 3));
+        6, 3,
+        new ScoreCounter(0, true),
+        new StateRecord()));
   }
-  
-  
+
+
   void testLevelHandleKey(Tester t) {
-    this.resetExamples();
     // see testOnKeyEvent for more extensive integration tests
     this.resetExamples();
     level5.handleKey("d");
@@ -502,10 +574,13 @@ class ExamplesGame {
                       + "|      |\n"
                       + "|C   c |\n"
                       + "|   t  |\n"
-                      + "+------+", new GridPosn(2, 3))
+                      + "+------+",
+            new GridPosn(2, 3),
+            new ScoreCounter(0, true),
+            new StateRecord())
     );
   }
-  
+
   // An integration test to check the functionality of the draw method on a simple scene.
   // Utilizes draw methods on IGameObject and GridPosn that are tested individually below.
   void testDraw(Tester t) {
@@ -534,14 +609,14 @@ class ExamplesGame {
     // Test the result
     t.checkExpect(level13.draw(), scene);
   }
-  
+
   void testGetWidthPixels(Tester t) {
     this.resetExamples();
     t.checkExpect(level12.getWidthPixels(), 64);
     t.checkExpect(level1.getWidthPixels(), 512);
     t.checkExpect(level11.getWidthPixels(), 704);
   }
-  
+
   void testGetHeightPixels(Tester t) {
     this.resetExamples();
     t.checkExpect(level12.getHeightPixels(), 64);
@@ -556,7 +631,7 @@ class ExamplesGame {
     t.checkExpect(level16.hasWon(), true);
     t.checkExpect(level17.hasWon(), false);
   }
-  
+
   void testHandleClick(Tester t) {
     this.resetExamples();
     // Doing nothing by clicking on a wall
@@ -570,25 +645,49 @@ class ExamplesGame {
                       + "|C   c |\n"
                       + "|   t  |\n"
                       + "+------+"));
+
     // Clicking on the player car to select it
     level1.handleClick(new GridPosn(2, 3));
-    t.checkExpect(level1, level5);
+    // The selections are correct
+    t.checkExpect(level1.movables, level5.movables);
+    // the score counter is correct
+    t.checkExpect(level1.sc, level5.sc);
+    // the selection was added to the
+    t.checkExpect(level1.record.record.empty(), false);
+
     // Deselecting the player car
     this.resetExamples();
     level5.handleClick(new GridPosn(0, 0));
-    t.checkExpect(level5, level1);
+    t.checkExpect(level5,
+        new Level("+------+\n"
+                + "|c    T|\n"
+                + "|T  T  |\n"
+                + "| p    X\n"
+                + "|      |\n"
+                + "|C   c |\n"
+                + "|   t  |\n"
+                + "+------+",
+            new GridPosn(-1, -1), // No selection
+            new ScoreCounter(0, true),
+            new StateRecord()));
     // Selecting a different car
     this.resetExamples();
     level5.handleClick(new GridPosn(1, 1));
-    t.checkExpect(level5,
-        new Level("+------+\n"
-                      + "|c    T|\n"
-                      + "|T  T  |\n"
-                      + "| p    X\n"
-                      + "|      |\n"
-                      + "|C   c |\n"
-                      + "|   t  |\n"
-                      + "+------+", new GridPosn(1, 1)));
+    Level testLevel = new Level("+------+\n"
+        + "|c    T|\n"
+        + "|T  T  |\n"
+        + "| p    X\n"
+        + "|      |\n"
+        + "|C   c |\n"
+        + "|   t  |\n"
+        + "+------+",
+        new GridPosn(1, 1),
+        new ScoreCounter(0, true),
+        new StateRecord());
+    t.checkExpect(level5.movables, testLevel.movables);
+    t.checkExpect(level5.sc, testLevel.sc);
+    t.checkExpect(level5.record.record.empty(), false);
+
   }
 }
 
@@ -601,18 +700,26 @@ class ExamplesIGameObject {
   // +----------+
 
   // Walls
-  Wall wall1, wall2;
+  Wall wall1;
+  Wall wall2;
   // Exits
-  Exit exit1, exit2;
+  Exit exit1;
+  Exit exit2;
   // Cars
-  Car car1, car2, car3;
+  Car car1;
+  Car car2;
+  Car car3;
   // PlayerCars
-  PlayerCar pCar1, pCar2;
+  PlayerCar pCar1;
+  PlayerCar pCar2;
   // Trucks
-  Truck truck1, truck2;
+  Truck truck1;
+  Truck truck2;
   // Klotski pieces
-  NormalBox nBox1, nBox2;
-  PlayerBox pBox1, pBox2;
+  NormalBox nBox1;
+  NormalBox nBox2;
+  PlayerBox pBox1;
+  PlayerBox pBox2;
 
   void resetExamples() {
     // Walls
@@ -809,26 +916,74 @@ class ExamplesIGameObject {
 
   void testRegisterClick(Tester t) {
     this.resetExamples();
+    ScoreCounter sc = new ScoreCounter();
+    StateRecord record = new StateRecord();
 
     // clicking an already active car yields an active car
-    car1.registerClick(new GridPosn(1, 0));
+    car1.registerClick(new GridPosn(1, 0), sc, record);
     t.checkExpect(car1,
         new Car(new GridPosn(), true, 0, true));
+    t.checkExpect(sc, new ScoreCounter());
+    t.checkExpect(record, new StateRecord());
+
     // clicking outside an already active car yields an inactive car
-    car1.registerClick(new GridPosn(1, 1));
+    car1.registerClick(new GridPosn(1, 1), sc, record);
     t.checkExpect(car1,
         new Car(new GridPosn(), false, 0, true));
+    t.checkExpect(sc, new ScoreCounter());
+    t.checkExpect(record, new StateRecord());
+
     // clicking outside an inactive car yields an inactive car
-    car2.registerClick(new GridPosn(1, 1));
+    car2.registerClick(new GridPosn(1, 1), sc, record);
     t.checkExpect(car2,
         new Car(new GridPosn(0, 1), false, 2, false));
+    t.checkExpect(sc, new ScoreCounter());
+    t.checkExpect(record, new StateRecord());
+
     // clicking an inactive car yields an active car
-    car2.registerClick(new GridPosn(0, 1));
+    car2.registerClick(new GridPosn(0, 1), sc, record);
     t.checkExpect(car2,
         new Car(new GridPosn(0, 1), true, 2, false));
+    t.checkExpect(sc, new ScoreCounter(0, true));
+    Stack<Action> newStack = new Stack<>();
+    newStack.push(new Action(car2));
+    t.checkExpect(record, new StateRecord(newStack));
 
     // clicking will also work with other vehicles and boxes, as it is defined on the AMovable
     // class using only tested methods.
+  }
+
+
+  void testMoveUnchecked(Tester t) {
+    this.resetExamples();
+
+    car1.moveUnchecked(1, 2);
+    t.checkExpect(car1.posn, new GridPosn(1, 2));
+    car2.moveUnchecked(2, -1);
+    t.checkExpect(car2.posn, new GridPosn(2, 0));
+  }
+
+  void testRegisterSelectEvent(Tester t) {
+    this.resetExamples();
+
+    ScoreCounter sc = new ScoreCounter();
+    StateRecord sr = new StateRecord();
+    car2.registerSelectEvent(true, sc, sr);
+    t.checkExpect(car2.selected, true);
+    t.checkExpect(sc.hasNewSelection, true);
+    t.checkExpect(sr.record.peek(), new Action(car2));
+  }
+
+  void testRegisterSelection(Tester t) {
+    this.resetExamples();
+
+    ScoreCounter sc = new ScoreCounter();
+    StateRecord sr = new StateRecord();
+    RegisterSelection<Car> rs = new RegisterSelection<Car>(true, sc, sr);
+    rs.accept(car2);
+    t.checkExpect(car2.selected, true);
+    t.checkExpect(sc.hasNewSelection, true);
+    t.checkExpect(sr.record.peek(), new Action(car2));
   }
 
   void testRegisterKey(Tester t) {
@@ -845,100 +1000,190 @@ class ExamplesIGameObject {
     Wall w = new Wall(new GridPosn(2, 0));
     Exit e = new Exit(new GridPosn(2, 0));
 
+    ScoreCounter sc = new ScoreCounter();
+    StateRecord record = new StateRecord();
+    Stack<Action> recordStack = new Stack<>();
+
     // Do nothing if the movable is inactive
-    inactiveTruck.registerKey("a", new Mt<>(), new Mt<>(), new Mt<>());
+    inactiveTruck.registerKey("a", new Mt<>(), new Mt<>(), new Mt<>(), sc, record);
     t.checkExpect(inactiveTruck,
         new Truck(new GridPosn(2, 0), 3, false, false));
-    inactiveBox.registerKey("a",  new Mt<>(), new Mt<>(), new Mt<>());
+    inactiveBox.registerKey("a",  new Mt<>(), new Mt<>(), new Mt<>(), sc, record);
     t.checkExpect(inactiveBox,
         new NormalBox(new GridPosn(), false, 2, 1));
+    // The score counter remains at 0
+    t.checkExpect(sc, new ScoreCounter(0, false));
 
     // Do nothing if the desired move isn't in the direction of movement (only on vehicles)
-    moveCar.registerKey("s", new Mt<>(), new Mt<>(), new Mt<>());
+    sc.registerReselect();
+    record.startAction(moveCar);
+    recordStack.push(new Action(moveCar));
+    moveCar.registerKey("s", new Mt<>(), new Mt<>(), new Mt<>(), sc, record);
     t.checkExpect(moveCar,
         new Car(new GridPosn(), true, 1, true));
-    moveTruck.registerKey("d", new Mt<>(), new Mt<>(), new Mt<>());
+
+    sc.registerReselect();
+    record.startAction(moveTruck);
+    recordStack.push(new Action(moveTruck));
+    moveTruck.registerKey("d", new Mt<>(), new Mt<>(), new Mt<>(), sc, record);
     t.checkExpect(moveTruck,
         new Truck(new GridPosn(2, 0), 3, true, false));
 
+    // The score counter remains at 0
+    t.checkExpect(sc, new ScoreCounter(0, true));
+    t.checkExpect(record, new StateRecord(recordStack));
+
+
     // Do nothing if the move would cause a collision with another movable
+    sc.registerReselect();
+    record.startAction(moveCar);
+    recordStack.push(new Action(moveCar));
     moveCar.registerKey("d",
         new Mt<>(),
         new Mt<>(),
-        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())),
+        sc, record);
     t.checkExpect(moveCar,
         new Car(new GridPosn(), true, 1, true));
+
+    sc.registerReselect();
+    record.startAction(moveNBox);
+    recordStack.push(new Action(moveNBox));
     moveNBox.registerKey("d",
         new Mt<>(),
         new Mt<>(),
-        new Cons<>(moveNBox, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveNBox, new Cons<>(moveTruck, new Mt<>())),
+        sc, record);
     t.checkExpect(moveNBox,
         new NormalBox(new GridPosn(), true, 2, 1));
+
+    // The score counter remains at 0
+    t.checkExpect(sc, new ScoreCounter(0, true));
+    t.checkExpect(record, new StateRecord(recordStack));
+
 
     // Do nothing if the move would cause a collision with a wall
-    moveCar.registerKey("d", new Cons<>(w, new Mt<>()), new Mt<>(), new Mt<>());
+    sc.registerReselect();
+    record.startAction(moveCar);
+    recordStack.push(new Action(moveCar));
+    moveCar.registerKey("d", new Cons<>(w, new Mt<>()), new Mt<>(), new Mt<>(), sc, record);
     t.checkExpect(moveCar,
         new Car(new GridPosn(), true, 1, true));
-    moveNBox.registerKey("d", new Cons<>(w, new Mt<>()), new Mt<>(), new Mt<>());
+
+    sc.registerReselect();
+    record.startAction(moveNBox);
+    recordStack.push(new Action(moveNBox));
+    moveNBox.registerKey("d", new Cons<>(w, new Mt<>()), new Mt<>(), new Mt<>(), sc, record);
     t.checkExpect(moveNBox,
         new NormalBox(new GridPosn(), true, 2, 1));
 
+    // The score counter remains at 0
+    t.checkExpect(sc, new ScoreCounter(0, true));
+    t.checkExpect(record, new StateRecord(recordStack));
+
+
     // Do nothing if we're trying to move over an exit (only on NormalBox)
-    moveNBox.registerKey("d", new Mt<>(), new Cons<>(e, new Mt<>()), new Mt<>());
+    sc.registerReselect();
+    record.startAction(moveNBox);
+    recordStack.push(new Action(moveNBox));
+    moveNBox.registerKey("d", new Mt<>(), new Cons<>(e, new Mt<>()), new Mt<>(), sc, record);
     t.checkExpect(moveNBox,
         new NormalBox(new GridPosn(), true, 2, 1));
-    movePBox.registerKey("d", new Mt<>(), new Cons<>(e, new Mt<>()), new Mt<>());
+
+    sc.registerReselect();
+    record.startAction(movePBox);
+    recordStack.push(new Action(movePBox, 1, 0));
+    movePBox.registerKey("d", new Mt<>(), new Cons<>(e, new Mt<>()), new Mt<>(), sc, record);
     t.checkExpect(movePBox,
         new PlayerBox(new GridPosn(1, 0), true, 2, 1));
 
+    // The score counter is now at 1, since we moved a box
+    t.checkExpect(sc, new ScoreCounter(1, false));
+    t.checkExpect(record, new StateRecord(recordStack));
+
+
     // Otherwise, move the AMovable
+    // for the purposes of these tests, we simulate re-selections manually
+    sc.registerReselect();
+    record.startAction(moveCar);
+    recordStack.push(new Action(moveCar));
     moveCar.registerKey("a",
         new Cons<>(w, new Mt<>()),
         new Mt<>(),
-        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())),
+        sc, record);
     t.checkExpect(moveCar,
         new Car(new GridPosn(-1, 0), true, 1, true));
     moveCar.registerKey("d",
         new Mt<>(),
         new Mt<>(),
-        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())),
+        sc, record);
     t.checkExpect(moveCar,
         new Car(new GridPosn(), true, 1, true));
 
+    // The score counter is now at 2, since the same vehicle was moved twice.
+    t.checkExpect(sc, new ScoreCounter(2, false));
+    t.checkExpect(record, new StateRecord(recordStack));
+
+    sc.registerReselect();
+    record.startAction(moveTruck);
+    recordStack.push(new Action(moveTruck));
     moveTruck.registerKey("w",
         new Mt<>(),
         new Mt<>(),
-        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())),
+        sc, record);
     t.checkExpect(moveTruck,
         new Truck(new GridPosn(2, -1), 3, true, false));
     moveTruck.registerKey("s",
         new Mt<>(),
         new Mt<>(),
-        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())),
+        sc, record);
     t.checkExpect(moveTruck,
         new Truck(new GridPosn(2, 0), 3, true, false));
 
+    // The score counter is now at 3, since the same vehicle was moved twice.
+    t.checkExpect(sc, new ScoreCounter(3, false));
+    t.checkExpect(record, new StateRecord(recordStack));
+
+    sc.registerReselect();
+    record.startAction(moveNBox);
+    recordStack.push(new Action(moveNBox, 1, -1));
     moveNBox.registerKey("w",
         new Mt<>(),
         new Mt<>(),
-        new Cons<>(moveNBox, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveNBox, new Cons<>(moveTruck, new Mt<>())),
+        sc, record);
     t.checkExpect(moveNBox,
         new NormalBox(new GridPosn(0, -1), true, 2, 1));
     moveNBox.registerKey("d",
         new Mt<>(),
         new Mt<>(),
-        new Cons<>(moveNBox, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveNBox, new Cons<>(moveTruck, new Mt<>())),
+        sc, record);
     t.checkExpect(moveNBox,
         new NormalBox(new GridPosn(1, -1), true, 2, 1));
+    // The score counter is now at 4, since the same vehicle was moved twice.
+    t.checkExpect(sc, new ScoreCounter(4, false));
+    t.checkExpect(record, new StateRecord(recordStack));
 
     // Arrow keys should work as well
+    sc.registerReselect();
+    record.startAction(moveCar);
+    recordStack.push(new Action(moveCar, -1, 0));
     moveCar.registerKey("left",
         new Cons<>(w, new Mt<>()),
         new Mt<>(),
-        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())),
+        sc, record);
     t.checkExpect(moveCar,
         new Car(new GridPosn(-1, 0), true, 1, true));
+    // The score counter is now at 5.
+    t.checkExpect(sc, new ScoreCounter(5, false));
   }
+
 
   void testMove(Tester t) {
     this.resetExamples();
@@ -951,58 +1196,109 @@ class ExamplesIGameObject {
 
     Wall w = new Wall(new GridPosn(2, 0));
     Exit e = new Exit(new GridPosn(2, 0));
+    ScoreCounter sc = new ScoreCounter(0, false);
+    StateRecord record = new StateRecord();
+    Stack<Action> recordStack = new Stack<>();
 
     // Do nothing if the desired move isn't in the direction of movement
-    moveCar.move(0, 1, new Mt<>(), new Mt<>(), new Mt<>());
+    sc.registerReselect();
+    record.startAction(moveCar);
+    recordStack.push(new Action(moveCar));
+    moveCar.move(0, 1, new Mt<>(), new Mt<>(), new Mt<>(), sc, record);
     t.checkExpect(moveCar,
         new Car(new GridPosn(), false, 1, true));
-    moveTruck.move(1, 0, new Mt<>(), new Mt<>(), new Mt<>());
+    sc.registerReselect();
+    record.startAction(moveTruck);
+    recordStack.push(new Action(moveTruck));
+    moveTruck.move(1, 0, new Mt<>(), new Mt<>(), new Mt<>(), sc, record);
     t.checkExpect(moveTruck,
         new Truck(new GridPosn(2, 0), 3, false, false));
+    // The score counter remains at 0 and the record remains empty
+    t.checkExpect(sc, new ScoreCounter(0, true));
+    t.checkExpect(record, new StateRecord(recordStack));
 
     // Do nothing if the move would cause a collision with another movable
+    sc.registerReselect();
+    record.startAction(moveCar);
+    recordStack.push(new Action(moveCar));
     moveCar.move(1, 0,
         new Mt<>(),
         new Mt<>(),
-        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())),
+        sc, record);
     t.checkExpect(moveCar,
         new Car(new GridPosn(), false, 1, true));
+    sc.registerReselect();
+    record.startAction(moveNBox);
+    recordStack.push(new Action(moveNBox));
     moveNBox.move(1, 0,
         new Mt<>(),
         new Mt<>(),
-        new Cons<>(moveNBox, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveNBox, new Cons<>(moveTruck, new Mt<>())),
+        sc, record);
     t.checkExpect(moveNBox,
         new NormalBox(new GridPosn(), true, 2, 1));
+    // The score counter remains at 0 and the record remains empty
+    t.checkExpect(sc, new ScoreCounter(0, true));
+    t.checkExpect(record, new StateRecord(recordStack));
 
     // Do nothing if the move would cause a collision with a wall
-    moveCar.move(1, 0, new Cons<>(w, new Mt<>()), new Mt<>(), new Mt<>());
+    sc.registerReselect();
+    record.startAction(moveCar);
+    recordStack.push(new Action(moveCar));
+    moveCar.move(1, 0, new Cons<>(w, new Mt<>()), new Mt<>(), new Mt<>(), sc, record);
     t.checkExpect(moveCar,
         new Car(new GridPosn(), false, 1, true));
-    moveNBox.move(1, 0, new Cons<>(w, new Mt<>()), new Mt<>(), new Mt<>());
+    sc.registerReselect();
+    record.startAction(moveNBox);
+    recordStack.push(new Action(moveNBox));
+    moveNBox.move(1, 0, new Cons<>(w, new Mt<>()), new Mt<>(), new Mt<>(), sc, record);
     t.checkExpect(moveNBox,
         new NormalBox(new GridPosn(), true, 2, 1));
+    // The score counter remains at 0 and the record remains empty
+    t.checkExpect(sc, new ScoreCounter(0, true));
+    t.checkExpect(record, new StateRecord(recordStack));
 
     // Do nothing if we're trying to move over an exit (only on NormalBox)
-    moveNBox.move(1, 0, new Mt<>(), new Cons<>(e, new Mt<>()), new Mt<>());
+    sc.registerReselect();
+    record.startAction(moveNBox);
+    recordStack.push(new Action(moveNBox));
+    moveNBox.move(1, 0, new Mt<>(), new Cons<>(e, new Mt<>()), new Mt<>(), sc, record);
     t.checkExpect(moveNBox,
         new NormalBox(new GridPosn(), true, 2, 1));
-    movePBox.move(1, 0, new Mt<>(), new Cons<>(e, new Mt<>()), new Mt<>());
+    sc.registerReselect();
+    record.startAction(movePBox);
+    recordStack.push(new Action(movePBox, 1, 0));
+    movePBox.move(1, 0, new Mt<>(), new Cons<>(e, new Mt<>()), new Mt<>(), sc, record);
     t.checkExpect(movePBox,
         new PlayerBox(new GridPosn(1, 0), true, 2, 1));
+    // The score counter goes to 1 and the record remains empty
+    t.checkExpect(sc, new ScoreCounter(1, false));
+    t.checkExpect(record, new StateRecord(recordStack));
 
     // Otherwise, move the movable
+    sc.registerReselect();
+    record.startAction(moveCar);
+    recordStack.push(new Action(moveCar, -1, 0));
     moveCar.move(-1, 0,
         new Cons<>(w, new Mt<>()),
         new Mt<>(),
-        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveCar, new Cons<>(moveTruck, new Mt<>())), sc, record);
     t.checkExpect(moveCar,
         new Car(new GridPosn(-1, 0), false, 1, true));
+    sc.registerReselect();
+    record.startAction(moveNBox);
+    recordStack.push(new Action(moveNBox, 1, -1));
+    sc.registerReselect();
     moveNBox.move(1, -1,
         new Mt<>(),
         new Mt<>(),
-        new Cons<>(moveNBox, new Cons<>(moveTruck, new Mt<>())));
+        new Cons<>(moveNBox, new Cons<>(moveTruck, new Mt<>())), sc, record);
     t.checkExpect(moveNBox,
         new NormalBox(new GridPosn(1, -1), true, 2, 1));
+    // The score counter increases to 3
+    t.checkExpect(sc, new ScoreCounter(3, false));
+    t.checkExpect(record, new StateRecord(recordStack));
   }
 
   // +----------------+
@@ -1056,6 +1352,26 @@ class ExamplesIGameObject {
     t.checkExpect(pBox2.tilesetPath().toString(),
         Path.of("klotski", "player-box-selected.png").toString());
   }
+
+  void testBoxXSize(Tester t) {
+    this.resetExamples();
+
+    t.checkExpect(nBox1.xSize(), 1);
+    t.checkExpect(nBox2.xSize(), 2);
+    t.checkExpect(pBox1.xSize(), 3);
+    t.checkExpect(pBox2.xSize(), 2);
+  }
+
+  void testBoxYSize(Tester t) {
+    this.resetExamples();
+
+    t.checkExpect(nBox1.ySize(), 1);
+    t.checkExpect(nBox2.ySize(), 3);
+    t.checkExpect(pBox1.ySize(), 1);
+    t.checkExpect(pBox2.ySize(), 2);
+  }
+
+
 }
 
 // Examples for Functions.java ====================================================================
@@ -1416,7 +1732,7 @@ class ExamplesIList {
   }
 }
 
-// Examples for LoadUtils.java ====================================================================
+// Examples for Utils.java ====================================================================
 
 class ExamplesParser {
   Parser p1 = new Parser(" +|-X", new GridPosn(0, 0));
@@ -1593,6 +1909,16 @@ class ExamplesParser {
             + "| p    X\n"
             + "|      ||\n"
             + "+--X---+").loadHeight(), 6);
+  }
+
+  // Tests for SpriteLoader ==================================================
+
+  void testSpriteLoaderFromSpritesDir(Tester t) {
+    SpriteLoader sl = new SpriteLoader();
+    t.checkExpect(sl.fromSpritesDir(Path.of("bush.png")),
+        new FromFileImage("sprites/bush.png"));
+    t.checkExpect(sl.fromSpritesDir(Path.of("truck", "truck0.png")),
+        new FromFileImage("sprites/truck/truck0.png"));
   }
 }
 
@@ -1783,5 +2109,132 @@ class ExamplesTiles {
                     new AboveImage(boxMidRow,
                         new AboveImage(boxBotRow,
                             new EmptyImage()))))));
+  }
+}
+
+// Tests for Recording.java ==============================================
+
+class ExamplesRecording {
+  NormalBox nb;
+  StateRecord mtRecord;
+  StateRecord record2;
+
+  IList<IMovable> movables;
+
+  ScoreCounter sc;
+
+  Action a1;
+  Action a2;
+  ScoreCounter sc2;
+
+  void resetExamples() {
+    mtRecord = new StateRecord();
+    nb = new NormalBox(
+        new GridPosn(2, 3),
+        false,
+        2, 2
+    );
+
+    Stack<Action> st = new Stack<>();
+    a1 = new Action(nb, 1, 1);
+    a2 = new Action(nb, -1, 2);
+    st.add(a1);
+    st.add(a2);
+
+    record2 = new StateRecord(st);
+
+    movables = new Cons<>(nb, new Mt<>());
+
+    sc = new ScoreCounter(5, false);
+    sc2 = new ScoreCounter(12, false);
+  }
+
+
+  // Tests for StateRecord ====================================
+  void testStateRecordUndo(Tester t) {
+    resetExamples();
+    t.checkExpect(mtRecord.record.size(), 0);
+    mtRecord.undo(sc, movables);
+    t.checkExpect(mtRecord.record.size(), 0);
+
+    t.checkExpect(record2.record.size(), 2);
+    record2.undo(sc2, movables);
+    t.checkExpect(record2.record.size(), 1);
+    t.checkExpect(nb.posn.y, 1);
+    t.checkExpect(nb.posn.x, 3);
+  }
+
+
+  void testStateRecordRegisterMove(Tester t) {
+    resetExamples();
+
+    record2.registerMove(1, 1);
+    t.checkExpect(a2.dx, 0);
+    t.checkExpect(a2.dy, 3);
+  }
+
+  void testStateRecordStartAction(Tester t) {
+    resetExamples();
+
+    mtRecord.startAction(nb);
+    t.checkExpect(mtRecord.record.peek(), new Action(nb, 0, 0));
+  }
+
+  // Tests for Action =========================================
+
+  void testActionUndo(Tester t) {
+    resetExamples();
+
+    a2.undo(sc2);
+
+    t.checkExpect(nb.posn, new GridPosn(3, 1));
+  }
+
+  void testActionRegisterMove(Tester t) {
+    resetExamples();
+
+    a2.registerMove(3, 3);
+    t.checkExpect(a2.dx, 2);
+    t.checkExpect(a2.dy, 5);
+  }
+
+  // Tests for ScoreCounter =============================
+
+  void testScoreRegisterReselect(Tester t) {
+    resetExamples();
+
+    sc.registerReselect();
+    t.checkExpect(sc.hasNewSelection, true);
+    sc2.registerReselect();
+    t.checkExpect(sc2.hasNewSelection, true);
+  }
+
+  void testScoreRegisterMove(Tester t) {
+    resetExamples();
+
+    sc.registerMove();
+    t.checkExpect(sc.score, 5);
+    sc2.hasNewSelection = true;
+    sc2.registerMove();
+    t.checkExpect(sc2.hasNewSelection, false);
+    t.checkExpect(sc2.score, 13);
+  }
+
+  void testScoreIncrement(Tester t) {
+    resetExamples();
+
+    sc.increment();
+    t.checkExpect(sc.score, 6);
+    sc2.increment();
+    t.checkExpect(sc2.score, 13);
+  }
+
+  void testScoreDraw(Tester t) {
+    resetExamples();
+
+    t.checkExpect(sc.toImage(), new TextImage("score: 5", 20, FontStyle.BOLD, Color.white)
+        .movePinhole(-10, -10));
+    t.checkExpect(sc2.toImage(), new TextImage("score: 12", 20, FontStyle.BOLD, Color.white)
+        .movePinhole(-10, -10));
   }
 }

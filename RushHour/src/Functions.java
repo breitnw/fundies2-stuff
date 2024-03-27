@@ -107,16 +107,21 @@ class DrawToScene<T extends IGameObject> implements Consumer<T> {
 // click position and deselecting it if it does not.
 class OnClick implements Consumer<IMovable> {
   GridPosn clickedPosn;
+  ScoreCounter sc;
+  StateRecord record;
   
-  OnClick(GridPosn clickedPosn) {
+  OnClick(GridPosn clickedPosn, ScoreCounter sc, StateRecord record) {
     this.clickedPosn = clickedPosn;
+    this.sc = sc;
+    this.record = record;
   }
   
   // Mutates the provided movable according to a click event, selecting it if it contains the
   // click position and deselecting it if it does not.
-  // EFFECT: mutates the provided IMovable to select or deselect it
+  // EFFECT: mutates the provided IMovable to select or deselect it, and mutates the ScoreCounter
+  // passed on construction to register new clicks if necessary.
   public void accept(IMovable that) {
-    that.registerClick(this.clickedPosn);
+    that.registerClick(this.clickedPosn, sc, record);
   }
 }
 
@@ -127,18 +132,53 @@ class OnKey implements Consumer<IMovable> {
   IList<Wall> walls;
   IList<Exit> exits;
   IList<IMovable> movables;
+  ScoreCounter sc;
+  StateRecord record;
 
-  OnKey(String key, IList<Wall> walls, IList<Exit> exits, IList<IMovable> movables) {
+  OnKey(
+      String key,
+      IList<Wall> walls,
+      IList<Exit> exits,
+      IList<IMovable> movables,
+      ScoreCounter sc,
+      StateRecord record
+  ) {
     this.key = key;
     this.walls = walls;
     this.exits = exits;
     this.movables = movables;
+    this.sc = sc;
+    this.record = record;
   }
   
   // Mutates a movable according to a key event, moving it if it is selected and the key
   // represents an available movement direction.
-  // EFFECT: mutates the position of the IMovable according to the purpose statement
+  // EFFECT: mutates the position of the IMovable according to the purpose statement, and mutates
+  // the ScoreCounter passed on construction to register moves if necessary.
   public void accept(IMovable that) {
-    that.registerKey(key, walls, exits, movables);
+    that.registerKey(key, walls, exits, movables, sc, record);
+  }
+}
+
+// A consumer that updates the selection state of the provided IMovable, updating the
+// ScoreCounter if it results in a new selection.
+class RegisterSelection<T extends IMovable> implements Consumer<T> {
+  Boolean value;
+  ScoreCounter sc;
+  StateRecord record;
+
+  RegisterSelection(boolean value, ScoreCounter sc, StateRecord record) {
+    this.sc = sc;
+    this.value = value;
+    this.record = record;
+  }
+
+  // Registers a deselection on the provided IMovable.
+  // EFFECT: Mutates the selection state of the provided object according to the value provided
+  // on construction. Also registers a new selection on sc if there is one.
+
+  @Override
+  public void accept(T obj) {
+    obj.registerSelectEvent(value, sc, record);
   }
 }

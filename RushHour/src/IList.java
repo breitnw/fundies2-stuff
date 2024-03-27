@@ -22,6 +22,8 @@ interface IList<T> {
   // Executes the provided consumer for each element in this list
   // EFFECT: each element in the list is mutated according to the consumer
   void forEach(Consumer<T> c);
+
+
 }
 
 // Represents a list of elements of type T with a first element and a list of remaining elements

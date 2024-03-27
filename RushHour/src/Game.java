@@ -72,13 +72,17 @@ class Level {
   IList<Exit> exits;
   int width;
   int height;
+  ScoreCounter sc;
+  StateRecord record;
 
   Level(
       IList<IMovable> movables,
       IList<Wall> walls,
       IList<Exit> exits,
       int width,
-      int height
+      int height,
+      ScoreCounter sc,
+      StateRecord record
   ) {
     // Validate that the grid width is at least 1
     if (width < 1) {
@@ -110,6 +114,8 @@ class Level {
     this.exits = exits;
     this.width = width;
     this.height = height;
+    this.sc = sc;
+    this.record = record;
   }
   
   
@@ -122,6 +128,10 @@ class Level {
      start of a horizontal car.
    - The letter "P" represents the start of a vertical player car, and the letter "p" represents
      the start of a horizontal player car.
+   - The character "." represents a 1x1 Klotski box.
+   - The letter "B" represents a 1x2 (vertical) Klotski box, and "b" represents a 2x1
+     (horizontal) Klotski box
+   - The letter "S" represents a 2x2 player Klotski box.
    - The letter "X" represents the exit.
    - The characters "+", "|", and "-" all represent walls.
    - The character " " indicates nothing is in a given cell
@@ -139,19 +149,34 @@ class Level {
            + "+------+");
    */
   Level(String layout) {
-    this(layout, new GridPosn(-1, -1));
+    this(
+        layout,
+        new GridPosn(-1, -1),
+        new ScoreCounter(),
+        new StateRecord()
+    );
   }
   
   // Convenience constructor to build a level from a layout String, with the same format as that
   // used in the previous constructor. The vehicle originating at selection, if there is one, is
-  // selected. Primary useful for testing selection methods.
-  Level(String layout, GridPosn selection) {
-    this(new Parser(layout, selection));
+  // selected. Additionally, the score counter is initialized to sc instead of 0. Primary useful
+  // for testing selection and score counting methods.
+  Level(String layout, GridPosn selection, ScoreCounter sc, StateRecord record) {
+    this(new Parser(layout, selection), sc, record);
   }
   
-  // Convenience constructor that creates a level from the information of a Parser p.
-  Level(Parser p) {
-    this(p.loadVehicles(), p.loadWalls(), p.loadExits(), p.loadWidth(), p.loadHeight());
+  // Convenience constructor that creates a level from the information of a Parser p and a
+  // provided ScoreCounter
+  Level(Parser p, ScoreCounter sc, StateRecord record) {
+    this(
+        p.loadVehicles(),
+        p.loadWalls(),
+        p.loadExits(),
+        p.loadWidth(),
+        p.loadHeight(),
+        sc,
+        record
+    );
   }
   
   // Renders the game to a new WorldScene
@@ -168,6 +193,8 @@ class Level {
     this.exits.forEach(new DrawToScene<>(s));
     this.walls.forEach(new DrawToScene<>(s));
     this.movables.forEach(new DrawToScene<>(s));
+    // Draw the score to the scene
+    new GridPosn().drawPositioned(this.sc.toImage(), s);
 
     return s;
   }
@@ -191,12 +218,16 @@ class Level {
   // and deselecting any cars that do not
   // EFFECT: selects any cars that overlap the provided GridPosn and deselects any that do not
   void handleClick(GridPosn p) {
-    this.movables.forEach(new OnClick(p));
+    this.movables.forEach(new OnClick(p, sc, record));
   }
   
   // Handles a key event by registering the event on each of the vehicles in this Level
   // EFFECT: registers the key event on each of this Level's movable objects
   void handleKey(String k) {
-    this.movables.forEach(new OnKey(k, walls, exits, movables));
+    if (k.equals("u")) {
+      this.record.undo(sc, this.movables);
+      return;
+    }
+    this.movables.forEach(new OnKey(k, walls, exits, movables, sc, record));
   }
 }

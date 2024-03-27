@@ -4,7 +4,8 @@ import java.nio.file.Path;
 
 // Represents a set of images that can be tiled horizontally and vertically
 interface ITileset {
-  // Produces a tile depending on whether it is at the top, bottom, left, and/or right of a given tiling.
+  // Produces a tile depending on whether it is at the
+  // top, bottom, left, and/or right of a given tiling.
   WorldImage drawTile(boolean isTop, boolean isBottom, boolean isLeft, boolean isRight);
 }
 
@@ -21,7 +22,8 @@ class OneSlice implements ITileset {
     this(new SpriteLoader().fromSpritesDir(filename));
   }
 
-  // Produces a tile depending on whether it is at the top, bottom, left, and/or right of a given tiling.
+  // Produces a tile depending on whether it is at the top, bottom, left, and/or right of a
+  // given tiling.
   public WorldImage drawTile(boolean isTop, boolean isBottom, boolean isLeft, boolean isRight) {
     return img;
   }
@@ -29,9 +31,15 @@ class OneSlice implements ITileset {
 
 // Represents a set of nine sprites that can be used in a nine-sliced TiledImage
 class NineSlice implements ITileset {
-  WorldImage topLeft, topMid, topRight;
-  WorldImage midLeft, midMid, midRight;
-  WorldImage botLeft, botMid, botRight;
+  WorldImage topLeft;
+  WorldImage topMid;
+  WorldImage topRight;
+  WorldImage midLeft;
+  WorldImage midMid;
+  WorldImage midRight;
+  WorldImage botLeft;
+  WorldImage botMid;
+  WorldImage botRight;
   
   NineSlice(
       WorldImage topLeft,
@@ -107,7 +115,8 @@ class NineSlice implements ITileset {
 // Represents images from a tile set tiled an arbitrary number of times horizontally and vertically
 class TiledImage {
   ITileset spriteSheet;
-  int tilesX, tilesY;
+  int tilesX;
+  int tilesY;
   
   // Creates a TiledImage with a tileset
   TiledImage(ITileset tileset, int tilesX, int tilesY) {
@@ -123,6 +132,7 @@ class TiledImage {
   // Draws a WorldImage of `width` tiles next to each other
   WorldImage drawRow(boolean isTop, boolean isBottom) {
     WorldImage row = new EmptyImage();
+    // EFFECT: draws each tile in this row and adds it to `row` with a `BesideImage`
     for (int col = 0; col < this.tilesX; col += 1) {
       boolean isRight = col == 0;
       boolean isLeft = col == this.tilesX - 1;
@@ -136,6 +146,7 @@ class TiledImage {
   // Draws this TiledImage as a WorldImage with the pinhole at the top-left
   WorldImage draw() {
     WorldImage img = new EmptyImage();
+    // EFFECT: draws each tile in this row and adds it to `img` with an `AboveImage`
     for (int row = 0; row < this.tilesY; row += 1) {
       boolean isTop = row == this.tilesY - 1;
       boolean isBottom = row == 0;

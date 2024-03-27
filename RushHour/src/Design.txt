@@ -1,37 +1,20 @@
-# PROGRAM DESIGN
+# DESIGN
 
-> Design two example levels whose playable area is not a straightforward rectangle. In your  
-> Design.txt file, explain what new implementation support, if any, you needed to build to make
-> this work.
+_For a more comprehensive discussion of the changes we made for this assignment, including switching 
+to  impworld and implementing klotski, see `Changes.txt`._
 
-
-🚧 _Refer to section "Level loading helpers" for implementation details_
-
-We did not need to make many major changes to make this work. As mentioned in `Changes.txt`, we 
-already had support for placing obstacles anywhere in the game board. As a direct consequence for
-this feature, one can easily use these walls to create an irregular border for the board, 
-fulfilling functionality for non-rectangular levels. 
-
-The only significant change we made was more of a convenience: rather than throwing an 
-`IllegalArgumentException` when the rows of the level `String` are uneven lengths, we chose to 
-represent the undefined cells as empty cells. Methods to retrieve the width of the game board, 
-then, simply find the length of the longest row. 
-
----
 
 ## GAME STATE
 
 Two classes manage the overall game state: `Game` and `Level`. As the names suggest, `Game` manages
-the state of the game as a whole, while `Level` manages an individual level.
-
+the state of the game as a whole, while `Level` manages an individual level. `Level` manages both 
+Klotski _and_ Rush Hour levels, so you could theoretically have a level with both kinds of pieces 
+simultaneously.
 
 ### Game
 
-`Game` extends `javalib.funworld.World`, and contains:
-
-- An integer `TILE_SIZE` that represents the size of each tile, in pixels. As of now, this number is
-  always 64, as that is the size of a tile in each sprite.
-- a `Level` that represents the level this game renders
+`Game` extends `javalib.impworld.World`, and contains a `Level` that represents the level this 
+game renders
 
 It has the following methods:
 
@@ -42,19 +25,22 @@ It has the following methods:
   grid coordinates and invoking `handleClick` on level
 - `onKeyEvent(String k)`, which handles a key event with code `k` by propagating it to the key 
   event handler on `Level`
-- `shouldWorldEnd()`, which determines whether the `Level`'s win condition is satisfied
 - `lastScene(String msg)`, which draws the current game with an overlay of "You win!" text
 
 ### Level
 
-`Level` represents the logic for a level and its layout, including all of its vehicles, walls,
+`Level` represents the logic for a level and its layout, including all of its movables, walls,
 exits, width, and height. Although they all implement the `IGameObject` interface, we chose to 
-represent vehicles, walls, and exits as separate lists, as subclasses (i.e., vehicle) have unique
-functionality that we would like to be able to easily invoke. For example, we'd like to iterate over
-all the cars when registering clicks, without needing to redundantly iterate over walls or exits.
+represent movables, walls, and exits as separate lists, as subclasses have unique functionality
+that we would like to be able to easily invoke. For example, we'd like to iterate over
+all the movables when registering clicks, without needing to redundantly iterate over walls or exits.
 
 Another quirk arising from this design is that it allows us to create levels with multiple player
 cars and exits, allowing for challenges that involve multiple exits we need to reach.
+
+To support undoing and scoring, `Level` also contains two mutable data structures: `ScoreCounter`
+and `StateRecord`. These data structures are passed as fields to the function objects used in
+its methods, allowing for mappers and consumers to modify the score and state record. 
 
 
 #### Loading levels
@@ -145,7 +131,7 @@ since it doesn't have one. In each case, they just load an image from the corres
 
 ### IMovable
 
-The `IMovable` interface represents public functionality across all vehicles, and extends the
+The `IMovable` interface represents public functionality across all movable objects, and extends the
 IGameObject interface. The only two methods it contains are:
 
 - `inWinningState`, which determines whether this `IMovable` is in a winning state. We decided to make
@@ -156,35 +142,39 @@ IGameObject interface. The only two methods it contains are:
 - `registerKey`, which registers a key event, returning a new `IMovable` representing the changed
   vehicle after the key. If this `IMovable` is selected, moves it left, right, up, or down
   depending on which movements are available and which key was pressed. Collisions are tested 
-  with the provided lists of walls and vehicles before movement. 
+  with the provided lists of walls and vehicles before movement.
+- `registerSelectEvent`, which registers a selection on this movable, an updates a score counter and
+  state record to match this update.
+
+
+### AMovable
+
+The AMovable class abstracts some of the functionality over all movable objects, such as the ability to check if this
+object is in a winning state, moving this object, and registering clicks and key events. It also contains state
+defining if this movable object is active or not.
 
 
 ### AVehicle
 
-The `AVehicle` interface abstracts some of the functionality present across all `IMovable`
-implementors. It contains three fields:
+The `AVehicle` interface abstracts some of the functionality present across all vehicles. It 
+contains two fields:
 
 - `color`, which is an integer (validated to be between 0 and 4) representing the color of the
   vehicle. It maps to the number present in the corresponding sprite's filename.
 - `isHorizontal`, which represents whether this vehicle is horizontal or vertical
-- `active`, which represents whether this vehicle is selected.
-
 
 This allows us to define `xSize` and `ySize` depending on two new abstract methods, `getWidth` and
 getHeight. These methods do not vary based on the orientation of the vehicle, but `xSize` and `ySize`
-transform the values, according to `isHorizontal`, such that they do.
-
-We also abstract `inWinningState` with a default implementation that always returns true, and define a
-method `drawFromFile` that, given a filename, retrieves a sprite and rotates it accordingly.
+transform the values, according to `isHorizontal`, such that they do. We also override the `move`
+method to constrain the movement of vehicles to the proper dimension. 
 
 
 ### Car and Truck
 
 The `Car` and `Truck` classes both extend `AVehicle`, overriding the `getWidth` and `getLength` methods
-according to their respective width and length. Both also override the `getImage` method by creating
+according to their respective width and length. Both also override the `imagePath` method by creating
 an image based on a path string and modifying it based on the color, or choosing the selected sprite
-if necessary. Finally, they implement `registerClick` by returning a new object with its `active` field
-set based on the click location.
+if necessary. 
 
 
 ### PlayerCar
@@ -194,6 +184,46 @@ overrides `getImage` to always return the player car image (unless selected), `r
 a `PlayerCar` instead of a `Car`, and `inWinningState` to check that one of the exits is intersecting with
 this.
 
+
+### ABox
+
+ABox abstracts functionality over all box types, including drawing from a tileset (the tileset to draw from
+is defined in the subclasses PlayerBox and NormalBox) and size processing. Meanwhile, its inheritors
+implement methods that keep track of scoring, and game ending detection (in PlayerBox)
+
+We chose to make NormalBox and PlayerBox extend an abstract class rather than having PlayerBox 
+extend NormalBox because we wanted NormalBox to have some functionality Player doesn't have. 
+Namely, it should prevent moving on top of exits. 
+
+
+### NormalBox and PlayerBox
+
+NormalBox and PlayerBox extend ABox to override the tileset path functionality and add extra 
+checks: PlayerBox takes on a win condition, and NormalBox a check that it cannot overlap any exits.
+
+---
+
+## Game History
+
+The Recording, Action, and ScoreCounter classes are mutable classes that are passed around the
+entire game to store and register the user's action history and score, tightly integrated with the
+Game and IGameObject classes.
+
+### Recording
+
+Recording is a composition of a Stack<Action> that keep tracks of past user interactions in the form
+of dx and dy coordinates. It integrates with ScoreCounter to keep track of the current user score.
+It provides undo functionality for the game world.
+
+### Action
+
+An `Action` represents a combined relative position change of a game piece. It is stored within the
+Recording class to store user actions history.
+
+### ScoreCounter
+
+The ScoreCounter keeps track of selection and deselection in order to save the current score of the
+user. It also provides a toImage method to draw onto the game screen.
 
 ---
 
